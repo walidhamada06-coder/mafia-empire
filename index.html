@@ -110,7 +110,7 @@ tr:hover { background: rgba(255,255,255,0.02); }
 
 <!-- TOP HEADER -->
 <header class="top-header">
-  <div class="brand-logo">🌿 AGRO ERP ENTERPRISE <span style="font-size:11px;color:var(--text-muted);font-weight:normal">| المزرعة الذكية (متصل بالسحابة ⚡)</span></div>
+  <div class="brand-logo">🌿 AGRO ERP ENTERPRISE <span style="font-size:11px;color:var(--text-muted);font-weight:normal">| المزرعة الذكية (Supabase ⚡)</span></div>
   <div class="user-profile">
     <div style="text-align:left">
       <b id="active-user-name" style="display:block;font-size:14px">المشرف العام</b>
@@ -125,10 +125,13 @@ tr:hover { background: rgba(255,255,255,0.02); }
 <aside class="sidebar-nav">
   <button class="nav-btn active" data-page="dashboard">📊 الداشبورد والتحليلات</button>
   <button class="nav-btn" data-page="invoices">🧾 الفواتير (بيع وشراء)</button>
+  <button class="nav-btn" data-page="partners">👥 العملاء والموردين</button>
   <button class="nav-btn" data-page="hr">👔 الموظفين والرواتب والسُلف</button>
   <button class="nav-btn" data-page="expenses">💸 المصروفات التشغيلية</button>
   <button class="nav-btn" data-page="animals">🐄 سجل القطيع والأوزان والـ ADG</button>
+  <button class="nav-btn" data-page="vet">💉 السجل البيطري والتحصينات</button>
   <button class="nav-btn" data-page="feed_calc">🧬 حاسبة الأعلاف (خلطات والبروتين)</button>
+  <button class="nav-btn" data-page="feed_dispense">🥣 صرف العلف للعنابر</button>
   <button class="nav-btn" data-page="stock">📦 رصيد المخزن والخامات</button>
 </aside>
 
@@ -179,6 +182,20 @@ tr:hover { background: rgba(255,255,255,0.02); }
     <table>
       <thead><tr><th>رقم الفاتورة</th><th>النوع</th><th>الطرف الثاني</th><th>إجمالي المبلغ</th><th>التاريخ</th><th>البيان والملحوظات</th></tr></thead>
       <tbody id="invoices-table-body"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- CUSTOMERS & SUPPLIERS PAGE -->
+<section id="partners" class="page-section">
+  <div class="card-panel" style="display:flex;justify-content:space-between;align-items:center">
+    <h2>👥 إدارة العملاء والموردين وكشوف الحساب</h2>
+    <button class="btn" onclick="openModal('partnerModal')">+ إضافة جهة جديدة</button>
+  </div>
+  <div class="card-panel">
+    <table>
+      <thead><tr><th>اسم الجهة</th><th>النوع</th><th>رقم الهاتف</th><th>العنوان</th><th>الرصيد / الديون (ج.م)</th></tr></thead>
+      <tbody id="partners-table-body"></tbody>
     </table>
   </div>
 </section>
@@ -241,6 +258,20 @@ tr:hover { background: rgba(255,255,255,0.02); }
   </div>
 </section>
 
+<!-- VET MEDICAL PAGE -->
+<section id="vet" class="page-section">
+  <div class="card-panel" style="display:flex;justify-content:space-between;align-items:center">
+    <h2>💉 السجل البيطري، العلاجات والتحصينات الدوري</h2>
+    <button class="btn blue" onclick="openModal('vetModal')">+ تسجيل علاج / تحصين</button>
+  </div>
+  <div class="card-panel">
+    <table>
+      <thead><tr><th>اسم التحصين/العلاج</th><th>العنبر / الكود</th><th>الجرعة</th><th>التكلفة (ج.م)</th><th>التاريخ</th><th>ملاحظات</th></tr></thead>
+      <tbody id="vet-table-body"></tbody>
+    </table>
+  </div>
+</section>
+
 <!-- FEED CALCULATOR PAGE -->
 <section id="feed_calc" class="page-section">
   <div class="card-panel">
@@ -264,6 +295,20 @@ tr:hover { background: rgba(255,255,255,0.02); }
         <p style="color:var(--text-muted)">قم بالضغط على حساب لعرض النتائج هنا...</p>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- FEED DISPENSE PAGE -->
+<section id="feed_dispense" class="page-section">
+  <div class="card-panel" style="display:flex;justify-content:space-between;align-items:center">
+    <h2>🥣 صرف العلف اليومي للعنابر</h2>
+    <button class="btn gold" onclick="openModal('dispenseModal')">+ صرف علف لعنبر</button>
+  </div>
+  <div class="card-panel">
+    <table>
+      <thead><tr><th>العنبر</th><th>نوع العلف / الخامة</th><th>الكمية (كجم)</th><th>التكلفة (ج.م)</th><th>التاريخ</th></tr></thead>
+      <tbody id="dispense-table-body"></tbody>
+    </table>
   </div>
 </section>
 
@@ -296,8 +341,23 @@ tr:hover { background: rgba(255,255,255,0.02); }
       <div class="form-field" style="grid-column:span 3"><label>تفاصيل الفاتورة</label><input type="text" id="inv-details" required placeholder="بيع 5 عجول / توريد 10 طن ذرة"></div>
       <div class="form-field"><label>التاريخ</label><input type="date" id="inv-date" required></div>
     </div>
-    <br><button class="btn" type="submit">حفظ وحفظ في السحابة</button>
+    <br><button class="btn" type="submit">حفظ وتأكيد الفاتورة</button>
     <button class="btn alt" type="button" onclick="closeModal('invoiceModal')">إلغاء</button>
+  </form>
+</div></div>
+
+<!-- Partner Modal -->
+<div id="partnerModal" class="modal-overlay"><div class="modal-content">
+  <h2>👥 إضافة عميل أو مورد جديد</h2>
+  <form onsubmit="savePartner(event)">
+    <div class="form-grid">
+      <div class="form-field" style="grid-column:span 2"><label>الاسم</label><input type="text" id="pt-name" required placeholder="الشركة المصرية للأعلاف"></div>
+      <div class="form-field"><label>النوع</label><select id="pt-type"><option>مورد</option><option>عميل</option></select></div>
+      <div class="form-field"><label>الهاتف</label><input type="text" id="pt-phone" placeholder="0100000000"></div>
+      <div class="form-field" style="grid-column:span 4"><label>العنوان</label><input type="text" id="pt-address" placeholder="طريق الإسكندرية الصحراوي"></div>
+    </div>
+    <br><button class="btn" type="submit">حفظ الجهة</button>
+    <button class="btn alt" type="button" onclick="closeModal('partnerModal')">إلغاء</button>
   </form>
 </div></div>
 
@@ -374,6 +434,36 @@ tr:hover { background: rgba(255,255,255,0.02); }
   </form>
 </div></div>
 
+<!-- Vet Modal -->
+<div id="vetModal" class="modal-overlay"><div class="modal-content">
+  <h2>💉 تسجيل تحصين أو علاج بيطري</h2>
+  <form onsubmit="saveVetLog(event)">
+    <div class="form-grid">
+      <div class="form-field" style="grid-column:span 2"><label>اسم التحصين / العلاج</label><input type="text" id="vet-name" required placeholder="تحصين الحمى القلاعية / خافض حرارة"></div>
+      <div class="form-field"><label>العنبر أو الرأس</label><input type="text" id="vet-target" required placeholder="عنبر 1 بالكامل"></div>
+      <div class="form-field"><label>التكلفة الإجمالية (ج.م)</label><input type="number" id="vet-cost" required placeholder="1200"></div>
+      <div class="form-field"><label>التاريخ</label><input type="date" id="vet-date" required></div>
+    </div>
+    <br><button class="btn blue" type="submit">حفظ السجل البيطري</button>
+    <button class="btn alt" type="button" onclick="closeModal('vetModal')">إلغاء</button>
+  </form>
+</div></div>
+
+<!-- Dispense Modal -->
+<div id="dispenseModal" class="modal-overlay"><div class="modal-content">
+  <h2>🥣 صرف علف يومي للعنبر</h2>
+  <form onsubmit="saveDispense(event)">
+    <div class="form-grid">
+      <div class="form-field"><label>العنبر</label><select id="dp-barn"><option>عنبر 1</option><option>عنبر 2</option><option>عنبر 3</option></select></div>
+      <div class="form-field" style="grid-column:span 2"><label>الصنف من المخزن</label><select id="dp-stock-select" required></select></div>
+      <div class="form-field"><label>الكمية (كجم)</label><input type="number" id="dp-qty" required placeholder="400"></div>
+      <div class="form-field"><label>التاريخ</label><input type="date" id="dp-date" required></div>
+    </div>
+    <br><button class="btn gold" type="submit">صرف العلف وخصم المخزون</button>
+    <button class="btn alt" type="button" onclick="closeModal('dispenseModal')">إلغاء</button>
+  </form>
+</div></div>
+
 <!-- Stock Modal -->
 <div id="stockModal" class="modal-overlay"><div class="modal-content">
   <h2>📦 إضافة خامة علفية للمخزن</h2>
@@ -398,10 +488,13 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let store = {
   currentUser: 'المدير العام',
   invoices: [],
+  partners: [],
   employees: [],
   advances: [],
   expenses: [],
   animals: [],
+  vetLogs: [],
+  dispenseLogs: [],
   stock: []
 };
 
@@ -417,10 +510,13 @@ async function initApp() {
 async function loadDataFromSupabase() {
   try {
     let { data: inv } = await _supabase.from('invoices').select('*'); store.invoices = inv || [];
+    let { data: pt } = await _supabase.from('partners').select('*'); store.partners = pt || [];
     let { data: emp } = await _supabase.from('employees').select('*'); store.employees = emp || [];
     let { data: adv } = await _supabase.from('advances').select('*'); store.advances = adv || [];
     let { data: exp } = await _supabase.from('expenses').select('*'); store.expenses = exp || [];
     let { data: ani } = await _supabase.from('animals').select('*'); store.animals = ani || [];
+    let { data: vet } = await _supabase.from('vet_logs').select('*'); store.vetLogs = vet || [];
+    let { data: dsp } = await _supabase.from('dispense_logs').select('*'); store.dispenseLogs = dsp || [];
     let { data: stk } = await _supabase.from('stock').select('*'); store.stock = stk || [];
 
     refreshAllUI();
@@ -446,9 +542,12 @@ function closeModal(id){ document.getElementById(id).classList.remove('show'); }
 function refreshAllUI() {
   renderDashboard();
   renderInvoices();
+  renderPartners();
   renderHR();
   renderExpenses();
   renderAnimals();
+  renderVet();
+  renderDispense();
   renderStock();
   updateSelectOptions();
 }
@@ -487,7 +586,7 @@ function renderDashboard() {
   document.getElementById('db-stock-protein').innerText = store.stock.length ? (sumProt/store.stock.length).toFixed(1) + '%' : '0%';
 }
 
-// SUPABASE INSERTS
+// INVOICES
 async function saveInvoice(e) {
   e.preventDefault();
   const obj = {
@@ -510,6 +609,29 @@ function renderInvoices() {
   });
 }
 
+// PARTNERS
+async function savePartner(e) {
+  e.preventDefault();
+  const obj = {
+    name: document.getElementById('pt-name').value,
+    type: document.getElementById('pt-type').value,
+    phone: document.getElementById('pt-phone').value,
+    address: document.getElementById('pt-address').value,
+    balance: 0
+  };
+  await _supabase.from('partners').insert([obj]);
+  closeModal('partnerModal'); e.target.reset(); loadDataFromSupabase();
+}
+
+function renderPartners() {
+  const tbody = document.getElementById('partners-table-body');
+  tbody.innerHTML = '';
+  store.partners.forEach(p => {
+    tbody.innerHTML += `<tr><td><b>${p.name}</b></td><td>${p.type}</td><td>${p.phone||'-'}</td><td>${p.address||'-'}</td><td>${p.balance||0} ج.م</td></tr>`;
+  });
+}
+
+// HR & EMPLOYEES
 async function saveEmployee(e) {
   e.preventDefault();
   const obj = {
@@ -549,6 +671,7 @@ function renderHR() {
   });
 }
 
+// EXPENSES
 async function saveExpense(e) {
   e.preventDefault();
   const obj = {
@@ -569,6 +692,7 @@ function renderExpenses() {
   });
 }
 
+// ANIMALS & ADG
 async function saveAnimalsBatch(e) {
   e.preventDefault();
   const prefix = document.getElementById('an-prefix').value.toUpperCase();
@@ -625,6 +749,28 @@ function renderAnimals() {
   });
 }
 
+// VET LOGS
+async function saveVetLog(e) {
+  e.preventDefault();
+  const obj = {
+    name: document.getElementById('vet-name').value,
+    target: document.getElementById('vet-target').value,
+    cost: Number(document.getElementById('vet-cost').value),
+    date: document.getElementById('vet-date').value
+  };
+  await _supabase.from('vet_logs').insert([obj]);
+  closeModal('vetModal'); e.target.reset(); loadDataFromSupabase();
+}
+
+function renderVet() {
+  const tbody = document.getElementById('vet-table-body');
+  tbody.innerHTML = '';
+  store.vetLogs.forEach(v => {
+    tbody.innerHTML += `<tr><td><b>${v.name}</b></td><td>${v.target}</td><td>1 جرعة</td><td>${v.cost} ج.م</td><td>${v.date}</td><td>تم الرش/التطعيم</td></tr>`;
+  });
+}
+
+// FEED FORMULA CALCULATOR
 function calculateFeedMix(e) {
   e.preventDefault();
   const name = document.getElementById('mix-name').value;
@@ -645,6 +791,35 @@ function calculateFeedMix(e) {
   `;
 }
 
+// FEED DISPENSE
+async function saveDispense(e) {
+  e.preventDefault();
+  const barn = document.getElementById('dp-barn').value;
+  const feedName = document.getElementById('dp-stock-select').value;
+  const qty = Number(document.getElementById('dp-qty').value);
+  const date = document.getElementById('dp-date').value;
+
+  const item = store.stock.find(s => s.name === feedName);
+  if(!item || item.qty_kg < qty) return alert('الرصيد المتاح من الخامات غير كافي بالمخزن!');
+
+  // Update Stock Quantity in Supabase
+  await _supabase.from('stock').update({ qty_kg: item.qty_kg - qty }).eq('name', feedName);
+
+  // Insert Dispense Log
+  await _supabase.from('dispense_logs').insert([{ barn, feed_name: feedName, qty, total_cost: qty * item.cost_per_kg, date }]);
+
+  closeModal('dispenseModal'); e.target.reset(); loadDataFromSupabase();
+}
+
+function renderDispense() {
+  const tbody = document.getElementById('dispense-table-body');
+  tbody.innerHTML = '';
+  store.dispenseLogs.forEach(d => {
+    tbody.innerHTML += `<tr><td><b>${d.barn}</b></td><td>${d.feed_name}</td><td>${d.qty} كجم</td><td>${Number(d.total_cost).toLocaleString()} ج.م</td><td>${d.date}</td></tr>`;
+  });
+}
+
+// STOCK
 async function saveStockItem(e) {
   e.preventDefault();
   const obj = {
@@ -670,6 +845,12 @@ function updateSelectOptions() {
   if(empSelect) {
     empSelect.innerHTML = '';
     store.employees.forEach(e => empSelect.innerHTML += `<option value="${e.name}">${e.name} (${e.role})</option>`);
+  }
+
+  const stockSelect = document.getElementById('dp-stock-select');
+  if(stockSelect) {
+    stockSelect.innerHTML = '';
+    store.stock.forEach(s => stockSelect.innerHTML += `<option value="${s.name}">${s.name} — المتوفر: ${s.qty_kg} كجم</option>`);
   }
 
   const animSelect = document.getElementById('wt-animal-select');
