@@ -3,615 +3,628 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Agro Green Farm ERP — نظام إدارة المزرعة المتكامل</title>
+<title>Agro Green Pro ERP — نظام إدارة المزارع والتصنيع</title>
 <style>
 :root{--bg:#0b1110;--panel:#111a17;--panel2:#16221d;--line:#29382f;--green:#4caf78;--gold:#d6aa4c;--red:#df6666;--blue:#65a8d8;--text:#eef4ef;--muted:#98a79f}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Tahoma,Arial,sans-serif}
 .top{height:70px;background:#101915;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 22px;position:sticky;top:0;z-index:20}
-.logo{font-size:21px;font-weight:900;color:var(--green)}.sub{font-size:11px;color:var(--muted);display:block;margin-top:3px}
+.logo{font-size:20px;font-weight:900;color:var(--green)}.sub{font-size:11px;color:var(--muted);display:block;margin-top:3px}
 .user{display:flex;align-items:center;gap:12px}.avatar{width:38px;height:38px;border-radius:50%;background:var(--green);color:#08110d;display:grid;place-items:center;font-weight:900}
-.layout{display:flex;min-height:calc(100vh - 70px)}.side{width:245px;background:#0e1512;border-left:1px solid var(--line);padding:14px;flex:none}
-.nav{width:100%;padding:11px 12px;margin:3px 0;background:transparent;color:#cbd5cf;border:1px solid transparent;border-radius:9px;text-align:right;cursor:pointer;font-size:14px}
+.layout{display:flex;min-height:calc(100vh - 70px)}.side{width:250px;background:#0e1512;border-left:1px solid var(--line);padding:14px;flex:none}
+.nav{width:100%;padding:11px 12px;margin:3px 0;background:transparent;color:#cbd5cf;border:1px solid transparent;border-radius:9px;text-align:right;cursor:pointer;font-size:13px}
 .nav:hover,.nav.active{background:#1b2922;border-color:var(--line);color:var(--green)}
 .main{flex:1;padding:22px;max-width:1450px;width:100%;margin:auto}.page{display:none}.page.active{display:block}
 h1,h2,h3{margin-top:0}.muted{color:var(--muted);font-size:13px}.grid{display:grid;gap:13px}.stats{grid-template-columns:repeat(6,1fr)}.cards{grid-template-columns:repeat(3,1fr)}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:15px}.stat{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:15px}.stat small{color:var(--muted)}.stat b{display:block;color:var(--green);font-size:20px;margin-top:7px}
-.item{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:15px}.item .big{font-size:25px;font-weight:900;color:var(--gold)}
-.btn{border:0;border-radius:8px;padding:9px 14px;background:var(--green);color:#08110d;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-size:13px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:15px}.stat{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:15px}.stat small{color:var(--muted)}.stat b{display:block;color:var(--green);font-size:18px;margin-top:7px}
+.item{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:15px}.item .big{font-size:24px;font-weight:900;color:var(--gold)}
+.btn{border:0;border-radius:8px;padding:9px 14px;background:var(--green);color:#08110d;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-size:12px}
 .btn:hover{opacity:0.9}.btn.alt{background:#303b35;color:#fff}.btn.gold{background:var(--gold);color:#08110d}.btn.red{background:#753434;color:#fff}
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}input,select{background:#0b110e;border:1px solid #344239;color:#fff;padding:10px;border-radius:8px;width:100%;font-size:13px}
-.formgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.field label{display:block;color:var(--muted);font-size:12px;margin-bottom:5px}
-table{width:100%;border-collapse:collapse;margin-top:10px}th,td{padding:11px;border-bottom:1px solid var(--line);text-align:right;font-size:13px}th{color:var(--gold)}
-.badge{display:inline-block;padding:4px 8px;border-radius:99px;background:#29362f;font-size:11px}.ok{color:#7cdb9e}.warn{color:#e5c16c}.danger{color:#ef7d7d}
-.progress{height:10px;background:#29342e;border-radius:99px;overflow:hidden;margin-top:8px}.progress i{display:block;height:100%;background:var(--green);transition:width 0.3s}
-.alert{padding:12px;border-radius:99px;background:#202a25;margin:7px 0;border-radius:8px}.alert.warn{border-right:4px solid var(--gold)}.alert.danger{border-right:4px solid var(--red)}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;padding:15px;z-index:50}.modal.show{display:flex}.modalbox{background:#131c18;border:1px solid var(--line);border-radius:15px;padding:20px;max-width:650px;width:100%}
-.kpi{font-size:13px;color:var(--muted);margin:5px 0}.kpi strong{color:#fff;font-size:16px}.notice{background:#18241e;padding:10px;border-radius:8px;margin-top:10px;font-size:14px}
-.action-btn{padding:4px 8px;font-size:11px;border-radius:5px;cursor:pointer}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}input,select{background:#0b110e;border:1px solid #344239;color:#fff;padding:9px;border-radius:8px;width:100%;font-size:13px}
+.formgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.field label{display:block;color:var(--muted);font-size:11px;margin-bottom:4px}
+table{width:100%;border-collapse:collapse;margin-top:10px}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:right;font-size:12px}th{color:var(--gold)}
+.badge{display:inline-block;padding:3px 7px;border-radius:99px;background:#29362f;font-size:11px}.ok{color:#7cdb9e}.warn{color:#e5c16c}.danger{color:#ef7d7d}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:none;align-items:center;justify-content:center;padding:15px;z-index:50}.modal.show{display:flex}.modalbox{background:#131c18;border:1px solid var(--line);border-radius:15px;padding:20px;max-width:700px;width:100%;max-height:90vh;overflow-y:auto}
+.action-btn{padding:3px 7px;font-size:11px;border-radius:5px;cursor:pointer}
+.tabs{display:flex;gap:10px;margin-bottom:15px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.tab-btn{background:transparent;border:0;color:var(--muted);padding:8px 12px;cursor:pointer;font-size:13px;border-radius:6px}
+.tab-btn.active{background:var(--panel2);color:var(--green);font-weight:bold}
 @media(max-width:1050px){.stats{grid-template-columns:repeat(3,1fr)}.cards{grid-template-columns:repeat(2,1fr)}.formgrid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:700px){.layout{display:block}.side{width:100%;display:grid;grid-template-columns:repeat(2,1fr)}.main{padding:12px}.stats,.cards,.formgrid{grid-template-columns:1fr}.top{padding:0 12px}}
+@media(max-width:700px){.layout{display:block}.side{width:100%;display:grid;grid-template-columns:repeat(2,1fr)}.main{padding:12px}.stats,.cards,.formgrid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
 <header class="top">
-  <div><span class="logo">🌿 AGRO GREEN FARM ERP</span><span class="sub">شركة اجرو جرين للاستيراد والتصدير — مزرعة شمال التحرير</span></div>
-  <div class="user"><div><b>مدير المزرعة</b><span class="sub">متصل الآن</span></div><div class="avatar">م</div></div>
+  <div><span class="logo">🌿 AGRO GREEN PRO ERP</span><span class="sub">نظام إدارة التسمين ومصنع الأعلاف — شمال التحرير</span></div>
+  <div class="user"><div><b>إدارة المزرعة</b><span class="sub">متصل</span></div><div class="avatar">م</div></div>
 </header>
 
 <div class="layout">
 <aside class="side">
-<button class="nav active" data-page="dashboard">🏠 الرئيسية</button>
-<button class="nav" data-page="animals">🐄 القطيع والحيوانات</button>
-<button class="nav" data-page="shipments">🚢 الشحنات</button>
-<button class="nav" data-page="barns">🏚️ العنابر</button>
-<button class="nav" data-page="feed">🌾 الأعلاف والتوزيع</button>
-<button class="nav" data-page="stock">📦 المخازن</button>
-<button class="nav" data-page="weights">⚖️ الأوزان و ADG</button>
-<button class="nav" data-page="fcr">📊 FCR معامل التحويل</button>
-<button class="nav" data-page="finance">💰 المالية (مبيعات ومشتريات)</button>
-<button class="nav" data-page="reports">📈 التقارير</button>
-<button class="nav" data-page="settings">⚙️ الإعدادات</button>
+<button class="nav active" data-page="dashboard">📊 الداشبورد التفاعلية</button>
+<button class="nav" data-page="shipments">🚢 الشحنات والتكويد الآلي</button>
+<button class="nav" data-page="animals">🐄 القطيع وتتبع الرؤوس</button>
+<button class="nav" data-page="weights">⚖️ متابعة الأوزان (رأس/مجموعة)</button>
+<button class="nav" data-page="feed_library">🌾 تعريف الأعلاف والبروتين</button>
+<button class="nav" data-page="factory">🏭 مصنع العلف والتصنيع</button>
+<button class="nav" data-page="stock">📦 جدول المخزون التفصيلي</button>
+<button class="nav" data-page="finance">💰 المالية والمبيعات</button>
 </aside>
 
 <main class="main">
 
 <!-- DASHBOARD -->
 <section id="dashboard" class="page active">
-<div class="card"><h1>لوحة تحكم المزرعة</h1><p class="muted">متابعة فورية للتشغيل، المخزون، والأداء المالي والإنتاجي.</p></div>
+<div class="card"><h1>📊 الداشبورد التشغيلية والإنتاجية</h1><p class="muted">متابعة حية للقطيع، أوزان اللحم، مخزون خامات الأعلاف، والتكلفة.</p></div>
 <div class="grid stats">
-<div class="stat"><small>إجمالي القطيع الحكلي</small><b id="stat-total-animals">0</b></div>
-<div class="stat"><small>إجمالي الوزن</small><b id="stat-total-weight">0 طن</b></div>
-<div class="stat"><small>متوسط الوزن</small><b id="stat-avg-weight">0 كجم</b></div>
-<div class="stat"><small>مخزون العلف</small><b id="stat-feed-stock">0 طن</b></div>
-<div class="stat"><small>إجمالي المشتريات</small><b id="stat-purchases">0 ج.م</b></div>
-<div class="stat"><small>إجمالي المبيعات</small><b id="stat-sales">0 ج.م</b></div>
+  <div class="stat"><small>إجمالي الرؤوس</small><b id="db-heads">0</b></div>
+  <div class="stat"><small>إجمالي أوزان المزرعة</small><b id="db-weight">0 طن</b></div>
+  <div class="stat"><small>متوسط وزن الرأس</small><b id="db-avg-w">0 كجم</b></div>
+  <div class="stat"><small>قيمة أصل القطيع التقديرية</small><b id="db-asset-val">0 ج.م</b></div>
+  <div class="stat"><small>إجمالي خامات المخزن</small><b id="db-stock-tons">0 طن</b></div>
+  <div class="stat"><small>قيمة خامات المخزن</small><b id="db-stock-val">0 ج.م</b></div>
 </div>
 <br>
 <div class="grid cards">
-<div class="item"><h3>🐄 حالة القطيع</h3><p>حي: <b class="ok" id="stat-live-count">0</b> — نافق: <b class="danger" id="stat-dead-count">0</b> — مباع: <b id="stat-sold-count">0</b></p><div class="progress"><i id="live-progress" style="width:100%"></i></div></div>
-<div class="item"><h3>🌾 استهلاك العلف اليوم</h3><p>المصروف اليوم: <b id="stat-today-feed">0 كجم</b></p><p class="muted">معدل الاستهلاك ممتاز بناءً على السجلات</p></div>
-<div class="item"><h3>📊 معدل النمو اليومي (ADG)</h3><p>المتوسط العام: <b id="stat-adg-val">1.25 كجم/يوم</b></p><span class="badge ok">ضمن المستهدف</span></div>
+  <div class="item"><h3>🐄 توزيع القطيع حسب العنابر</h3><div id="db-barns-summary"></div></div>
+  <div class="item"><h3>🌾 متوسط بروتين الأعلاف المتوفرة</h3><div class="big" id="db-avg-protein">0%</div><p class="muted">محسوب بناءً على خلطات وأرصدة المخزن</p></div>
+  <div class="item"><h3>📈 مؤشر الأداء الإنتاجي</h3><p>معدل النمو اليومي (ADG المتوقع): <b class="ok">1.35 كجم/يوم</b></p><p>معامل التحويل FCR: <b class="gold">5.8 : 1</b></p></div>
 </div>
-<br>
-<div class="card"><h3>🔔 تنبيهات النظام الحية</h3><div id="alerts-list"></div></div>
+</section>
+
+<!-- SHIPMENTS & AUTO TAGGING -->
+<section id="shipments" class="page">
+<div class="card">
+  <h2>🚢 الشحنات الواردة والتكويد الآلي للرؤوس</h2>
+  <button class="btn" onclick="openModal('shipmentModal')">+ تسجيل شحنة جديدة وتكويدها تلقائياً</button>
+</div>
+<div class="card">
+  <table>
+    <thead><tr><th>كود الشحنة</th><th>المنشأ</th><th>عدد الرؤوس</th><th>إجمالي الوزن (كجم)</th><th>متوسط الوزن</th><th>تاريخ الوصول</th><th>إجراء</th></tr></thead>
+    <tbody id="shipments-table-body"></tbody>
+  </table>
+</div>
 </section>
 
 <!-- ANIMALS -->
 <section id="animals" class="page">
 <div class="card">
-  <h2>🐄 إدارة القطيع والحيوانات</h2>
-  <div class="toolbar">
-    <button class="btn" onclick="openModal('animalModal')">+ إضافة حيوان</button>
-    <button class="btn alt" onclick="exportData()">تصدير البيانات (JSON)</button>
-  </div>
+  <h2>🐄 سجل القطيع التفصيلي</h2>
   <div class="formgrid">
-    <div class="field"><label>بحث برقم الحيوان</label><input type="text" id="animal-search" oninput="renderAnimals()" placeholder="اكتب رقم الحيوان..."></div>
-    <div class="field"><label>تصفية بالعنبر</label><select id="animal-filter-barn" onchange="renderAnimals()"><option value="">كل العنابر</option><option value="عنبر 1">عنبر 1</option><option value="عنبر 2">عنبر 2</option><option value="عنبر 3">عنبر 3</option></select></div>
-    <div class="field"><label>تصفية بالحالة</label><select id="animal-filter-status" onchange="renderAnimals()"><option value="">كل الحالات</option><option value="حي">حي</option><option value="مباع">مباع</option><option value="نافق">نافق</option></select></div>
+    <div class="field"><label>بحث برقم الكود الفريد</label><input type="text" id="an-search" oninput="renderAnimals()" placeholder="مثال: SH-01-0005"></div>
+    <div class="field"><label>العنبر</label><select id="an-filter-barn" onchange="renderAnimals()"><option value="">كل العنابر</option><option>عنبر 1</option><option>عنبر 2</option><option>عنبر 3</option></select></div>
   </div>
 </div>
 <div class="card">
-<table>
-  <thead><tr><th>رقم الحيوان</th><th>الشحنة</th><th>العنبر</th><th>الوزن (كجم)</th><th>الحالة</th><th>إجراءات</th></tr></thead>
-  <tbody id="animals-table-body"></tbody>
-</table>
+  <table>
+    <thead><tr><th>الكود الفريد</th><th>الشحنة</th><th>العنبر</th><th>الوزن الأولي</th><th>الوزن الحالي</th><th>تاريخ آخر وزنة</th><th>الحالة</th></tr></thead>
+    <tbody id="animals-table-body"></tbody>
+  </table>
 </div>
 </section>
 
-<!-- SHIPMENTS -->
-<section id="shipments" class="page">
-<div class="card"><h2>🚢 الشحنات الواردة</h2><button class="btn" onclick="openModal('shipmentModal')">+ شحنة جديدة</button></div>
-<div class="card">
-<table>
-  <thead><tr><th>رقم الشحنة</th><th>المنشأ</th><th>عدد الرؤوس</th><th>تاريخ الوصول</th><th>إجراءات</th></tr></thead>
-  <tbody id="shipments-table-body"></tbody>
-</table>
-</div>
-</section>
-
-<!-- BARNS -->
-<section id="barns" class="page">
-<div class="card"><h2>🏚️ إدارة العنابر والمستويات</h2>
-<div class="grid cards" id="barns-cards-container"></div>
-</div>
-</section>
-
-<!-- FEED -->
-<section id="feed" class="page">
-<div class="card"><h2>🌾 الأعلاف وحركات الصرف</h2>
-<div class="toolbar"><button class="btn" onclick="openModal('feedModal')">+ تسجيل صرف علف</button></div>
-<div class="grid cards">
-  <div class="item"><h3>ذرة صفراء</h3><div class="big" id="feed-corn-val">10 طن</div></div>
-  <div class="item"><h3>كسب صويا</h3><div class="big" id="feed-soya-val">5 طن</div></div>
-  <div class="item"><h3>علف تسمين 14%</h3><div class="big" id="feed-mix-val">8 طن</div></div>
-</div>
-</div>
-<div class="card">
-<h3>سجل حركات الصرف اليومية</h3>
-<table>
-  <thead><tr><th>التاريخ</th><th>من مخزن</th><th>إلى عنبر</th><th>نوع العلف</th><th>الكمية (كجم)</th><th>إجراء</th></tr></thead>
-  <tbody id="feed-table-body"></tbody>
-</table>
-</div>
-</section>
-
-<!-- STOCK -->
-<section id="stock" class="page">
-<div class="card"><h2>📦 حالة المخازن والرصيد الحالي</h2>
-<div class="grid cards">
-  <div class="item"><h3>مخزن الأعلاف الرئيسي (1)</h3><div class="big" id="stock-m1">15 طن</div><p class="ok">حالة ممتازة</p></div>
-  <div class="item"><h3>مخزن الأعلاف الفرعي (2)</h3><div class="big" id="stock-m2">8 طن</div><p class="warn">قريب من حد الطلب</p></div>
-</div>
-</div>
-</section>
-
-<!-- WEIGHTS & ADG -->
+<!-- WEIGHTS MODULE (SINGLE & GROUP) -->
 <section id="weights" class="page">
-<div class="card"><h2>⚖️ أوزان القطيع ومعدل النمو اليومي (ADG)</h2><p class="muted">البيانات محسوبة تلقائياً بناءً على متوسط الأوزان المسجلة بالحيوانات.</p>
-<div class="grid cards">
-  <div class="item"><h3>إجمالي أوزان القطيع</h3><div class="big" id="adg-total-w">0 كجم</div></div>
-  <div class="item"><h3>متوسط وزن الرأس</h3><div class="big" id="adg-avg-w">0 كجم</div></div>
-  <div class="item"><h3>معدل النمو اليومي المتوقع (ADG)</h3><div class="big">1.22 كجم/يوم</div></div>
-</div>
+<div class="card">
+  <h2>⚖️ متابعة الأوزان والتسجيل الدوري</h2>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchWeightTab('single')">وزن رأس واحدة</button>
+    <button class="tab-btn" onclick="switchWeightTab('group')">وزن مجموعة / عنبر كامل</button>
+  </div>
+
+  <!-- SINGLE WEIGHT -->
+  <div id="weight-single-tab">
+    <form onsubmit="saveSingleWeight(event)">
+      <div class="formgrid">
+        <div class="field"><label>اختر أو اكتب كود الرأس</label><input type="text" id="w-single-code" required placeholder="SH-01-0001"></div>
+        <div class="field"><label>الوزن الجديد (كجم)</label><input type="number" id="w-single-val" required placeholder="320"></div>
+        <div class="field"><label>تاريخ الوزنة</label><input type="date" id="w-single-date" required></div>
+        <div class="field" style="display:flex;align-items:flex-end"><button class="btn" type="submit">تحديث وزن الرأس</button></div>
+      </div>
+    </form>
+  </div>
+
+  <!-- GROUP WEIGHT -->
+  <div id="weight-group-tab" style="display:none">
+    <form onsubmit="saveGroupWeight(event)">
+      <div class="formgrid">
+        <div class="field"><label>اختر العنبر</label><select id="w-group-barn"><option>عنبر 1</option><option>عنبر 2</option><option>عنبر 3</option></select></div>
+        <div class="field"><label>إجمالي وزن المجموعة (كجم)</label><input type="number" id="w-group-total" required placeholder="120000"></div>
+        <div class="field"><label>تاريخ الوزنة الجماعية</label><input type="date" id="w-group-date" required></div>
+        <div class="field" style="display:flex;align-items:flex-end"><button class="btn gold" type="submit">توزيع الأوزان بالتساوي على العنبر</button></div>
+      </div>
+    </form>
+  </div>
 </div>
 </section>
 
-<!-- FCR -->
-<section id="fcr" class="page">
-<div class="card"><h2>📊 FCR — معامل التحويل الغذائي</h2>
-<div class="grid cards">
-  <div class="item"><h3>المعدل العام للمزرعة</h3><div class="big">6.15</div><p class="ok">ممتاز (كل 6.15 كجم علف تعطى 1 كجم لحم)</p></div>
+<!-- FEED LIBRARY -->
+<section id="feed_library" class="page">
+<div class="card">
+  <h2>🌾 مكتبة الأعلاف والخامات (تعريف البروتين والتكلفة)</h2>
+  <button class="btn" onclick="openModal('feedItemModal')">+ إضافة خامة / صنف علف جديد</button>
 </div>
+<div class="card">
+  <table>
+    <thead><tr><th>اسم الصنف / الخامة</th><th>نسبة البروتين (%)</th><th>التكلفة / كجم (ج.م)</th><th>التكلفة / طن (ج.م)</th><th>إجراء</th></tr></thead>
+    <tbody id="feed-lib-table-body"></tbody>
+  </table>
+</div>
+</section>
+
+<!-- FEED FACTORY -->
+<section id="factory" class="page">
+<div class="card">
+  <h2>🏭 مصنع خلط وتصنيع الأعلاف المركزية</h2>
+  <p class="muted">قم بسحب الخامات من المخزن لإنتاج خلطة مركبة وحساب بروتينها وتكلفتها تلقائياً وإضافتها للمخزن.</p>
+  <button class="btn gold" onclick="openModal('manufactureModal')">+ تصنيع تشغيلة علف جديدة (Batch)</button>
+</div>
+<div class="card">
+  <h3>سجل التشغيلات والتصنيع</h3>
+  <table>
+    <thead><tr><th>اسم العلف المصنع</th><th>الكمية المصنعة (كجم)</th><th>نسبة البروتين للخلطة</th><th>تكلفة الكيلو الناتجة</th><th>التاريخ</th></tr></thead>
+    <tbody id="factory-table-body"></tbody>
+  </table>
+</div>
+</section>
+
+<!-- DETAILED STOCK -->
+<section id="stock" class="page">
+<div class="card">
+  <h2>📦 مخزون الخامات والأعلاف التفصيلي</h2>
+  <button class="btn" onclick="openModal('addStockModal')">+ إضافة رصيد خامة للمخزن</button>
+</div>
+<div class="card">
+  <table>
+    <thead><tr><th>اسم الخامة / الصنف</th><th>الرصيد (كجم)</th><th>الرصيد (طن)</th><th>نسبة البروتين</th><th>سعر الكيلو التقديري</th><th>إجمالي قيمة المخزون</th></tr></thead>
+    <tbody id="stock-table-body"></tbody>
+  </table>
 </div>
 </section>
 
 <!-- FINANCE -->
 <section id="finance" class="page">
-<div class="card"><h2>💰 المالية: المبيعات والمشتريات والمصروفات</h2>
-<div class="toolbar">
-  <button class="btn" onclick="openModal('financeModal')">+ تسجيل حركة مالية جديدة</button>
-</div>
+<div class="card"><h2>💰 المالية والمبيعات</h2>
 <div class="grid cards">
   <div class="item"><h3>إجمالي المبيعات</h3><div class="big" id="fin-sales">0 ج.م</div></div>
-  <div class="item"><h3>إجمالي المشتريات</h3><div class="big" id="fin-purchases">0 ج.م</div></div>
-  <div class="item"><h3>إجمالي المصروفات</h3><div class="big" id="fin-expenses">0 ج.م</div></div>
+  <div class="item"><h3>إجمالي تكلفة المشتريات والتصنيع</h3><div class="big" id="fin-cost">0 ج.م</div></div>
 </div>
-</div>
-<div class="card">
-<h3>سجل المعاملات المالية</h3>
-<table>
-  <thead><tr><th>التاريخ</th><th>النوع</th><th>البيان / التفاصيل</th><th>المبلغ (ج.م)</th><th>إجراء</th></tr></thead>
-  <tbody id="finance-table-body"></tbody>
-</table>
-</div>
-</section>
-
-<!-- REPORTS -->
-<section id="reports" class="page">
-<div class="card"><h2>📈 التقارير الملخصة</h2>
-<div class="grid cards">
-  <div class="item"><h3>تقرير القطيع</h3><p>طباعة أو ملخص أعداد المواشي الحية والمباعة.</p><button class="btn" onclick="alert('التقرير جاهز: إجمالي القطيع المخزن بالسيستم')">عرض التفاصيل</button></div>
-  <div class="item"><h3>التقرير المالي</h3><p>تحليل الإيرادات والمصروفات.</p><button class="btn" onclick="alert('صافي التدفق المالي تم تحديثه بنجاح')">عرض التفاصيل</button></div>
-</div>
-</div>
-</section>
-
-<!-- SETTINGS -->
-<section id="settings" class="page">
-<div class="card"><h2>⚙️ إعدادات النظام وتصدير البيانات</h2>
-<div class="formgrid">
-  <div class="field"><label>اسم المزرعة</label><input value="مزرعة شمال التحرير"></div>
-  <div class="field"><label>العملة الأساسية</label><input value="جنيه مصري (EGP)" readonly></div>
-</div>
-<br>
-<button class="btn red" onclick="resetSystem()">إعادة ضبط النظام (حذف البيانات)</button>
 </div>
 </section>
 
 </main></div>
 
 <!-- MODALS -->
-<!-- Animal Modal -->
-<div id="animalModal" class="modal"><div class="modalbox">
-<h2>إضافة حيوان جديد</h2>
-<form id="animalForm" onsubmit="saveAnimal(event)">
-<div class="formgrid">
-  <div class="field"><label>رقم كود الحيوان</label><input type="text" id="an-code" required placeholder="مثال: J-22-105"></div>
-  <div class="field"><label>الشحنة</label><input type="text" id="an-shipment" required placeholder="مثال: J-22"></div>
-  <div class="field"><label>العنبر</label><select id="an-barn"><option>عنبر 1</option><option>عنبر 2</option><option>عنبر 3</option></select></div>
-  <div class="field"><label>الوزن الحالي (كجم)</label><input type="number" id="an-weight" required placeholder="250"></div>
-  <div class="field"><label>الحالة</label><select id="an-status"><option value="حي">حي</option><option value="مباع">مباع</option><option value="نافق">نافق</option></select></div>
-</div>
-<br>
-<button class="btn" type="submit">حفظ البيانات</button>
-<button class="btn alt" type="button" onclick="closeModal('animalModal')">إلغاء</button>
-</form>
-</div></div>
 
 <!-- Shipment Modal -->
 <div id="shipmentModal" class="modal"><div class="modalbox">
-<h2>تسجيل شحنة جديدة</h2>
+<h2>🚢 تسجيل شحنة جديدة وتوليد الرؤوس تلقائياً</h2>
 <form onsubmit="saveShipment(event)">
 <div class="formgrid">
-  <div class="field"><label>رقم الشحنة</label><input type="text" id="sh-code" required placeholder="J-23"></div>
-  <div class="field"><label>بلد المنشأ</label><input type="text" id="sh-origin" required placeholder="جيبوتي / جزر القمر"></div>
-  <div class="field"><label>عدد الرؤوس</label><input type="number" id="sh-count" required placeholder="500"></div>
+  <div class="field"><label>كود الشحنة (بادئة الكود)</label><input type="text" id="sh-code" required placeholder="SH-01"></div>
+  <div class="field"><label>بلد المنشأ</label><input type="text" id="sh-origin" required placeholder="جيبوتي"></div>
+  <div class="field"><label>عدد الرؤوس (سيتم توليدهم)</label><input type="number" id="sh-count" required placeholder="50"></div>
+  <div class="field"><label>إجمالي وزن الشحنة (كجم)</label><input type="number" id="sh-total-w" required placeholder="12500"></div>
+  <div class="field"><label>تسكين في عنبر</label><select id="sh-barn"><option>عنبر 1</option><option>عنبر 2</option><option>عنبر 3</option></select></div>
   <div class="field"><label>تاريخ الوصول</label><input type="date" id="sh-date" required></div>
 </div>
 <br>
-<button class="btn" type="submit">حفظ الشحنة</button>
+<button class="btn" type="submit">تأكيد وتوليد كود فريد لكل رأس</button>
 <button class="btn alt" type="button" onclick="closeModal('shipmentModal')">إلغاء</button>
 </form>
 </div></div>
 
-<!-- Feed Modal -->
-<div id="feedModal" class="modal"><div class="modalbox">
-<h2>تسجيل صرف علف</h2>
-<form onsubmit="saveFeed(event)">
+<!-- Feed Item Definition Modal -->
+<div id="feedItemModal" class="modal"><div class="modalbox">
+<h2>🌾 تعريف صنف علف / خامة جديدة</h2>
+<form onsubmit="saveFeedLib(event)">
 <div class="formgrid">
-  <div class="field"><label>نوع العلف</label><select id="fd-type"><option>علف تسمين 14%</option><option>ذرة صفراء</option><option>كسب صويا</option></select></div>
-  <div class="field"><label>الكمية (كجم)</label><input type="number" id="fd-qty" required placeholder="500"></div>
-  <div class="field"><label>من مخزن</label><select id="fd-stock"><option value="1">مخزن الأعلاف (1)</option><option value="2">مخزن الأعلاف (2)</option></select></div>
-  <div class="field"><label>إلى عنبر</label><select id="fd-barn"><option>عنبر 1</option><option>عنبر 2</option><option>عنبر 3</option></select></div>
+  <div class="field"><label>اسم الخامة</label><input type="text" id="fl-name" required placeholder="ذرة صفراء / كسب صويا"></div>
+  <div class="field"><label>نسبة البروتين (%)</label><input type="number" step="0.1" id="fl-protein" required placeholder="8.5"></div>
+  <div class="field"><label>التكلفة للـ كجم (جنيه)</label><input type="number" step="0.1" id="fl-cost" required placeholder="18"></div>
 </div>
 <br>
-<button class="btn" type="submit">تسجيل وتأكيد الصرف</button>
-<button class="btn alt" type="button" onclick="closeModal('feedModal')">إلغاء</button>
+<button class="btn" type="submit">حفظ في مكتبة الأعلاف</button>
+<button class="btn alt" type="button" onclick="closeModal('feedItemModal')">إلغاء</button>
 </form>
 </div></div>
 
-<!-- Finance Modal -->
-<div id="financeModal" class="modal"><div class="modalbox">
-<h2>تسجيل حركة مالية جديدة</h2>
-<form onsubmit="saveFinance(event)">
+<!-- Add Stock Modal -->
+<div id="addStockModal" class="modal"><div class="modalbox">
+<h2>📦 توريد / إضافة رصيد للمخزن</h2>
+<form onsubmit="saveStockAdd(event)">
 <div class="formgrid">
-  <div class="field"><label>نوع الحركة</label><select id="fn-type"><option value="مبيعات">مبيعات (+)</option><option value="مشتريات">مشتريات (-)</option><option value="مصروفات">مصروفات تشغيل (-)</option></select></div>
-  <div class="field"><label>المبلغ (جنيه)</label><input type="number" id="fn-amount" required placeholder="50000"></div>
-  <div class="field" style="grid-column: span 2"><label>البيان / التفاصيل</label><input type="text" id="fn-desc" required placeholder="بيع 10 رؤوس مواشي / شراء مركزات"></div>
+  <div class="field" style="grid-column:span 2"><label>اختر الخامة من المكتبة</label><select id="st-item-select" required></select></div>
+  <div class="field" style="grid-column:span 2"><label>الكمية المضافة (كجم)</label><input type="number" id="st-qty" required placeholder="5000"></div>
 </div>
 <br>
-<button class="btn" type="submit">تسجيل المعاملة</button>
-<button class="btn alt" type="button" onclick="closeModal('financeModal')">إلغاء</button>
+<button class="btn" type="submit">إضافة للمخزن</button>
+<button class="btn alt" type="button" onclick="closeModal('addStockModal')">إلغاء</button>
+</form>
+</div></div>
+
+<!-- Manufacture Modal -->
+<div id="manufactureModal" class="modal"><div class="modalbox">
+<h2>🏭 تصنيع علف مركز (خلطة جديدة)</h2>
+<form onsubmit="saveManufacture(event)">
+<div class="formgrid">
+  <div class="field" style="grid-column:span 2"><label>اسم العلف الناتج</label><input type="text" id="mf-name" required placeholder="علف تسمين مركز 16%"></div>
+  <div class="field"><label>كمية الذرة المستخدمة (كجم)</label><input type="number" id="mf-corn" value="0"></div>
+  <div class="field"><label>كمية الصويا المستخدمة (كجم)</label><input type="number" id="mf-soya" value="0"></div>
+  <div class="field"><label>كمية الردة / المركزات (كجم)</label><input type="number" id="mf-other" value="0"></div>
+</div>
+<p class="muted" style="margin-top:10px">سيتم خصم الكميات المحددة من مخزن الخامات وتجميعها في صنف علف جديد بحساب آلي للبروتين والتكلفة.</p>
+<button class="btn gold" type="submit">بدء التصنيع وإضافة الناتج للمخزن</button>
+<button class="btn alt" type="button" onclick="closeModal('manufactureModal')">إلغاء</button>
 </form>
 </div></div>
 
 <script>
-// --- STATE MANAGEMENT ---
-let appData = {
-  animals: [
-    { id: 'J-22-001', shipment: 'J-22', barn: 'عنبر 1', weight: 284, status: 'حي' },
-    { id: 'J-22-002', shipment: 'J-22', barn: 'عنبر 1', weight: 267, status: 'حي' },
-    { id: 'J-22-003', shipment: 'J-22', barn: 'عنبر 2', weight: 301, status: 'حي' }
+// --- INITIAL STATE ---
+let store = {
+  shipments: [],
+  animals: [],
+  feedLibrary: [
+    { name: 'ذرة صفراء', protein: 8.5, costPerKg: 16.5 },
+    { name: 'كسب صويا 44%', protein: 44.0, costPerKg: 31.0 },
+    { name: 'ردة ناعمة', protein: 14.0, costPerKg: 13.0 }
   ],
-  shipments: [
-    { code: 'J-22', origin: 'Djibouti', count: 1500, date: '2026-08-20' }
+  stock: [
+    { name: 'ذرة صفراء', qtyKg: 12000, protein: 8.5, costPerKg: 16.5 },
+    { name: 'كسب صويا 44%', qtyKg: 5000, protein: 44.0, costPerKg: 31.0 }
   ],
-  feedLogs: [
-    { date: new Date().toLocaleDateString('ar-EG'), stock: 'مخزن 1', barn: 'عنبر 1', type: 'علف تسمين 14%', qty: 720 }
-  ],
-  finance: [
-    { date: new Date().toLocaleDateString('ar-EG'), type: 'مشتريات', desc: 'شراء دفعة أعلاف ذرة', amount: 250000 },
-    { date: new Date().toLocaleDateString('ar-EG'), type: 'مبيعات', desc: 'بيع 5 رؤوس تسمين', amount: 180000 }
-  ],
-  stocks: { m1: 15.0, m2: 8.0 }
+  factoryLogs: [],
+  finance: { sales: 0, cost: 0 }
 };
 
-// Load saved data from localStorage
-function initData() {
-  const local = localStorage.getItem('agro_farm_data');
-  if (local) {
-    try { appData = JSON.parse(local); } catch(e){}
-  }
-  updateUI();
+function init() {
+  const local = localStorage.getItem('agro_pro_store');
+  if(local) { try { store = JSON.parse(local); }catch(e){} }
+  
+  // Set default dates
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('w-single-date').value = today;
+  document.getElementById('w-group-date').value = today;
+  document.getElementById('sh-date').value = today;
+
+  refreshAll();
 }
 
-function saveData() {
-  localStorage.setItem('agro_farm_data', JSON.stringify(appData));
-  updateUI();
+function save() {
+  localStorage.setItem('agro_pro_store', JSON.stringify(store));
+  refreshAll();
 }
+
+function refreshAll() {
+  renderDashboard();
+  renderShipments();
+  renderAnimals();
+  renderFeedLib();
+  renderStock();
+  renderFactory();
+  updateSelects();
+}
+
+function openModal(id){ document.getElementById(id).classList.add('show'); }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
 
 // NAVIGATION
-document.querySelectorAll('.nav').forEach(b => b.onclick = () => {
-  document.querySelectorAll('.nav').forEach(x => x.classList.remove('active'));
-  document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
-  b.classList.add('active');
-  document.getElementById(b.dataset.page).classList.add('active');
-  window.scrollTo(0,0);
+document.querySelectorAll('.nav').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.page).classList.add('active');
+  }
 });
 
-function openModal(id) { document.getElementById(id).classList.add('show'); }
-function closeModal(id) { document.getElementById(id).classList.remove('show'); }
-document.querySelectorAll('.modal').forEach(m => m.addEventListener('click', e => { if(e.target === m) m.classList.remove('show'); }));
-
-// --- LOGIC & RENDERING ---
-function updateUI() {
-  renderDashboard();
-  renderAnimals();
-  renderShipments();
-  renderBarns();
-  renderFeed();
-  renderFinance();
+function switchWeightTab(type) {
+  document.querySelectorAll('.tabs .tab-btn').forEach(b => b.classList.remove('active'));
+  if(type === 'single') {
+    event.target.classList.add('active');
+    document.getElementById('weight-single-tab').style.display = 'block';
+    document.getElementById('weight-group-tab').style.display = 'none';
+  } else {
+    event.target.classList.add('active');
+    document.getElementById('weight-single-tab').style.display = 'none';
+    document.getElementById('weight-group-tab').style.display = 'block';
+  }
 }
 
+// --- DASHBOARD ---
 function renderDashboard() {
-  const totalAnimals = appData.animals.length;
-  const live = appData.animals.filter(a => a.status === 'حي').length;
-  const dead = appData.animals.filter(a => a.status === 'نافق').length;
-  const sold = appData.animals.filter(a => a.status === 'مباع').length;
-
-  const totalW = appData.animals.reduce((sum, a) => sum + Number(a.weight || 0), 0);
-  const avgW = totalAnimals > 0 ? Math.round(totalW / totalAnimals) : 0;
-
-  document.getElementById('stat-total-animals').innerText = totalAnimals.toLocaleString();
-  document.getElementById('stat-total-weight').innerText = (totalW / 1000).toFixed(1) + ' طن';
-  document.getElementById('stat-avg-weight').innerText = avgW + ' كجم';
+  const heads = store.animals.length;
+  const totalW = store.animals.reduce((s, a) => s + Number(a.currentWeight || 0), 0);
+  const avgW = heads > 0 ? Math.round(totalW / heads) : 0;
   
-  document.getElementById('stat-live-count').innerText = live;
-  document.getElementById('stat-dead-count').innerText = dead;
-  document.getElementById('stat-sold-count').innerText = sold;
-  
-  const livePct = totalAnimals > 0 ? (live / totalAnimals * 100) : 100;
-  document.getElementById('live-progress').style.width = livePct + '%';
+  // Estimated asset value (avg 180 EGP per kg live weight)
+  const assetVal = totalW * 180;
 
-  // Feed stock calculation
-  const totalFeedStock = (appData.stocks.m1 + appData.stocks.m2).toFixed(1);
-  document.getElementById('stat-feed-stock').innerText = totalFeedStock + ' طن';
-
-  // Finance summary
-  const totalSales = appData.finance.filter(f => f.type === 'مبيعات').reduce((s, f) => s + f.amount, 0);
-  const totalPurchases = appData.finance.filter(f => f.type === 'مشتريات').reduce((s, f) => s + f.amount, 0);
-
-  document.getElementById('stat-sales').innerText = totalSales.toLocaleString() + ' ج.م';
-  document.getElementById('stat-purchases').innerText = totalPurchases.toLocaleString() + ' ج.م';
-
-  // ADG Page link
-  document.getElementById('adg-total-w').innerText = totalW.toLocaleString() + ' كجم';
-  document.getElementById('adg-avg-w').innerText = avgW + ' كجم';
-
-  // Feed stocks page
-  document.getElementById('stock-m1').innerText = appData.stocks.m1.toFixed(1) + ' طن';
-  document.getElementById('stock-m2').innerText = appData.stocks.m2.toFixed(1) + ' طن';
-
-  // Alerts
-  const alertsDiv = document.getElementById('alerts-list');
-  alertsDiv.innerHTML = '';
-  if(appData.stocks.m2 < 5) {
-    alertsDiv.innerHTML += `<div class="alert warn">⚠️ تحذير: رصيد مخزن الأعلاف الفرعي (2) انخفض عن الحد المسموح (${appData.stocks.m2} طن).</div>`;
-  }
-  if(dead > 0) {
-    alertsDiv.innerHTML += `<div class="alert danger">🚨 إشعار: تم تسجيل ${dead} حالات نفوق في القطيع.</div>`;
-  }
-  if(!alertsDiv.innerHTML) {
-    alertsDiv.innerHTML = `<div class="alert ok">✅ جميع المؤشرات والعمليات تعمل بشكل ممتاذ وسليم.</div>`;
-  }
-}
-
-// ANIMALS ACTIONS
-function renderAnimals() {
-  const search = document.getElementById('animal-search').value.toLowerCase();
-  const barnFilter = document.getElementById('animal-filter-barn').value;
-  const statusFilter = document.getElementById('animal-filter-status').value;
-
-  const tbody = document.getElementById('animals-table-body');
-  tbody.innerHTML = '';
-
-  const filtered = appData.animals.filter(a => {
-    return (!search || a.id.toLowerCase().includes(search)) &&
-           (!barnFilter || a.barn === barnFilter) &&
-           (!statusFilter || a.status === statusFilter);
+  let stockTons = 0, stockVal = 0, totalProteinSum = 0;
+  store.stock.forEach(s => {
+    stockTons += s.qtyKg / 1000;
+    stockVal += s.qtyKg * s.costPerKg;
+    totalProteinSum += s.protein;
   });
 
-  filtered.forEach((a, index) => {
-    const badgeClass = a.status === 'حي' ? 'ok' : (a.status === 'نافق' ? 'danger' : 'warn');
-    tbody.innerHTML += `
-      <tr>
-        <td><b>${a.id}</b></td>
-        <td>${a.shipment}</td>
-        <td>${a.barn}</td>
-        <td>${a.weight} كجم</td>
-        <td><span class="badge ${badgeClass}">${a.status}</span></td>
-        <td><button class="btn red action-btn" onclick="deleteAnimal(${index})">مسح</button></td>
-      </tr>
-    `;
+  const avgProtein = store.stock.length > 0 ? (totalProteinSum / store.stock.length).toFixed(1) : 0;
+
+  document.getElementById('db-heads').innerText = heads.toLocaleString();
+  document.getElementById('db-weight').innerText = (totalW/1000).toFixed(1) + ' طن';
+  document.getElementById('db-avg-w').innerText = avgW + ' كجم';
+  document.getElementById('db-asset-val').innerText = assetVal.toLocaleString() + ' ج.م';
+  document.getElementById('db-stock-tons').innerText = stockTons.toFixed(1) + ' طن';
+  document.getElementById('db-stock-val').innerText = stockVal.toLocaleString() + ' ج.م';
+  document.getElementById('db-avg-protein').innerText = avgProtein + '%';
+
+  // Barns breakdown
+  const barnDiv = document.getElementById('db-barns-summary');
+  barnDiv.innerHTML = '';
+  ['عنبر 1', 'عنبر 2', 'عنبر 3'].forEach(b => {
+    const c = store.animals.filter(a => a.barn === b).length;
+    barnDiv.innerHTML += `<div style="display:flex;justify-content:space-between;margin:5px 0"><span>${b}:</span><b>${c} رأس</b></div>`;
   });
 }
 
-function saveAnimal(e) {
+// --- SHIPMENTS & AUTO TAGGING ---
+function saveShipment(e) {
   e.preventDefault();
-  appData.animals.push({
-    id: document.getElementById('an-code').value,
-    shipment: document.getElementById('an-shipment').value,
-    barn: document.getElementById('an-barn').value,
-    weight: Number(document.getElementById('an-weight').value),
-    status: document.getElementById('an-status').value
-  });
-  closeModal('animalModal');
-  e.target.reset();
-  saveData();
-}
+  const code = document.getElementById('sh-code').value.toUpperCase().trim();
+  const origin = document.getElementById('sh-origin').value;
+  const count = Number(document.getElementById('sh-count').value);
+  const totalW = Number(document.getElementById('sh-total-w').value);
+  const barn = document.getElementById('sh-barn').value;
+  const date = document.getElementById('sh-date').value;
 
-function deleteAnimal(index) {
-  if(confirm('هل انت متاكد من حذف هذا الحيوان؟')) {
-    appData.animals.splice(index, 1);
-    saveData();
+  const avgW = Math.round(totalW / count);
+
+  // Auto Generate Unique Animals
+  for(let i = 1; i <= count; i++) {
+    const uniqueId = `${code}-${String(i).padStart(4, '0')}`;
+    store.animals.push({
+      id: uniqueId,
+      shipment: code,
+      barn: barn,
+      initialWeight: avgW,
+      currentWeight: avgW,
+      lastWeightDate: date,
+      status: 'حي'
+    });
   }
+
+  store.shipments.push({ code, origin, count, totalW, avgW, date });
+  closeModal('shipmentModal');
+  e.target.reset();
+  save();
 }
 
-// SHIPMENTS ACTIONS
 function renderShipments() {
   const tbody = document.getElementById('shipments-table-body');
   tbody.innerHTML = '';
-  appData.shipments.forEach((s, index) => {
+  store.shipments.forEach((s, idx) => {
     tbody.innerHTML += `
       <tr>
         <td><b>${s.code}</b></td>
         <td>${s.origin}</td>
         <td>${s.count} رأس</td>
+        <td>${s.totalW.toLocaleString()} كجم</td>
+        <td>${s.avgW} كجم</td>
         <td>${s.date}</td>
-        <td><button class="btn red action-btn" onclick="deleteShipment(${index})">مسح</button></td>
+        <td><button class="btn red action-btn" onclick="deleteShipment(${idx})">حذف</button></td>
       </tr>
     `;
   });
 }
 
-function saveShipment(e) {
-  e.preventDefault();
-  appData.shipments.push({
-    code: document.getElementById('sh-code').value,
-    origin: document.getElementById('sh-origin').value,
-    count: Number(document.getElementById('sh-count').value),
-    date: document.getElementById('sh-date').value
-  });
-  closeModal('shipmentModal');
-  e.target.reset();
-  saveData();
-}
-
-function deleteShipment(index) {
-  if(confirm('مسح الشحنة؟')) {
-    appData.shipments.splice(index, 1);
-    saveData();
+function deleteShipment(idx) {
+  if(confirm('سيتم حذف الشحنة وكافة الرؤوس المرتبطة بها! هل أنت متأكد؟')) {
+    const code = store.shipments[idx].code;
+    store.shipments.splice(idx, 1);
+    store.animals = store.animals.filter(a => a.shipment !== code);
+    save();
   }
 }
 
-// BARNS RENDERING
-function renderBarns() {
-  const container = document.getElementById('barns-cards-container');
-  const barns = ['عنبر 1', 'عنبر 2', 'عنبر 3'];
-  container.innerHTML = '';
-
-  barns.forEach(b => {
-    const count = appData.animals.filter(a => a.barn === b && a.status === 'حي').length;
-    const weights = appData.animals.filter(a => a.barn === b && a.status === 'حي').map(a => a.weight);
-    const avg = weights.length ? Math.round(weights.reduce((a,b)=>a+b,0)/weights.length) : 0;
-    
-    container.innerHTML += `
-      <div class="item">
-        <h3>${b}</h3>
-        <div class="kpi">عدد الرؤوس الحية: <strong>${count}</strong></div>
-        <div class="kpi">متوسط الوزن: <strong>${avg} كجم</strong></div>
-        <span class="badge ok">مستقر</span>
-      </div>
-    `;
-  });
-}
-
-// FEED ACTIONS
-function renderFeed() {
-  const tbody = document.getElementById('feed-table-body');
+// --- ANIMALS ---
+function renderAnimals() {
+  const search = document.getElementById('an-search').value.toLowerCase();
+  const barn = document.getElementById('an-filter-barn').value;
+  const tbody = document.getElementById('animals-table-body');
   tbody.innerHTML = '';
-  let todayTotal = 0;
 
-  appData.feedLogs.forEach((f, i) => {
-    todayTotal += Number(f.qty);
+  const filtered = store.animals.filter(a => {
+    return (!search || a.id.toLowerCase().includes(search)) && (!barn || a.barn === barn);
+  });
+
+  filtered.forEach(a => {
     tbody.innerHTML += `
       <tr>
-        <td>${f.date}</td>
-        <td>${f.stock}</td>
-        <td>${f.barn}</td>
-        <td>${f.type}</td>
-        <td><b>${f.qty} كجم</b></td>
-        <td><button class="btn red action-btn" onclick="deleteFeed(${i})">حذف</button></td>
+        <td><b style="color:var(--green)">${a.id}</b></td>
+        <td>${a.shipment}</td>
+        <td>${a.barn}</td>
+        <td>${a.initialWeight} كجم</td>
+        <td><b>${a.currentWeight} كجم</b></td>
+        <td>${a.lastWeightDate}</td>
+        <td><span class="badge ok">${a.status}</span></td>
       </tr>
     `;
   });
-
-  document.getElementById('stat-today-feed').innerText = todayTotal + ' كجم';
 }
 
-function saveFeed(e) {
+// --- WEIGHTS MANAGEMENT ---
+function saveSingleWeight(e) {
   e.preventDefault();
-  const qty = Number(document.getElementById('fd-qty').value);
-  const stockNum = document.getElementById('fd-stock').value;
-  const qtyInTons = qty / 1000;
+  const code = document.getElementById('w-single-code').value.trim();
+  const newW = Number(document.getElementById('w-single-val').value);
+  const date = document.getElementById('w-single-date').value;
+
+  const animal = store.animals.find(a => a.id.toLowerCase() === code.toLowerCase());
+  if(!animal) {
+    alert('رقم كود الرأس غير موجود بالسجلات!');
+    return;
+  }
+
+  animal.currentWeight = newW;
+  animal.lastWeightDate = date;
+  alert(`تم تحديث وزن الرأس ${animal.id} إلى ${newW} كجم بنجاح.`);
+  e.target.reset();
+  save();
+}
+
+function saveGroupWeight(e) {
+  e.preventDefault();
+  const barn = document.getElementById('w-group-barn').value;
+  const totalW = Number(document.getElementById('w-group-total').value);
+  const date = document.getElementById('w-group-date').value;
+
+  const group = store.animals.filter(a => a.barn === barn);
+  if(group.length === 0) {
+    alert('لا يوجد رؤوس مسجلة في هذا العنبر!');
+    return;
+  }
+
+  const avgW = Math.round(totalW / group.length);
+  group.forEach(a => {
+    a.currentWeight = avgW;
+    a.lastWeightDate = date;
+  });
+
+  alert(`تم توزيع الوزن بالتساوي على ${group.length} رأس بالعنبر ${barn} بمتوسط ${avgW} كجم للرأس.`);
+  e.target.reset();
+  save();
+}
+
+// --- FEED LIBRARY ---
+function saveFeedLib(e) {
+  e.preventDefault();
+  store.feedLibrary.push({
+    name: document.getElementById('fl-name').value,
+    protein: Number(document.getElementById('fl-protein').value),
+    costPerKg: Number(document.getElementById('fl-cost').value)
+  });
+  closeModal('feedItemModal');
+  e.target.reset();
+  save();
+}
+
+function renderFeedLib() {
+  const tbody = document.getElementById('feed-lib-table-body');
+  tbody.innerHTML = '';
+  store.feedLibrary.forEach((f, idx) => {
+    tbody.innerHTML += `
+      <tr>
+        <td><b>${f.name}</b></td>
+        <td><span class="badge ok">${f.protein}% بروتين</span></td>
+        <td>${f.costPerKg} ج.م</td>
+        <td>${(f.costPerKg * 1000).toLocaleString()} ج.م</td>
+        <td><button class="btn red action-btn" onclick="store.feedLibrary.splice(${idx},1);save();">حذف</button></td>
+      </tr>
+    `;
+  });
+}
+
+// --- DETAILED STOCK ---
+function updateSelects() {
+  const sel = document.getElementById('st-item-select');
+  sel.innerHTML = '';
+  store.feedLibrary.forEach(f => {
+    sel.innerHTML += `<option value="${f.name}">${f.name} (${f.protein}% بروتين)</option>`;
+  });
+}
+
+function saveStockAdd(e) {
+  e.preventDefault();
+  const name = document.getElementById('st-item-select').value;
+  const qty = Number(document.getElementById('st-qty').value);
+  const lib = store.feedLibrary.find(f => f.name === name);
+
+  const existing = store.stock.find(s => s.name === name);
+  if(existing) {
+    existing.qtyKg += qty;
+  } else {
+    store.stock.push({ name: name, qtyKg: qty, protein: lib.protein, costPerKg: lib.costPerKg });
+  }
+
+  closeModal('addStockModal');
+  e.target.reset();
+  save();
+}
+
+function renderStock() {
+  const tbody = document.getElementById('stock-table-body');
+  tbody.innerHTML = '';
+  store.stock.forEach(s => {
+    const val = s.qtyKg * s.costPerKg;
+    tbody.innerHTML += `
+      <tr>
+        <td><b>${s.name}</b></td>
+        <td>${s.qtyKg.toLocaleString()} كجم</td>
+        <td>${(s.qtyKg/1000).toFixed(2)} طن</td>
+        <td>${s.protein}%</td>
+        <td>${s.costPerKg} ج.م</td>
+        <td><b>${val.toLocaleString()} ج.م</b></td>
+      </tr>
+    `;
+  });
+}
+
+// --- FACTORY & MANUFACTURE ---
+function saveManufacture(e) {
+  e.preventDefault();
+  const name = document.getElementById('mf-name').value;
+  const corn = Number(document.getElementById('mf-corn').value);
+  const soya = Number(document.getElementById('mf-soya').value);
+  const other = Number(document.getElementById('mf-other').value);
+
+  const totalBatchQty = corn + soya + other;
+  if(totalBatchQty <= 0) return;
 
   // Deduct from stock
-  if(stockNum === '1') appData.stocks.m1 = Math.max(0, appData.stocks.m1 - qtyInTons);
-  else appData.stocks.m2 = Math.max(0, appData.stocks.m2 - qtyInTons);
+  const cornStock = store.stock.find(s => s.name.includes('ذرة'));
+  const soyaStock = store.stock.find(s => s.name.includes('صويا'));
 
-  appData.feedLogs.unshift({
-    date: new Date().toLocaleDateString('ar-EG'),
-    stock: 'مخزن ' + stockNum,
-    barn: document.getElementById('fd-barn').value,
-    type: document.getElementById('fd-type').value,
-    qty: qty
+  if(cornStock) cornStock.qtyKg = Math.max(0, cornStock.qtyKg - corn);
+  if(soyaStock) soyaStock.qtyKg = Math.max(0, soyaStock.qtyKg - soya);
+
+  // Calculate Mixed Protein & Cost
+  const cornP = 8.5, soyaP = 44.0, otherP = 14.0;
+  const totalProteinKg = (corn * cornP/100) + (soya * soyaP/100) + (other * otherP/100);
+  const mixProtein = ((totalProteinKg / totalBatchQty) * 100).toFixed(1);
+
+  const cornC = 16.5, soyaC = 31.0, otherC = 13.0;
+  const totalCost = (corn * cornC) + (soya * soyaC) + (other * otherC);
+  const costPerKg = (totalCost / totalBatchQty).toFixed(1);
+
+  // Add produced mixed feed to Stock
+  store.stock.push({ name: name, qtyKg: totalBatchQty, protein: Number(mixProtein), costPerKg: Number(costPerKg) });
+
+  store.factoryLogs.unshift({
+    name, qty: totalBatchQty, protein: mixProtein, cost: costPerKg, date: new Date().toLocaleDateString('ar-EG')
   });
 
-  closeModal('feedModal');
+  closeModal('manufactureModal');
   e.target.reset();
-  saveData();
+  save();
 }
 
-function deleteFeed(index) {
-  appData.feedLogs.splice(index, 1);
-  saveData();
-}
-
-// FINANCE ACTIONS
-function renderFinance() {
-  const tbody = document.getElementById('finance-table-body');
+function renderFactory() {
+  const tbody = document.getElementById('factory-table-body');
   tbody.innerHTML = '';
-
-  let sales = 0, purchases = 0, exp = 0;
-
-  appData.finance.forEach((f, index) => {
-    if(f.type === 'مبيعات') sales += f.amount;
-    if(f.type === 'مشتريات') purchases += f.amount;
-    if(f.type === 'مصروفات') exp += f.amount;
-
+  store.factoryLogs.forEach(f => {
     tbody.innerHTML += `
       <tr>
+        <td><b>${f.name}</b></td>
+        <td>${f.qty.toLocaleString()} كجم</td>
+        <td><span class="badge ok">${f.protein}% بروتين</span></td>
+        <td>${f.cost} ج.م/كجم</td>
         <td>${f.date}</td>
-        <td><span class="badge ${f.type==='مبيعات'?'ok':'danger'}">${f.type}</span></td>
-        <td>${f.desc}</td>
-        <td><b>${f.amount.toLocaleString()} ج.م</b></td>
-        <td><button class="btn red action-btn" onclick="deleteFinance(${index})">مسح</button></td>
       </tr>
     `;
   });
-
-  document.getElementById('fin-sales').innerText = sales.toLocaleString() + ' ج.م';
-  document.getElementById('fin-purchases').innerText = purchases.toLocaleString() + ' ج.م';
-  document.getElementById('fin-expenses').innerText = exp.toLocaleString() + ' ج.م';
 }
 
-function saveFinance(e) {
-  e.preventDefault();
-  appData.finance.unshift({
-    date: new Date().toLocaleDateString('ar-EG'),
-    type: document.getElementById('fn-type').value,
-    amount: Number(document.getElementById('fn-amount').value),
-    desc: document.getElementById('fn-desc').value
-  });
-  closeModal('financeModal');
-  e.target.reset();
-  saveData();
-}
-
-function deleteFinance(index) {
-  appData.finance.splice(index, 1);
-  saveData();
-}
-
-// BACKUP & RESET
-function exportData() {
-  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData));
-  const dlAnchorElem = document.createElement('a');
-  dlAnchorElem.setAttribute("href", dataStr);
-  dlAnchorElem.setAttribute("download", "agro_farm_backup.json");
-  dlAnchorElem.click();
-}
-
-function resetSystem() {
-  if(confirm('هل أنت متأكد من رغبتك في استعادة ضبط المصنع ومسح كافة البيانات المدخلة؟')) {
-    localStorage.removeItem('agro_farm_data');
-    location.reload();
-  }
-}
-
-// START
-initData();
+// RUN AT START
+init();
 </script>
 </body>
 </html>
