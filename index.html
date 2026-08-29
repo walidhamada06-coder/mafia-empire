@@ -557,6 +557,41 @@ function refreshAllUI() {
   renderDispense();
   renderStock();
   updateSelectOptions();
+  function checkStockDepletion() {
+  const alertContainer = document.getElementById('stock-alerts-list');
+  if(!alertContainer) return;
+  
+  alertContainer.innerHTML = '';
+  
+  // افتراض متوسط استهلاك المزرعة اليومي
+  const dailyConsumptionKg = 500; 
+
+  if (typeof store !== 'undefined' && store.stock) {
+    store.stock.forEach(item => {
+      const daysLeft = Math.floor(item.qty_kg / dailyConsumptionKg);
+      let statusColor = 'var(--accent-green)';
+      let warningText = `يكفي لمدة ${daysLeft} يوم تشغيل.`;
+
+      if(daysLeft <= 3) {
+        statusColor = 'var(--accent-red)';
+        warningText = `🚨 خطر! المخزون حرج جداً ويكفي لمدة ${daysLeft} أيام فقط!`;
+      } else if(daysLeft <= 7) {
+        statusColor = 'var(--accent-gold)';
+        warningText = `⚠️ تنبيه: يفضل عمل طلب شراء جديد (يكفي ${daysLeft} أيام).`;
+      }
+
+      alertContainer.innerHTML += `
+        <div style="padding: 10px; background: #111715; border-radius: 8px; margin-bottom: 8px; display:flex; justify-content:space-between; align-items:center;">
+          <span><b>${item.name}</b> (الرصيد: ${item.qty_kg} كجم)</span>
+          <span style="color:${statusColor}; font-weight:bold;">${warningText}</span>
+        </div>
+      `;
+    });
+  }
+}
+
+// تشغيل الدالة فور تحميل الصفحة
+setTimeout(checkStockDepletion, 1000);
 }
 
 function renderDashboard() {
