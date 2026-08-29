@@ -1,88 +1,226 @@
--- MAFIA EMPIRE - Phase 1
--- Run this once in Supabase SQL Editor.
--- This creates a separate operations table and a secure server-side completion function.
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mafia Empire</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:#0b0d10;color:#eee}
+.wrap{max-width:1150px;margin:auto;padding:22px}.brand{text-align:center;font-size:30px;font-weight:900;color:#d9a441;margin:8px 0 22px}
+.card{background:#16191e;border:1px solid #292f38;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 10px 30px #0005}
+.auth{max-width:440px;margin:55px auto}.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+input,select{width:100%;padding:13px;margin:7px 0;background:#0e1014;border:1px solid #343b45;border-radius:9px;color:#fff}
+button{border:0;border-radius:9px;padding:11px 17px;background:#b8892d;color:#111;font-weight:800;cursor:pointer;margin:4px}
+button.secondary{background:#303640;color:#fff}button:disabled{opacity:.45;cursor:not-allowed}
+.msg{padding:10px;border-radius:8px;margin-top:10px;display:none}.error{background:#4a2024}.success{background:#1d422c}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.stat{background:#101318;border:1px solid #252b33;border-radius:12px;padding:14px;text-align:center}
+.stat span{display:block;color:#aaa;font-size:13px}.stat b{display:block;color:#d9a441;font-size:22px;margin-top:6px}
+.operations{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.op{background:#101318;border:1px solid #292f38;border-radius:12px;padding:16px}
+.timer{font-size:18px;color:#d9a441;margin:10px 0}.muted{color:#9ca3ad;font-size:13px}
+.bar{height:10px;background:#292e35;border-radius:99px;overflow:hidden;margin:7px 0 12px}.bar i{display:block;height:100%;background:#b8892d;width:0}
+.hidden{display:none!important}.danger{color:#ff8b8b}.ok{color:#91e3a4}
+@media(max-width:750px){.grid{grid-template-columns:repeat(2,1fr)}.operations{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">MAFIA EMPIRE</div>
 
-create table if not exists public.player_operations (
-  id uuid primary key default gen_random_uuid(),
-  player_id uuid not null references public.players(id) on delete cascade,
-  operation_type text not null check (operation_type in ('bike','car')),
-  started_at timestamptz not null default now(),
-  finish_at timestamptz not null,
-  status text not null default 'running' check (status in ('running','completed','failed')),
-  reward integer not null default 0,
-  xp_reward integer not null default 0,
-  wanted_gain integer not null default 0,
-  created_at timestamptz not null default now()
-);
+  <section id="authCard" class="card auth">
+    <h2 id="authTitle">تسجيل الدخول</h2>
+    <input id="email" type="email" placeholder="البريد الإلكتروني">
+    <input id="password" type="password" placeholder="كلمة المرور">
+    <input id="username" type="text" placeholder="اسم اللاعب (عند إنشاء حساب)" class="hidden">
+    <div>
+      <button id="loginBtn">دخول</button>
+      <button id="signupBtn" class="secondary">إنشاء حساب</button>
+    </div>
+    <div id="authMsg" class="msg"></div>
+  </section>
 
-create index if not exists player_operations_player_idx
-  on public.player_operations(player_id, status);
+  <section id="game" class="hidden">
+    <div class="card">
+      <div class="top">
+        <div>
+          <h2 id="welcome">مرحبًا</h2>
+          <div id="rank">الرتبة: -</div>
+        </div>
+        <button id="logoutBtn" class="secondary">تسجيل الخروج</button>
+      </div>
+    </div>
 
-alter table public.player_operations enable row level security;
+    <div class="grid">
+      <div class="stat"><span>المستوى</span><b id="level">-</b></div>
+      <div class="stat"><span>الخبرة XP</span><b id="xp">-</b></div>
+      <div class="stat"><span>النقدية</span><b id="money">-</b></div>
+      <div class="stat"><span>البنك</span><b id="bank">-</b></div>
+      <div class="stat"><span>الصحة</span><b id="health">-</b></div>
+      <div class="stat"><span>المطلوب</span><b id="wanted">-</b></div>
+      <div class="stat"><span>السمعة</span><b id="reputation">-</b></div>
+      <div class="stat"><span>الحالة</span><b id="alive">-</b></div>
+    </div>
 
-drop policy if exists "players can read own operations" on public.player_operations;
-create policy "players can read own operations"
-on public.player_operations for select
-to authenticated
-using (player_id = auth.uid());
+    <div class="card">
+      <h2>الصحة</h2>
+      <div class="bar"><i id="healthBar"></i></div>
+      <div class="muted" id="healthText">-</div>
+    </div>
 
-drop policy if exists "players can create own operations" on public.player_operations;
-create policy "players can create own operations"
-on public.player_operations for insert
-to authenticated
-with check (player_id = auth.uid());
+    <div class="card">
+      <h2>العمليات</h2>
+      <p class="muted">ابدأ عملية، وسيتم حفظ وقت بدايتها على قاعدة البيانات. المكافأة لا تُضاف إلا بعد انتهاء المؤقت.</p>
+      <div class="operations">
+        <div class="op">
+          <h3>🏍️ سرقة دراجة نارية</h3>
+          <div>المدة: دقيقتان</div>
+          <div>المكافأة: $800</div>
+          <div>XP: 40</div>
+          <div class="timer" id="bikeTimer">جاهزة</div>
+          <button id="bikeBtn">ابدأ السرقة</button>
+        </div>
+        <div class="op">
+          <h3>🚗 سرقة سيارة</h3>
+          <div>المدة: 3 دقائق</div>
+          <div>المكافأة: $1,500</div>
+          <div>XP: 70</div>
+          <div class="timer" id="carTimer">جاهزة</div>
+          <button id="carBtn">ابدأ السرقة</button>
+        </div>
+      </div>
+      <div id="opMsg" class="msg"></div>
+    </div>
 
-create or replace function public.finish_player_operation(p_operation_id uuid)
-returns jsonb
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  op public.player_operations;
-  p public.players;
-begin
-  select * into op
-  from public.player_operations
-  where id = p_operation_id
-    and player_id = auth.uid()
-  for update;
+    <div class="card">
+      <h3>حالة الاتصال</h3>
+      <div id="connection" class="ok">متصل بقاعدة البيانات</div>
+    </div>
+  </section>
+</div>
 
-  if not found then
-    raise exception 'Operation not found';
-  end if;
+<script>
+const SUPABASE_URL="https://vhbhbzcywtmtwtpqvnhw.supabase.co";
+const SUPABASE_KEY="sb_publishable_LXRs70nbUvJljFiRyCT2UA_-hZDkuf3";
+const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const $=id=>document.getElementById(id);
 
-  if op.status <> 'running' then
-    return jsonb_build_object('ok', false, 'message', 'Operation already finished');
-  end if;
+function showMsg(el,text,type=""){
+  el.textContent=text; el.className="msg "+type; el.style.display="block";
+}
+function hideMsg(el){el.style.display="none"}
 
-  if now() < op.finish_at then
-    raise exception 'Operation is not finished yet';
-  end if;
+let player=null;
+let activeOps={};
+const OP_TYPES={
+  bike:{name:"سرقة دراجة نارية",duration:120,reward:800,xp:40,wanted:1,timer:"bikeTimer",button:"bikeBtn"},
+  car:{name:"سرقة سيارة",duration:180,reward:1500,xp:70,wanted:2,timer:"carTimer",button:"carBtn"}
+};
 
-  select * into p
-  from public.players
-  where id = auth.uid()
-  for update;
+$("signupBtn").onclick=async()=>{
+  const email=$("email").value.trim(), password=$("password").value, username=$("username").value.trim();
+  if(!email||!password||!username){
+    $("username").classList.remove("hidden"); $("authTitle").textContent="إنشاء حساب";
+    showMsg($("authMsg"),"اكتب البريد وكلمة المرور واسم اللاعب.","error"); return;
+  }
+  const {data,error}=await db.auth.signUp({email,password,options:{data:{username}}});
+  if(error){showMsg($("authMsg"),error.message,"error");return}
+  if(data.session) await loadPlayer();
+  else showMsg($("authMsg"),"تم إنشاء الحساب. إذا كان تأكيد البريد مفعّلًا، أكد بريدك ثم سجل الدخول.","success");
+};
 
-  update public.players
-  set money = coalesce(money,0) + op.reward,
-      xp = coalesce(xp,0) + op.xp_reward,
-      wanted_level = coalesce(wanted_level,0) + op.wanted_gain
-  where id = auth.uid();
+$("loginBtn").onclick=async()=>{
+  const email=$("email").value.trim(), password=$("password").value;
+  if(!email||!password){showMsg($("authMsg"),"اكتب البريد وكلمة المرور.","error");return}
+  const {error}=await db.auth.signInWithPassword({email,password});
+  if(error){showMsg($("authMsg"),error.message,"error");return}
+  await loadPlayer();
+};
 
-  update public.player_operations
-  set status = 'completed'
-  where id = op.id;
+$("logoutBtn").onclick=async()=>{await db.auth.signOut();showAuth()};
 
-  return jsonb_build_object(
-    'ok', true,
-    'reward', op.reward,
-    'xp', op.xp_reward,
-    'wanted_gain', op.wanted_gain
-  );
-end;
-$$;
+function showAuth(){$("game").classList.add("hidden");$("authCard").classList.remove("hidden")}
+function showGame(){$("authCard").classList.add("hidden");$("game").classList.remove("hidden")}
 
-revoke all on function public.finish_player_operation(uuid) from public;
-grant execute on function public.finish_player_operation(uuid) to authenticated;
+async function loadPlayer(){
+  const {data:{user},error:userError}=await db.auth.getUser();
+  if(userError||!user){showAuth();return}
+  const {data,error}=await db.from("players")
+    .select("id,username,level,xp,money,bank_money,health,max_health,wanted_level,alive,rank,reputation")
+    .eq("id",user.id).single();
+  if(error){showMsg($("authMsg"),"تم تسجيل الدخول، لكن لم يتم العثور على شخصية اللاعب.","error");return}
+  player=data; showGame(); renderPlayer(); await loadActiveOperations();
+}
+
+function renderPlayer(){
+  $("welcome").textContent="مرحبًا، "+(player.username||"لاعب");
+  $("rank").textContent="الرتبة: "+(player.rank||"-");
+  $("level").textContent=player.level??0;
+  $("xp").textContent=Number(player.xp||0).toLocaleString("ar-EG");
+  $("money").textContent="$"+Number(player.money||0).toLocaleString("en-US");
+  $("bank").textContent="$"+Number(player.bank_money||0).toLocaleString("en-US");
+  $("health").textContent=`${player.health??0}/${player.max_health??0}`;
+  $("wanted").textContent=player.wanted_level??0;
+  $("reputation").textContent=player.reputation??0;
+  $("alive").textContent=player.alive?"حي":"ميت";
+  const max=Number(player.max_health||1), hp=Math.max(0,Number(player.health||0));
+  $("healthBar").style.width=Math.min(100,hp/max*100)+"%";
+  $("healthText").textContent=`${hp} / ${max}`;
+}
+
+async function loadActiveOperations(){
+  const {data,error}=await db.from("player_operations")
+    .select("id,operation_type,started_at,finish_at,status,reward,xp_reward,wanted_gain")
+    .eq("player_id",player.id).eq("status","running");
+  if(error){console.warn(error);return}
+  activeOps={};
+  for(const op of (data||[])){activeOps[op.operation_type]=op; startTicker(op)}
+}
+
+function startTicker(op){
+  const cfg=OP_TYPES[op.operation_type]; if(!cfg)return;
+  const timer=$(cfg.timer), btn=$(cfg.button); btn.disabled=true;
+  const tick=async()=>{
+    const left=Math.max(0,new Date(op.finish_at).getTime()-Date.now());
+    if(left<=0){
+      timer.textContent="جاري تسليم المكافأة...";
+      await finishOperation(op.id,op.operation_type);
+      return;
+    }
+    const sec=Math.ceil(left/1000), m=Math.floor(sec/60), s=sec%60;
+    timer.textContent=`متبقي ${m}:${String(s).padStart(2,"0")}`;
+    op._timer=setTimeout(tick,1000);
+  };
+  tick();
+}
+
+async function startOperation(type){
+  const cfg=OP_TYPES[type];
+  if(activeOps[type]){showMsg($("opMsg"),"هذه العملية تعمل بالفعل.","error");return}
+  if(!player.alive){showMsg($("opMsg"),"لا يمكنك تنفيذ عملية وأنت ميت.","error");return}
+  const now=new Date(), finish=new Date(now.getTime()+cfg.duration*1000);
+  const {data,error}=await db.from("player_operations").insert({
+    player_id:player.id,operation_type:type,started_at:now.toISOString(),
+    finish_at:finish.toISOString(),status:"running",reward:cfg.reward,
+    xp_reward:cfg.xp,wanted_gain:cfg.wanted
+  }).select().single();
+  if(error){showMsg($("opMsg"),error.message,"error");return}
+  activeOps[type]=data; showMsg($("opMsg"),cfg.name+" بدأت. يمكن ترك الصفحة مفتوحة أو العودة لاحقًا.","success");
+  startTicker(data);
+}
+
+async function finishOperation(id,type){
+  const {error}=await db.rpc("finish_player_operation",{p_operation_id:id});
+  if(error){showMsg($("opMsg"),"تعذر إنهاء العملية: "+error.message,"error");return}
+  delete activeOps[type];
+  await loadPlayer();
+  showMsg($("opMsg"),"انتهت العملية وتمت إضافة المكافأة وXP.","success");
+}
+
+$("bikeBtn").onclick=()=>startOperation("bike");
+$("carBtn").onclick=()=>startOperation("car");
+
+db.auth.onAuthStateChange((event)=>{if(event==="SIGNED_IN")loadPlayer();if(event==="SIGNED_OUT")showAuth()});
+(async()=>{const {data:{session}}=await db.auth.getSession();if(session)loadPlayer()})();
+</script>
+</body>
+</html>
