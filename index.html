@@ -1,226 +1,195 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mafia Empire</title>
+<title>Mafia Empire — Online</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:#0b0d10;color:#eee}
-.wrap{max-width:1150px;margin:auto;padding:22px}.brand{text-align:center;font-size:30px;font-weight:900;color:#d9a441;margin:8px 0 22px}
-.card{background:#16191e;border:1px solid #292f38;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 10px 30px #0005}
-.auth{max-width:440px;margin:55px auto}.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
-input,select{width:100%;padding:13px;margin:7px 0;background:#0e1014;border:1px solid #343b45;border-radius:9px;color:#fff}
-button{border:0;border-radius:9px;padding:11px 17px;background:#b8892d;color:#111;font-weight:800;cursor:pointer;margin:4px}
-button.secondary{background:#303640;color:#fff}button:disabled{opacity:.45;cursor:not-allowed}
-.msg{padding:10px;border-radius:8px;margin-top:10px;display:none}.error{background:#4a2024}.success{background:#1d422c}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.stat{background:#101318;border:1px solid #252b33;border-radius:12px;padding:14px;text-align:center}
-.stat span{display:block;color:#aaa;font-size:13px}.stat b{display:block;color:#d9a441;font-size:22px;margin-top:6px}
-.operations{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.op{background:#101318;border:1px solid #292f38;border-radius:12px;padding:16px}
-.timer{font-size:18px;color:#d9a441;margin:10px 0}.muted{color:#9ca3ad;font-size:13px}
-.bar{height:10px;background:#292e35;border-radius:99px;overflow:hidden;margin:7px 0 12px}.bar i{display:block;height:100%;background:#b8892d;width:0}
-.hidden{display:none!important}.danger{color:#ff8b8b}.ok{color:#91e3a4}
-@media(max-width:750px){.grid{grid-template-columns:repeat(2,1fr)}.operations{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}}
+:root{--bg:#090b0f;--panel:#13171d;--panel2:#0e1116;--line:#292f39;--gold:#d2a33d;--txt:#f2f2f2;--muted:#9ba3ae;--red:#d9534f;--green:#51b46d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:Tajawal,Tahoma,Arial,sans-serif}
+button,input,select{font:inherit}button{cursor:pointer}
+.app{min-height:100vh}.topbar{height:68px;background:#101319;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 22px;position:sticky;top:0;z-index:10}
+.logo{font-size:24px;font-weight:900;color:var(--gold)}.userbox{display:flex;gap:15px;align-items:center;color:var(--muted)}
+.layout{display:flex;min-height:calc(100vh - 68px)}.sidebar{width:245px;background:#0f1217;border-left:1px solid var(--line);padding:14px;flex:none}
+.navbtn{width:100%;text-align:right;border:1px solid transparent;background:transparent;color:#cbd0d7;padding:12px;border-radius:9px;margin:3px 0}
+.navbtn:hover,.navbtn.active{background:#1b2028;border-color:var(--line);color:var(--gold)}
+.content{flex:1;padding:22px;max-width:1250px;margin:auto;width:100%}.page{display:none}.page.active{display:block}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}.grid{display:grid;gap:12px}.stats{grid-template-columns:repeat(6,1fr)}
+.stat{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:14px;text-align:center}.stat small{color:var(--muted)}.stat b{display:block;font-size:20px;color:var(--gold);margin-top:5px}
+.cards{grid-template-columns:repeat(3,1fr)}.item{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px}
+.item h3{margin:0 0 8px}.muted{color:var(--muted);font-size:13px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.between{justify-content:space-between}
+.btn{background:var(--gold);color:#111;border:0;border-radius:8px;padding:10px 14px;font-weight:800}.btn.alt{background:#303640;color:#fff}.btn.danger{background:#7c2d2d;color:#fff}.btn:disabled{opacity:.45;cursor:not-allowed}
+table{width:100%;border-collapse:collapse}th,td{padding:11px;border-bottom:1px solid var(--line);text-align:right}th{color:var(--gold)}
+input,select{background:#0b0e12;border:1px solid #343b46;color:#fff;border-radius:8px;padding:10px;width:100%}.formgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.badge{display:inline-block;background:#272d36;padding:4px 8px;border-radius:99px;font-size:12px}.green{color:var(--green)}.red{color:#ff8585}
+.timer{font-size:20px;color:var(--gold);font-weight:800;margin:12px 0}.notice{padding:10px;border-radius:8px;background:#202630;margin:8px 0}.hidden{display:none!important}
+.auth{max-width:430px;margin:80px auto}.auth input{margin:7px 0}.toast{position:fixed;bottom:20px;left:20px;background:#202630;border:1px solid var(--line);padding:12px 16px;border-radius:9px;display:none;z-index:99}
+@media(max-width:1000px){.stats{grid-template-columns:repeat(3,1fr)}.cards{grid-template-columns:repeat(2,1fr)}.sidebar{width:200px}}
+@media(max-width:700px){.layout{display:block}.sidebar{width:100%;display:grid;grid-template-columns:repeat(2,1fr)}.stats,.cards,.formgrid{grid-template-columns:1fr}.content{padding:12px}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="brand">MAFIA EMPIRE</div>
-
-  <section id="authCard" class="card auth">
-    <h2 id="authTitle">تسجيل الدخول</h2>
-    <input id="email" type="email" placeholder="البريد الإلكتروني">
-    <input id="password" type="password" placeholder="كلمة المرور">
-    <input id="username" type="text" placeholder="اسم اللاعب (عند إنشاء حساب)" class="hidden">
-    <div>
-      <button id="loginBtn">دخول</button>
-      <button id="signupBtn" class="secondary">إنشاء حساب</button>
-    </div>
-    <div id="authMsg" class="msg"></div>
-  </section>
-
-  <section id="game" class="hidden">
-    <div class="card">
-      <div class="top">
-        <div>
-          <h2 id="welcome">مرحبًا</h2>
-          <div id="rank">الرتبة: -</div>
-        </div>
-        <button id="logoutBtn" class="secondary">تسجيل الخروج</button>
-      </div>
-    </div>
-
-    <div class="grid">
-      <div class="stat"><span>المستوى</span><b id="level">-</b></div>
-      <div class="stat"><span>الخبرة XP</span><b id="xp">-</b></div>
-      <div class="stat"><span>النقدية</span><b id="money">-</b></div>
-      <div class="stat"><span>البنك</span><b id="bank">-</b></div>
-      <div class="stat"><span>الصحة</span><b id="health">-</b></div>
-      <div class="stat"><span>المطلوب</span><b id="wanted">-</b></div>
-      <div class="stat"><span>السمعة</span><b id="reputation">-</b></div>
-      <div class="stat"><span>الحالة</span><b id="alive">-</b></div>
-    </div>
-
-    <div class="card">
-      <h2>الصحة</h2>
-      <div class="bar"><i id="healthBar"></i></div>
-      <div class="muted" id="healthText">-</div>
-    </div>
-
-    <div class="card">
-      <h2>العمليات</h2>
-      <p class="muted">ابدأ عملية، وسيتم حفظ وقت بدايتها على قاعدة البيانات. المكافأة لا تُضاف إلا بعد انتهاء المؤقت.</p>
-      <div class="operations">
-        <div class="op">
-          <h3>🏍️ سرقة دراجة نارية</h3>
-          <div>المدة: دقيقتان</div>
-          <div>المكافأة: $800</div>
-          <div>XP: 40</div>
-          <div class="timer" id="bikeTimer">جاهزة</div>
-          <button id="bikeBtn">ابدأ السرقة</button>
-        </div>
-        <div class="op">
-          <h3>🚗 سرقة سيارة</h3>
-          <div>المدة: 3 دقائق</div>
-          <div>المكافأة: $1,500</div>
-          <div>XP: 70</div>
-          <div class="timer" id="carTimer">جاهزة</div>
-          <button id="carBtn">ابدأ السرقة</button>
-        </div>
-      </div>
-      <div id="opMsg" class="msg"></div>
-    </div>
-
-    <div class="card">
-      <h3>حالة الاتصال</h3>
-      <div id="connection" class="ok">متصل بقاعدة البيانات</div>
-    </div>
-  </section>
+<div id="authView" class="auth card">
+  <h1 style="color:var(--gold)">MAFIA EMPIRE</h1>
+  <p class="muted">دخول إلى الإمبراطورية</p>
+  <input id="email" type="email" placeholder="البريد الإلكتروني">
+  <input id="password" type="password" placeholder="كلمة المرور">
+  <input id="newUsername" class="hidden" placeholder="اسم اللاعب">
+  <div class="row">
+    <button class="btn" id="login">دخول</button>
+    <button class="btn alt" id="signup">إنشاء حساب</button>
+  </div>
+  <div id="authMsg" class="notice hidden"></div>
 </div>
+
+<div id="app" class="app hidden">
+<header class="topbar">
+  <div class="logo">MAFIA EMPIRE</div>
+  <div class="userbox"><span id="topPlayer">-</span><span>💰 <b id="topMoney">$0</b></span><button class="btn alt" id="logout">خروج</button></div>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <button class="navbtn active" data-page="home">🏠 الرئيسية</button>
+  <button class="navbtn" data-page="operations">🎯 العمليات</button>
+  <button class="navbtn" data-page="garage">🚗 الجراج</button>
+  <button class="navbtn" data-page="weapons">🔫 الأسلحة والذخيرة</button>
+  <button class="navbtn" data-page="shop">🛒 المتجر</button>
+  <button class="navbtn" data-page="bank">🏦 البنك</button>
+  <button class="navbtn" data-page="properties">🏠 الممتلكات والأراضي</button>
+  <button class="navbtn" data-page="factories">🏭 المصانع</button>
+  <button class="navbtn" data-page="players">👥 اللاعبين</button>
+  <button class="navbtn" data-page="gang">🤝 العصابة</button>
+  <button class="navbtn" data-page="cities">🗺️ المدن</button>
+  <button class="navbtn" data-page="messages">📨 الرسائل</button>
+  <button class="navbtn" data-page="logs">📜 السجل</button>
+  <button class="navbtn" data-page="ranking">🏆 الرتب</button>
+</aside>
+
+<main class="content">
+<section id="home" class="page active">
+  <div class="card"><h2 id="welcome">مرحبًا</h2><div id="rankLine" class="muted">-</div></div>
+  <div class="grid stats">
+    <div class="stat"><small>المستوى</small><b id="level">0</b></div><div class="stat"><small>XP</small><b id="xp">0</b></div>
+    <div class="stat"><small>الكاش</small><b id="money">$0</b></div><div class="stat"><small>البنك</small><b id="bank">$0</b></div>
+    <div class="stat"><small>الصحة</small><b id="health">0/0</b></div><div class="stat"><small>Wanted</small><b id="wanted">0</b></div>
+  </div>
+  <div class="card"><h3>⚡ اختصارات</h3><div class="row">
+    <button class="btn" onclick="go('operations')">ابدأ عملية</button><button class="btn alt" onclick="go('garage')">الجراج</button>
+    <button class="btn alt" onclick="go('weapons')">الأسلحة</button><button class="btn alt" onclick="go('players')">اللاعبون</button>
+  </div></div>
+</section>
+
+<section id="operations" class="page">
+  <div class="card"><h2>🎯 العمليات</h2><p class="muted">الوقت النهائي يعتمد على توقيت السيرفر، وليس عداد المتصفح.</p>
+  <div class="grid cards">
+    <div class="item"><h3>🏍️ سرقة دراجة</h3><p>المدة: 2 دقيقة<br>المكافأة: $800<br>XP: 40</p><div id="bikeTimer" class="timer">جاهزة</div><button class="btn" id="bikeBtn">ابدأ</button></div>
+    <div class="item"><h3>🚗 سرقة سيارة</h3><p>المدة: 3 دقائق<br>المكافأة: $1,500<br>XP: 70</p><div id="carTimer" class="timer">جاهزة</div><button class="btn" id="carBtn">ابدأ</button></div>
+    <div class="item"><h3>🚚 سرقة شاحنة</h3><p>المدة: 5 دقائق<br>مكافأة أعلى — قيد التطوير</p><div class="timer">قريبًا</div><button class="btn" disabled>قريبًا</button></div>
+    <div class="item"><h3>🏪 سرقة محل</h3><p>المدة: 8 دقائق</p><div class="timer">قريبًا</div><button class="btn" disabled>قريبًا</button></div>
+    <div class="item"><h3>🏦 سرقة بنك</h3><p>المدة: 15 دقيقة</p><div class="timer">قريبًا</div><button class="btn danger" disabled>قريبًا</button></div>
+  </div></div>
+</section>
+
+<section id="garage" class="page"><div class="card"><h2>🚗 الجراج</h2><div class="grid cards"><div class="item"><h3>لا توجد مركبات معروضة بعد</h3><p class="muted">سيتم ربط الجراج بجدول المركبات وملكية اللاعب في المرحلة التالية.</p></div></div></div></section>
+
+<section id="weapons" class="page"><div class="card"><h2>🔫 الأسلحة والذخيرة</h2><div class="grid cards">
+<div class="item"><h3>🔫 مسدس</h3><p>ذخيرة: <b>0</b></p><button class="btn" disabled>تجهيز</button></div>
+<div class="item"><h3>🔫 SMG</h3><p>ذخيرة: <b>0</b></p><button class="btn" disabled>تجهيز</button></div>
+<div class="item"><h3>🔇 كاتم صوت</h3><p>تجهيز خاص للاغتيالات</p><button class="btn" disabled>تجهيز</button></div>
+</div></div></section>
+
+<section id="shop" class="page"><div class="card"><h2>🛒 المتجر</h2><div class="formgrid"><div><label>القسم</label><select><option>أسلحة</option><option>ذخيرة</option><option>مركبات</option><option>أدوات</option></select></div><div><label>المدينة</label><select><option>المدينة الحالية</option></select></div><div><label>ترتيب</label><select><option>الأرخص</option><option>الأغلى</option><option>الأحدث</option></select></div></div></div></section>
+
+<section id="bank" class="page"><div class="card"><h2>🏦 البنك</h2><div class="grid cards"><div class="item"><h3>الرصيد</h3><b id="bankBig">$0</b></div><div class="item"><h3>إيداع</h3><input placeholder="المبلغ"><button class="btn" disabled>إيداع</button></div><div class="item"><h3>سحب</h3><input placeholder="المبلغ"><button class="btn" disabled>سحب</button></div></div></div></section>
+
+<section id="properties" class="page"><div class="card"><h2>🏠 الممتلكات والأراضي</h2><div class="grid cards"><div class="item"><h3>أراضي</h3><p class="muted">شراء الأراضي وبناء المنشآت.</p><button class="btn" disabled>استعراض الأراضي</button></div><div class="item"><h3>ممتلكات</h3><p class="muted">منازل، مخازن، منشآت.</p><button class="btn" disabled>إدارة</button></div></div></div></section>
+
+<section id="factories" class="page"><div class="card"><h2>🏭 المصانع</h2><div class="grid cards"><div class="item"><h3>مصنع ذخيرة</h3><p class="muted">إنتاج وتخزين وبيع الذخيرة.</p><button class="btn" disabled>بناء مصنع</button></div><div class="item"><h3>مصانع أخرى</h3><p class="muted">ستضاف مع نظام الاقتصاد.</p></div></div></div></section>
+
+<section id="players" class="page"><div class="card"><h2>👥 اللاعبين</h2><div class="formgrid"><input id="playerSearch" placeholder="ابحث باسم اللاعب"><select><option>كل الرتب</option><option>مبتدئ</option><option>زعيم عصابة</option><option>City Basha</option></select><button class="btn" disabled>بحث</button></div><div class="notice">نظام القتال والاغتيالات سيتصل هنا باللاعبين الحقيقيين.</div></div></section>
+
+<section id="gang" class="page"><div class="card"><h2>🤝 العصابة</h2><div class="grid cards"><div class="item"><h3>عصابتي</h3><p>غير منضم لعصابة حاليًا.</p><button class="btn" disabled>إنشاء عصابة</button></div><div class="item"><h3>رتب العصابة</h3><p class="muted">عضو → نائب → زعيم</p></div><div class="item"><h3>الخزينة</h3><p class="muted">$0</p></div></div></div></section>
+
+<section id="cities" class="page"><div class="card"><h2>🗺️ المدن والسيطرة</h2><div class="grid cards">
+<div class="item"><h3>القاهرة</h3><span class="badge">محايدة</span><p>النفوذ: 0%</p><button class="btn" disabled>دخول</button></div>
+<div class="item"><h3>الإسكندرية</h3><span class="badge">محايدة</span><p>النفوذ: 0%</p><button class="btn" disabled>دخول</button></div>
+<div class="item"><h3>المدينة التالية</h3><p class="muted">سيتم بناء خريطة السيطرة لاحقًا.</p></div>
+</div></div></section>
+
+<section id="messages" class="page"><div class="card"><h2>📨 الرسائل</h2><div class="notice">لا توجد رسائل جديدة.</div><p class="muted">هنا ستصل رسائل الشهود والتنبيهات والمعاملات.</p></div></section>
+
+<section id="logs" class="page"><div class="card"><h2>📜 سجل الأحداث</h2><table><thead><tr><th>الوقت</th><th>الحدث</th><th>النتيجة</th></tr></thead><tbody id="logsBody"><tr><td colspan="3" class="muted">لا توجد أحداث بعد.</td></tr></tbody></table></div></section>
+
+<section id="ranking" class="page"><div class="card"><h2>🏆 الرتب</h2><table><thead><tr><th>الرتبة</th><th>الـXP المطلوب</th><th>المميزات</th></tr></thead><tbody>
+<tr><td>مبتدئ</td><td>0</td><td>الأساسيات</td></tr><tr><td>مجرم</td><td>500</td><td>عمليات إضافية</td></tr><tr><td>زعيم عصابة</td><td>10,000</td><td>إدارة عصابة</td></tr><tr><td>City Basha</td><td>سيطرة مدينة</td><td>امتيازات السيطرة</td></tr>
+</tbody></table></div></section>
+</main></div></div>
+<div id="toast" class="toast"></div>
 
 <script>
 const SUPABASE_URL="https://vhbhbzcywtmtwtpqvnhw.supabase.co";
 const SUPABASE_KEY="sb_publishable_LXRs70nbUvJljFiRyCT2UA_-hZDkuf3";
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const $=id=>document.getElementById(id);
+let player=null, activeOps={};
 
-function showMsg(el,text,type=""){
-  el.textContent=text; el.className="msg "+type; el.style.display="block";
-}
-function hideMsg(el){el.style.display="none"}
-
-let player=null;
-let activeOps={};
-const OP_TYPES={
-  bike:{name:"سرقة دراجة نارية",duration:120,reward:800,xp:40,wanted:1,timer:"bikeTimer",button:"bikeBtn"},
-  car:{name:"سرقة سيارة",duration:180,reward:1500,xp:70,wanted:2,timer:"carTimer",button:"carBtn"}
+const OPS={
+ bike:{name:"سرقة دراجة نارية",duration:120,reward:800,xp:40,wanted:1,timer:"bikeTimer",button:"bikeBtn"},
+ car:{name:"سرقة سيارة",duration:180,reward:1500,xp:70,wanted:2,timer:"carTimer",button:"carBtn"}
 };
 
-$("signupBtn").onclick=async()=>{
-  const email=$("email").value.trim(), password=$("password").value, username=$("username").value.trim();
-  if(!email||!password||!username){
-    $("username").classList.remove("hidden"); $("authTitle").textContent="إنشاء حساب";
-    showMsg($("authMsg"),"اكتب البريد وكلمة المرور واسم اللاعب.","error"); return;
-  }
-  const {data,error}=await db.auth.signUp({email,password,options:{data:{username}}});
-  if(error){showMsg($("authMsg"),error.message,"error");return}
-  if(data.session) await loadPlayer();
-  else showMsg($("authMsg"),"تم إنشاء الحساب. إذا كان تأكيد البريد مفعّلًا، أكد بريدك ثم سجل الدخول.","success");
-};
-
-$("loginBtn").onclick=async()=>{
-  const email=$("email").value.trim(), password=$("password").value;
-  if(!email||!password){showMsg($("authMsg"),"اكتب البريد وكلمة المرور.","error");return}
-  const {error}=await db.auth.signInWithPassword({email,password});
-  if(error){showMsg($("authMsg"),error.message,"error");return}
-  await loadPlayer();
-};
-
-$("logoutBtn").onclick=async()=>{await db.auth.signOut();showAuth()};
-
-function showAuth(){$("game").classList.add("hidden");$("authCard").classList.remove("hidden")}
-function showGame(){$("authCard").classList.add("hidden");$("game").classList.remove("hidden")}
+function toast(t){$("toast").textContent=t;$("toast").style.display="block";setTimeout(()=>$("toast").style.display="none",3000)}
+function go(page){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));document.querySelectorAll(".navbtn").forEach(x=>x.classList.remove("active"));$(page).classList.add("active");document.querySelector(`[data-page="${page}"]`)?.classList.add("active")}
+document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>go(b.dataset.page));
 
 async function loadPlayer(){
-  const {data:{user},error:userError}=await db.auth.getUser();
-  if(userError||!user){showAuth();return}
-  const {data,error}=await db.from("players")
-    .select("id,username,level,xp,money,bank_money,health,max_health,wanted_level,alive,rank,reputation")
-    .eq("id",user.id).single();
-  if(error){showMsg($("authMsg"),"تم تسجيل الدخول، لكن لم يتم العثور على شخصية اللاعب.","error");return}
-  player=data; showGame(); renderPlayer(); await loadActiveOperations();
+ const {data:{user}}=await db.auth.getUser(); if(!user)return;
+ const {data,error}=await db.from("players").select("id,username,level,xp,money,bank_money,health,max_health,wanted_level,alive,rank,reputation").eq("id",user.id).single();
+ if(error){console.error(error);toast("تعذر تحميل بيانات اللاعب");return}
+ player=data;
+ $("topPlayer").textContent=player.username||"لاعب"; $("topMoney").textContent="$"+Number(player.money||0).toLocaleString();
+ $("welcome").textContent="مرحبًا، "+(player.username||"لاعب"); $("rankLine").textContent="الرتبة: "+(player.rank||"-");
+ $("level").textContent=player.level??0;$("xp").textContent=Number(player.xp||0).toLocaleString();
+ $("money").textContent="$"+Number(player.money||0).toLocaleString();$("bank").textContent="$"+Number(player.bank_money||0).toLocaleString();
+ $("bankBig").textContent="$"+Number(player.bank_money||0).toLocaleString();$("health").textContent=`${player.health??0}/${player.max_health??0}`;$("wanted").textContent=player.wanted_level??0;
+ await loadActiveOps();
 }
-
-function renderPlayer(){
-  $("welcome").textContent="مرحبًا، "+(player.username||"لاعب");
-  $("rank").textContent="الرتبة: "+(player.rank||"-");
-  $("level").textContent=player.level??0;
-  $("xp").textContent=Number(player.xp||0).toLocaleString("ar-EG");
-  $("money").textContent="$"+Number(player.money||0).toLocaleString("en-US");
-  $("bank").textContent="$"+Number(player.bank_money||0).toLocaleString("en-US");
-  $("health").textContent=`${player.health??0}/${player.max_health??0}`;
-  $("wanted").textContent=player.wanted_level??0;
-  $("reputation").textContent=player.reputation??0;
-  $("alive").textContent=player.alive?"حي":"ميت";
-  const max=Number(player.max_health||1), hp=Math.max(0,Number(player.health||0));
-  $("healthBar").style.width=Math.min(100,hp/max*100)+"%";
-  $("healthText").textContent=`${hp} / ${max}`;
+async function loadActiveOps(){
+ const {data,error}=await db.from("player_operations").select("id,operation_type,started_at,finish_at,status").eq("player_id",player.id).eq("status","running");
+ if(error){console.warn(error);return}
+ activeOps={};(data||[]).forEach(op=>{activeOps[op.operation_type]=op;tick(op)});
 }
-
-async function loadActiveOperations(){
-  const {data,error}=await db.from("player_operations")
-    .select("id,operation_type,started_at,finish_at,status,reward,xp_reward,wanted_gain")
-    .eq("player_id",player.id).eq("status","running");
-  if(error){console.warn(error);return}
-  activeOps={};
-  for(const op of (data||[])){activeOps[op.operation_type]=op; startTicker(op)}
+function tick(op){
+ const c=OPS[op.operation_type];if(!c)return;$(c.button).disabled=true;
+ const loop=async()=>{let left=Math.max(0,new Date(op.finish_at).getTime()-Date.now());
+  if(!left){$(c.timer).textContent="جاري إنهاء العملية...";await finish(op);return}
+  let s=Math.ceil(left/1000);$(c.timer).textContent=`متبقي ${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;setTimeout(loop,1000)}
+ loop();
 }
-
-function startTicker(op){
-  const cfg=OP_TYPES[op.operation_type]; if(!cfg)return;
-  const timer=$(cfg.timer), btn=$(cfg.button); btn.disabled=true;
-  const tick=async()=>{
-    const left=Math.max(0,new Date(op.finish_at).getTime()-Date.now());
-    if(left<=0){
-      timer.textContent="جاري تسليم المكافأة...";
-      await finishOperation(op.id,op.operation_type);
-      return;
-    }
-    const sec=Math.ceil(left/1000), m=Math.floor(sec/60), s=sec%60;
-    timer.textContent=`متبقي ${m}:${String(s).padStart(2,"0")}`;
-    op._timer=setTimeout(tick,1000);
-  };
-  tick();
+async function startOp(type){
+ const c=OPS[type];if(activeOps[type])return toast("العملية تعمل بالفعل");
+ if(!player?.alive)return toast("لا يمكنك تنفيذ العملية الآن");
+ const start=new Date(),finish=new Date(start.getTime()+c.duration*1000);
+ const {data,error}=await db.from("player_operations").insert({player_id:player.id,operation_type:type,started_at:start.toISOString(),finish_at:finish.toISOString(),status:"running",reward:c.reward,xp_reward:c.xp,wanted_gain:c.wanted}).select().single();
+ if(error)return toast(error.message);
+ activeOps[type]=data;tick(data);toast(c.name+" بدأت");
 }
-
-async function startOperation(type){
-  const cfg=OP_TYPES[type];
-  if(activeOps[type]){showMsg($("opMsg"),"هذه العملية تعمل بالفعل.","error");return}
-  if(!player.alive){showMsg($("opMsg"),"لا يمكنك تنفيذ عملية وأنت ميت.","error");return}
-  const now=new Date(), finish=new Date(now.getTime()+cfg.duration*1000);
-  const {data,error}=await db.from("player_operations").insert({
-    player_id:player.id,operation_type:type,started_at:now.toISOString(),
-    finish_at:finish.toISOString(),status:"running",reward:cfg.reward,
-    xp_reward:cfg.xp,wanted_gain:cfg.wanted
-  }).select().single();
-  if(error){showMsg($("opMsg"),error.message,"error");return}
-  activeOps[type]=data; showMsg($("opMsg"),cfg.name+" بدأت. يمكن ترك الصفحة مفتوحة أو العودة لاحقًا.","success");
-  startTicker(data);
+async function finish(op){
+ const {error}=await db.rpc("finish_player_operation",{p_operation_id:op.id});
+ if(error)return toast("تعذر إنهاء العملية: "+error.message);
+ delete activeOps[op.operation_type];toast("انتهت العملية وتمت إضافة المكافأة");await loadPlayer();
 }
-
-async function finishOperation(id,type){
-  const {error}=await db.rpc("finish_player_operation",{p_operation_id:id});
-  if(error){showMsg($("opMsg"),"تعذر إنهاء العملية: "+error.message,"error");return}
-  delete activeOps[type];
-  await loadPlayer();
-  showMsg($("opMsg"),"انتهت العملية وتمت إضافة المكافأة وXP.","success");
-}
-
-$("bikeBtn").onclick=()=>startOperation("bike");
-$("carBtn").onclick=()=>startOperation("car");
-
-db.auth.onAuthStateChange((event)=>{if(event==="SIGNED_IN")loadPlayer();if(event==="SIGNED_OUT")showAuth()});
-(async()=>{const {data:{session}}=await db.auth.getSession();if(session)loadPlayer()})();
+$("bikeBtn").onclick=()=>startOp("bike");$("carBtn").onclick=()=>startOp("car");
+$("login").onclick=async()=>{const {error}=await db.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});if(error){$("authMsg").textContent=error.message;$("authMsg").classList.remove("hidden");return}showApp()};
+$("signup").onclick=async()=>{if($("newUsername").classList.contains("hidden")){$("newUsername").classList.remove("hidden");return}
+ const {data,error}=await db.auth.signUp({email:$("email").value.trim(),password:$("password").value,options:{data:{username:$("newUsername").value.trim()}}});
+ if(error){$("authMsg").textContent=error.message;$("authMsg").classList.remove("hidden");return}
+ if(data.session)showApp();else toast("أكد بريدك الإلكتروني ثم سجل الدخول")};
+$("logout").onclick=async()=>{await db.auth.signOut();location.reload()};
+async function showApp(){$("authView").classList.add("hidden");$("app").classList.remove("hidden");await loadPlayer()}
+db.auth.onAuthStateChange((e)=>{if(e==="SIGNED_IN")showApp()});
+(async()=>{const {data:{session}}=await db.auth.getSession();if(session)showApp()})();
 </script>
 </body>
 </html>
