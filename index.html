@@ -3,72 +3,74 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Agro Green Pro ERP — نظام إدارة المزارع والتصنيع</title>
+<title>Agro Green Pro ERP — النظام الشامل لإدارة مزارع التسمين والإنتاج الحيواني</title>
 <style>
-:root{--bg:#0b1110;--panel:#111a17;--panel2:#16221d;--line:#29382f;--green:#4caf78;--gold:#d6aa4c;--red:#df6666;--blue:#65a8d8;--text:#eef4ef;--muted:#98a79f}
+:root{--bg:#090f0d;--panel:#101815;--panel2:#16231e;--line:#26362e;--green:#43b879;--gold:#dfb04d;--red:#e75a5a;--blue:#529ecf;--text:#edf5f0;--muted:#8fa297}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Tahoma,Arial,sans-serif}
-.top{height:70px;background:#101915;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 22px;position:sticky;top:0;z-index:20}
+.top{height:70px;background:#0d1411;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 22px;position:sticky;top:0;z-index:20}
 .logo{font-size:20px;font-weight:900;color:var(--green)}.sub{font-size:11px;color:var(--muted);display:block;margin-top:3px}
 .user{display:flex;align-items:center;gap:12px}.avatar{width:38px;height:38px;border-radius:50%;background:var(--green);color:#08110d;display:grid;place-items:center;font-weight:900}
-.layout{display:flex;min-height:calc(100vh - 70px)}.side{width:250px;background:#0e1512;border-left:1px solid var(--line);padding:14px;flex:none}
-.nav{width:100%;padding:11px 12px;margin:3px 0;background:transparent;color:#cbd5cf;border:1px solid transparent;border-radius:9px;text-align:right;cursor:pointer;font-size:13px}
-.nav:hover,.nav.active{background:#1b2922;border-color:var(--line);color:var(--green)}
-.main{flex:1;padding:22px;max-width:1450px;width:100%;margin:auto}.page{display:none}.page.active{display:block}
-h1,h2,h3{margin-top:0}.muted{color:var(--muted);font-size:13px}.grid{display:grid;gap:13px}.stats{grid-template-columns:repeat(6,1fr)}.cards{grid-template-columns:repeat(3,1fr)}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:15px}.stat{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:15px}.stat small{color:var(--muted)}.stat b{display:block;color:var(--green);font-size:18px;margin-top:7px}
-.item{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:15px}.item .big{font-size:24px;font-weight:900;color:var(--gold)}
-.btn{border:0;border-radius:8px;padding:9px 14px;background:var(--green);color:#08110d;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-size:12px}
-.btn:hover{opacity:0.9}.btn.alt{background:#303b35;color:#fff}.btn.gold{background:var(--gold);color:#08110d}.btn.red{background:#753434;color:#fff}
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}input,select{background:#0b110e;border:1px solid #344239;color:#fff;padding:9px;border-radius:8px;width:100%;font-size:13px}
+.layout{display:flex;min-height:calc(100vh - 70px)}.side{width:260px;background:#0b110f;border-left:1px solid var(--line);padding:12px;flex:none;max-height:calc(100vh - 70px);overflow-y:auto}
+.nav{width:100%;padding:10px 12px;margin:3px 0;background:transparent;color:#c3d1c9;border:1px solid transparent;border-radius:8px;text-align:right;cursor:pointer;font-size:12px;font-weight:bold}
+.nav:hover,.nav.active{background:#182820;border-color:var(--line);color:var(--green)}
+.main{flex:1;padding:20px;max-width:1500px;width:100%;margin:auto}.page{display:none}.page.active{display:block}
+h1,h2,h3{margin-top:0}.muted{color:var(--muted);font-size:12px}.grid{display:grid;gap:12px}.stats{grid-template-columns:repeat(6,1fr)}.cards{grid-template-columns:repeat(3,1fr)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}.stat{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px}.stat small{color:var(--muted);font-size:11px}.stat b{display:block;color:var(--green);font-size:17px;margin-top:5px}
+.item{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px}.item .big{font-size:22px;font-weight:900;color:var(--gold)}
+.btn{border:0;border-radius:7px;padding:8px 12px;background:var(--green);color:#08110d;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-size:12px}
+.btn:hover{opacity:0.9}.btn.alt{background:#28352e;color:#fff}.btn.gold{background:var(--gold);color:#08110d}.btn.red{background:#813737;color:#fff}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}input,select{background:#080d0b;border:1px solid #2e3e34;color:#fff;padding:8px;border-radius:7px;width:100%;font-size:12px}
 .formgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.field label{display:block;color:var(--muted);font-size:11px;margin-bottom:4px}
-table{width:100%;border-collapse:collapse;margin-top:10px}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:right;font-size:12px}th{color:var(--gold)}
-.badge{display:inline-block;padding:3px 7px;border-radius:99px;background:#29362f;font-size:11px}.ok{color:#7cdb9e}.warn{color:#e5c16c}.danger{color:#ef7d7d}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:none;align-items:center;justify-content:center;padding:15px;z-index:50}.modal.show{display:flex}.modalbox{background:#131c18;border:1px solid var(--line);border-radius:15px;padding:20px;max-width:700px;width:100%;max-height:90vh;overflow-y:auto}
-.action-btn{padding:3px 7px;font-size:11px;border-radius:5px;cursor:pointer}
-.tabs{display:flex;gap:10px;margin-bottom:15px;border-bottom:1px solid var(--line);padding-bottom:8px}
-.tab-btn{background:transparent;border:0;color:var(--muted);padding:8px 12px;cursor:pointer;font-size:13px;border-radius:6px}
+table{width:100%;border-collapse:collapse;margin-top:8px}th,td{padding:9px;border-bottom:1px solid var(--line);text-align:right;font-size:12px}th{color:var(--gold);background:#0e1613}
+.badge{display:inline-block;padding:2px 6px;border-radius:99px;background:#212e27;font-size:10px}.ok{color:#7cdb9e}.warn{color:#e5c16c}.danger{color:#ef7d7d}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center;padding:15px;z-index:50}.modal.show{display:flex}.modalbox{background:#121a17;border:1px solid var(--line);border-radius:14px;padding:20px;max-width:750px;width:100%;max-height:90vh;overflow-y:auto}
+.action-btn{padding:2px 6px;font-size:10px;border-radius:4px;cursor:pointer}
+.tabs{display:flex;gap:8px;margin-bottom:12px;border-bottom:1px solid var(--line);padding-bottom:6px}
+.tab-btn{background:transparent;border:0;color:var(--muted);padding:6px 10px;cursor:pointer;font-size:12px;border-radius:5px}
 .tab-btn.active{background:var(--panel2);color:var(--green);font-weight:bold}
-@media(max-width:1050px){.stats{grid-template-columns:repeat(3,1fr)}.cards{grid-template-columns:repeat(2,1fr)}.formgrid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:700px){.layout{display:block}.side{width:100%;display:grid;grid-template-columns:repeat(2,1fr)}.main{padding:12px}.stats,.cards,.formgrid{grid-template-columns:1fr}}
+@media(max-width:1100px){.stats{grid-template-columns:repeat(3,1fr)}.cards{grid-template-columns:repeat(2,1fr)}.formgrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.layout{display:block}.side{width:100%;max-height:none}.main{padding:10px}.stats,.cards,.formgrid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
 <header class="top">
-  <div><span class="logo">🌿 AGRO GREEN PRO ERP</span><span class="sub">نظام إدارة التسمين ومصنع الأعلاف — شمال التحرير</span></div>
+  <div><span class="logo">🌿 AGRO GREEN PRO ERP</span><span class="sub">إدارة التسمين الشاملة والإنتاج الحيواني — شمال التحرير</span></div>
   <div class="user"><div><b>إدارة المزرعة</b><span class="sub">متصل</span></div><div class="avatar">م</div></div>
 </header>
 
 <div class="layout">
 <aside class="side">
-<button class="nav active" data-page="dashboard">📊 الداشبورد التفاعلية</button>
+<button class="nav active" data-page="dashboard">📊 الداشبورد والمؤشرات</button>
 <button class="nav" data-page="shipments">🚢 الشحنات والتكويد الآلي</button>
-<button class="nav" data-page="animals">🐄 القطيع وتتبع الرؤوس</button>
-<button class="nav" data-page="weights">⚖️ متابعة الأوزان (رأس/مجموعة)</button>
-<button class="nav" data-page="feed_library">🌾 تعريف الأعلاف والبروتين</button>
+<button class="nav" data-page="animals">🐄 سجل القطيع التفصيلي</button>
+<button class="nav" data-page="weights">⚖️ متابعة الأوزان و النمو</button>
+<button class="nav" data-page="feed_dispense">🥣 صرف العلف اليومي للعنابر</button>
+<button class="nav" data-page="health">💉 البيطري والتحصينات والنفوق</button>
+<button class="nav" data-page="feed_library">🌾 مكتبة الأعلاف والتركيبات</button>
 <button class="nav" data-page="factory">🏭 مصنع العلف والتصنيع</button>
-<button class="nav" data-page="stock">📦 جدول المخزون التفصيلي</button>
-<button class="nav" data-page="finance">💰 المالية والمبيعات</button>
+<button class="nav" data-page="stock">📦 جدول المخزون الشامل</button>
+<button class="nav" data-page="sales">🏷️ المبيعات والتسويق</button>
 </aside>
 
 <main class="main">
 
 <!-- DASHBOARD -->
 <section id="dashboard" class="page active">
-<div class="card"><h1>📊 الداشبورد التشغيلية والإنتاجية</h1><p class="muted">متابعة حية للقطيع، أوزان اللحم، مخزون خامات الأعلاف، والتكلفة.</p></div>
+<div class="card"><h1>📊 لوحة التحكم ومؤشرات أداء التسمين</h1><p class="muted">متابعة دقيقة لحظية للقطيع، معدلات التحويل، العلف المصروف، والأرباح.</p></div>
 <div class="grid stats">
-  <div class="stat"><small>إجمالي الرؤوس</small><b id="db-heads">0</b></div>
-  <div class="stat"><small>إجمالي أوزان المزرعة</small><b id="db-weight">0 طن</b></div>
+  <div class="stat"><small>رؤوس المزرعة الحية</small><b id="db-heads">0</b></div>
+  <div class="stat"><small>إجمالي أوزان اللحم</small><b id="db-weight">0 طن</b></div>
   <div class="stat"><small>متوسط وزن الرأس</small><b id="db-avg-w">0 كجم</b></div>
-  <div class="stat"><small>قيمة أصل القطيع التقديرية</small><b id="db-asset-val">0 ج.م</b></div>
-  <div class="stat"><small>إجمالي خامات المخزن</small><b id="db-stock-tons">0 طن</b></div>
-  <div class="stat"><small>قيمة خامات المخزن</small><b id="db-stock-val">0 ج.م</b></div>
+  <div class="stat"><small>معدل النمو اليومي (ADG)</small><b id="db-adg" class="ok">0 كجم/يوم</b></div>
+  <div class="stat"><small>معامل التحويل (FCR)</small><b id="db-fcr" class="gold">0 : 1</b></div>
+  <div class="stat"><small>إجمالي حالات النفوق</small><b id="db-deaths" class="danger">0 رأس</b></div>
 </div>
 <br>
 <div class="grid cards">
-  <div class="item"><h3>🐄 توزيع القطيع حسب العنابر</h3><div id="db-barns-summary"></div></div>
-  <div class="item"><h3>🌾 متوسط بروتين الأعلاف المتوفرة</h3><div class="big" id="db-avg-protein">0%</div><p class="muted">محسوب بناءً على خلطات وأرصدة المخزن</p></div>
-  <div class="item"><h3>📈 مؤشر الأداء الإنتاجي</h3><p>معدل النمو اليومي (ADG المتوقع): <b class="ok">1.35 كجم/يوم</b></p><p>معامل التحويل FCR: <b class="gold">5.8 : 1</b></p></div>
+  <div class="item"><h3>🐄 توزيع العنابر والقطيع</h3><div id="db-barns-summary"></div></div>
+  <div class="item"><h3>🥣 إجمالي العلف المصروف للقطيع</h3><div class="big" id="db-total-feed-used">0 طن</div><p class="muted">مجموع الكميات الموزعة على العنابر</p></div>
+  <div class="item"><h3>💰 أرباح الدورة المتوقعة اليوم</h3><div class="big" id="db-est-profit">0 ج.م</div><p class="muted">بناءً على سعر السوق الحالي (180 ج.م/كجم)</p></div>
 </div>
 </section>
 
@@ -92,48 +94,88 @@ table{width:100%;border-collapse:collapse;margin-top:10px}th,td{padding:10px;bor
   <h2>🐄 سجل القطيع التفصيلي</h2>
   <div class="formgrid">
     <div class="field"><label>بحث برقم الكود الفريد</label><input type="text" id="an-search" oninput="renderAnimals()" placeholder="مثال: SH-01-0005"></div>
-    <div class="field"><label>العنبر</label><select id="an-filter-barn" onchange="renderAnimals()"><option value="">كل العنابر</option><option>عنبر 1</option><option>عنبر 2</option><option>عنبر 3</option></select></div>
+    <div class="field"><label>تصفية بالعنبر</label><select id="an-filter-barn" onchange="renderAnimals()"><option value="">كل العنابر</option><option>عنبر 1</option><option>عنبر 2</option><option>عنبر 3</option></select></div>
   </div>
 </div>
 <div class="card">
   <table>
-    <thead><tr><th>الكود الفريد</th><th>الشحنة</th><th>العنبر</th><th>الوزن الأولي</th><th>الوزن الحالي</th><th>تاريخ آخر وزنة</th><th>الحالة</th></tr></thead>
+    <thead><tr><th>الكود الفريد</th><th>الشحنة</th><th>العنبر</th><th>وزن الدخول</th><th>الوزن الحالي</th><th>معدل النمو (ADG)</th><th>الحالة</th><th>إجراءات</th></tr></thead>
     <tbody id="animals-table-body"></tbody>
   </table>
 </div>
 </section>
 
-<!-- WEIGHTS MODULE (SINGLE & GROUP) -->
+<!-- WEIGHTS MODULE -->
 <section id="weights" class="page">
 <div class="card">
-  <h2>⚖️ متابعة الأوزان والتسجيل الدوري</h2>
+  <h2>⚖️ متابعة الأوزان ومعدلات النمو</h2>
   <div class="tabs">
     <button class="tab-btn active" onclick="switchWeightTab('single')">وزن رأس واحدة</button>
-    <button class="tab-btn" onclick="switchWeightTab('group')">وزن مجموعة / عنبر كامل</button>
+    <button class="tab-btn" onclick="switchWeightTab('group')">وزن عنبر / مجموعة كاملة</button>
   </div>
 
-  <!-- SINGLE WEIGHT -->
   <div id="weight-single-tab">
     <form onsubmit="saveSingleWeight(event)">
       <div class="formgrid">
-        <div class="field"><label>اختر أو اكتب كود الرأس</label><input type="text" id="w-single-code" required placeholder="SH-01-0001"></div>
+        <div class="field"><label>كود الرأس الفريد</label><input type="text" id="w-single-code" required placeholder="SH-01-0001"></div>
         <div class="field"><label>الوزن الجديد (كجم)</label><input type="number" id="w-single-val" required placeholder="320"></div>
         <div class="field"><label>تاريخ الوزنة</label><input type="date" id="w-single-date" required></div>
-        <div class="field" style="display:flex;align-items:flex-end"><button class="btn" type="submit">تحديث وزن الرأس</button></div>
+        <div class="field" style="display:flex;align-items:flex-end"><button class="btn" type="submit">تحديث الوزن</button></div>
       </div>
     </form>
   </div>
 
-  <!-- GROUP WEIGHT -->
   <div id="weight-group-tab" style="display:none">
     <form onsubmit="saveGroupWeight(event)">
       <div class="formgrid">
-        <div class="field"><label>اختر العنبر</label><select id="w-group-barn"><option>عنبر 1</option><option>عنبر 2</option><option>عنبر 3</option></select></div>
-        <div class="field"><label>إجمالي وزن المجموعة (كجم)</label><input type="number" id="w-group-total" required placeholder="120000"></div>
+        <div class="field"><label>العنبر</label><select id="w-group-barn"><option>عنبر 1</option><option>عنبر 2</option><option>عنبر 3</option></select></div>
+        <div class="field"><label>إجمالي وزن مجموعة العنبر (كجم)</label><input type="number" id="w-group-total" required placeholder="120000"></div>
         <div class="field"><label>تاريخ الوزنة الجماعية</label><input type="date" id="w-group-date" required></div>
-        <div class="field" style="display:flex;align-items:flex-end"><button class="btn gold" type="submit">توزيع الأوزان بالتساوي على العنبر</button></div>
+        <div class="field" style="display:flex;align-items:flex-end"><button class="btn gold" type="submit">توزيع بالتساوي على العنبر</button></div>
       </div>
     </form>
+  </div>
+</div>
+</section>
+
+<!-- DAILY FEED DISPENSE -->
+<section id="feed_dispense" class="page">
+<div class="card">
+  <h2>🥣 صرف العلف اليومي للعنابر (التقنيق والتغذية)</h2>
+  <button class="btn" onclick="openModal('dispenseModal')">+ تسجيل عملية صرف علف لعنبر</button>
+</div>
+<div class="card">
+  <h3>سجل الصرف اليومي للعنابر</h3>
+  <table>
+    <thead><tr><th>العنبر</th><th>نوع العلف المصروف</th><th>الكمية المصروفة (كجم)</th><th>التكلفة الإجمالية</th><th>التاريخ</th></tr></thead>
+    <tbody id="dispense-table-body"></tbody>
+  </table>
+</div>
+</section>
+
+<!-- HEALTH & VACCINES & MORTALITY -->
+<section id="health" class="page">
+<div class="card">
+  <h2>💉 السجل الطبي، التحصينات، وحالات النفوق</h2>
+  <div class="toolbar">
+    <button class="btn" onclick="openModal('vaccineModal')">+ تسجيل تحصين / علاج</button>
+    <button class="btn red" onclick="openModal('deathModal')">+ تسجيل حالة نفوق رأس</button>
+  </div>
+</div>
+<div class="grid cards">
+  <div class="card" style="grid-column:span 2">
+    <h3>سجل السجلات الطبية والتحصينات</h3>
+    <table>
+      <thead><tr><th>العنبر / الرأس</th><th>نوع التحصين / العلاج</th><th>التكلفة (ج.م)</th><th>التاريخ</th><th>ملاحظات</th></tr></thead>
+      <tbody id="health-table-body"></tbody>
+    </table>
+  </div>
+  <div class="card">
+    <h3 class="danger">سجل النفوق والوفيات</h3>
+    <table>
+      <thead><tr><th>كود الرأس</th><th>سبب الوفاة</th><th>التاريخ</th></tr></thead>
+      <tbody id="death-table-body"></tbody>
+    </table>
   </div>
 </div>
 </section>
@@ -141,8 +183,8 @@ table{width:100%;border-collapse:collapse;margin-top:10px}th,td{padding:10px;bor
 <!-- FEED LIBRARY -->
 <section id="feed_library" class="page">
 <div class="card">
-  <h2>🌾 مكتبة الأعلاف والخامات (تعريف البروتين والتكلفة)</h2>
-  <button class="btn" onclick="openModal('feedItemModal')">+ إضافة خامة / صنف علف جديد</button>
+  <h2>🌾 مكتبة الأعلاف والتركيبات (البروتين والتكلفة)</h2>
+  <button class="btn" onclick="openModal('feedItemModal')">+ إضافة خامة جديدة</button>
 </div>
 <div class="card">
   <table>
@@ -156,39 +198,41 @@ table{width:100%;border-collapse:collapse;margin-top:10px}th,td{padding:10px;bor
 <section id="factory" class="page">
 <div class="card">
   <h2>🏭 مصنع خلط وتصنيع الأعلاف المركزية</h2>
-  <p class="muted">قم بسحب الخامات من المخزن لإنتاج خلطة مركبة وحساب بروتينها وتكلفتها تلقائياً وإضافتها للمخزن.</p>
   <button class="btn gold" onclick="openModal('manufactureModal')">+ تصنيع تشغيلة علف جديدة (Batch)</button>
 </div>
 <div class="card">
-  <h3>سجل التشغيلات والتصنيع</h3>
   <table>
-    <thead><tr><th>اسم العلف المصنع</th><th>الكمية المصنعة (كجم)</th><th>نسبة البروتين للخلطة</th><th>تكلفة الكيلو الناتجة</th><th>التاريخ</th></tr></thead>
+    <thead><tr><th>اسم العلف المصنع</th><th>الكمية (كجم)</th><th>نسبة البروتين</th><th>تكلفة الكيلو</th><th>التاريخ</th></tr></thead>
     <tbody id="factory-table-body"></tbody>
   </table>
 </div>
 </section>
 
-<!-- DETAILED STOCK -->
+<!-- STOCK -->
 <section id="stock" class="page">
 <div class="card">
-  <h2>📦 مخزون الخامات والأعلاف التفصيلي</h2>
-  <button class="btn" onclick="openModal('addStockModal')">+ إضافة رصيد خامة للمخزن</button>
+  <h2>📦 جدول مخزون الأعلاف والخامات الشامل</h2>
+  <button class="btn" onclick="openModal('addStockModal')">+ توريد خامة للمخزن</button>
 </div>
 <div class="card">
   <table>
-    <thead><tr><th>اسم الخامة / الصنف</th><th>الرصيد (كجم)</th><th>الرصيد (طن)</th><th>نسبة البروتين</th><th>سعر الكيلو التقديري</th><th>إجمالي قيمة المخزون</th></tr></thead>
+    <thead><tr><th>اسم الخامة</th><th>الرصيد (كجم)</th><th>الرصيد (طن)</th><th>نسبة البروتين</th><th>سعر الكيلو</th><th>إجمالي القيمة</th></tr></thead>
     <tbody id="stock-table-body"></tbody>
   </table>
 </div>
 </section>
 
-<!-- FINANCE -->
-<section id="finance" class="page">
-<div class="card"><h2>💰 المالية والمبيعات</h2>
-<div class="grid cards">
-  <div class="item"><h3>إجمالي المبيعات</h3><div class="big" id="fin-sales">0 ج.م</div></div>
-  <div class="item"><h3>إجمالي تكلفة المشتريات والتصنيع</h3><div class="big" id="fin-cost">0 ج.م</div></div>
+<!-- SALES -->
+<section id="sales" class="page">
+<div class="card">
+  <h2>🏷️ المبيعات وتسويق العجول</h2>
+  <button class="btn gold" onclick="openModal('saleModal')">+ تسجيل عملية بيع عجول</button>
 </div>
+<div class="card">
+  <table>
+    <thead><tr><th>كود الرأس / المجموعة</th><th>الوزن عند البيع (كجم)</th><th>سعر الكيلو قائمة (ج.م)</th><th>إجمالي المبلغ</th><th>التاريخ</th></tr></thead>
+    <tbody id="sales-table-body"></tbody>
+  </table>
 </div>
 </section>
 
@@ -201,41 +245,89 @@ table{width:100%;border-collapse:collapse;margin-top:10px}th,td{padding:10px;bor
 <h2>🚢 تسجيل شحنة جديدة وتوليد الرؤوس تلقائياً</h2>
 <form onsubmit="saveShipment(event)">
 <div class="formgrid">
-  <div class="field"><label>كود الشحنة (بادئة الكود)</label><input type="text" id="sh-code" required placeholder="SH-01"></div>
-  <div class="field"><label>بلد المنشأ</label><input type="text" id="sh-origin" required placeholder="جيبوتي"></div>
-  <div class="field"><label>عدد الرؤوس (سيتم توليدهم)</label><input type="number" id="sh-count" required placeholder="50"></div>
+  <div class="field"><label>بادئة كود الشحنة</label><input type="text" id="sh-code" required placeholder="SH-01"></div>
+  <div class="field"><label>المنشأ</label><input type="text" id="sh-origin" required placeholder="جيبوتي"></div>
+  <div class="field"><label>عدد الرؤوس</label><input type="number" id="sh-count" required placeholder="50"></div>
   <div class="field"><label>إجمالي وزن الشحنة (كجم)</label><input type="number" id="sh-total-w" required placeholder="12500"></div>
   <div class="field"><label>تسكين في عنبر</label><select id="sh-barn"><option>عنبر 1</option><option>عنبر 2</option><option>عنبر 3</option></select></div>
   <div class="field"><label>تاريخ الوصول</label><input type="date" id="sh-date" required></div>
 </div>
 <br>
-<button class="btn" type="submit">تأكيد وتوليد كود فريد لكل رأس</button>
+<button class="btn" type="submit">توليد الرؤوس وتأكيد الشحنة</button>
 <button class="btn alt" type="button" onclick="closeModal('shipmentModal')">إلغاء</button>
 </form>
 </div></div>
 
-<!-- Feed Item Definition Modal -->
+<!-- Dispense Feed Modal -->
+<div id="dispenseModal" class="modal"><div class="modalbox">
+<h2>🥣 صرف علف يومي لعنبر</h2>
+<form onsubmit="saveFeedDispense(event)">
+<div class="formgrid">
+  <div class="field"><label>اختر العنبر</label><select id="dp-barn"><option>عنبر 1</option><option>عنبر 2</option><option>عنبر 3</option></select></div>
+  <div class="field" style="grid-column:span 2"><label>اختر العلف من المخزن</label><select id="dp-feed-select" required></select></div>
+  <div class="field"><label>الكمية المصروفة (كجم)</label><input type="number" id="dp-qty" required placeholder="300"></div>
+  <div class="field"><label>التاريخ</label><input type="date" id="dp-date" required></div>
+</div>
+<br>
+<button class="btn" type="submit">تأكيد الصرف وخصم من المخزن</button>
+<button class="btn alt" type="button" onclick="closeModal('dispenseModal')">إلغاء</button>
+</form>
+</div></div>
+
+<!-- Vaccine / Health Modal -->
+<div id="vaccineModal" class="modal"><div class="modalbox">
+<h2>💉 تسجيل علاج / تحصين بيطري</h2>
+<form onsubmit="saveHealthRecord(event)">
+<div class="formgrid">
+  <div class="field"><label>النطاق</label><select id="hl-target"><option value="عنبر 1">عنبر 1</option><option value="عنبر 2">عنبر 2</option><option value="عنبر 3">عنبر 3</option></select></div>
+  <div class="field" style="grid-column:span 2"><label>اسم التحصين / العلاج</label><input type="text" id="hl-name" required placeholder="تحصين حمى قلاعية / تجريع طفيليات"></div>
+  <div class="field"><label>التكلفة الإجمالية (ج.م)</label><input type="number" id="hl-cost" required placeholder="1500"></div>
+  <div class="field"><label>التاريخ</label><input type="date" id="hl-date" required></div>
+  <div class="field" style="grid-column:span 3"><label>ملاحظات</label><input type="text" id="hl-notes" placeholder="الجرعة التنشيطية بعد 21 يوم"></div>
+</div>
+<br>
+<button class="btn" type="submit">حفظ السجل الطبي</button>
+<button class="btn alt" type="button" onclick="closeModal('vaccineModal')">إلغاء</button>
+</form>
+</div></div>
+
+<!-- Death Modal -->
+<div id="deathModal" class="modal"><div class="modalbox">
+<h2>🚨 تسجيل حالة نفوق رأس</h2>
+<form onsubmit="saveDeathRecord(event)">
+<div class="formgrid">
+  <div class="field" style="grid-column:span 2"><label>كود الرأس النافقة</label><input type="text" id="dt-code" required placeholder="SH-01-0005"></div>
+  <div class="field" style="grid-column:span 2"><label>تاريخ النفوق</label><input type="date" id="dt-date" required></div>
+  <div class="field" style="grid-column:span 4"><label>سبب الوفاة والتصريح البيطري</label><input type="text" id="dt-reason" required placeholder="انتفاخ حاد / صدمة حرارية"></div>
+</div>
+<br>
+<button class="btn red" type="submit">تأكيد وتسجيل النفوق وخصمه</button>
+<button class="btn alt" type="button" onclick="closeModal('deathModal')">إلغاء</button>
+</form>
+</div></div>
+
+<!-- Feed Item Modal -->
 <div id="feedItemModal" class="modal"><div class="modalbox">
 <h2>🌾 تعريف صنف علف / خامة جديدة</h2>
 <form onsubmit="saveFeedLib(event)">
 <div class="formgrid">
-  <div class="field"><label>اسم الخامة</label><input type="text" id="fl-name" required placeholder="ذرة صفراء / كسب صويا"></div>
+  <div class="field"><label>اسم الخامة</label><input type="text" id="fl-name" required placeholder="ذرة صفراء"></div>
   <div class="field"><label>نسبة البروتين (%)</label><input type="number" step="0.1" id="fl-protein" required placeholder="8.5"></div>
-  <div class="field"><label>التكلفة للـ كجم (جنيه)</label><input type="number" step="0.1" id="fl-cost" required placeholder="18"></div>
+  <div class="field"><label>التكلفة / كجم (ج.م)</label><input type="number" step="0.1" id="fl-cost" required placeholder="18"></div>
 </div>
 <br>
-<button class="btn" type="submit">حفظ في مكتبة الأعلاف</button>
+<button class="btn" type="submit">حفظ</button>
 <button class="btn alt" type="button" onclick="closeModal('feedItemModal')">إلغاء</button>
 </form>
 </div></div>
 
-<!-- Add Stock Modal -->
+<!-- Stock Add Modal -->
 <div id="addStockModal" class="modal"><div class="modalbox">
-<h2>📦 توريد / إضافة رصيد للمخزن</h2>
+<h2>📦 توريد خامة للمخزن</h2>
 <form onsubmit="saveStockAdd(event)">
 <div class="formgrid">
-  <div class="field" style="grid-column:span 2"><label>اختر الخامة من المكتبة</label><select id="st-item-select" required></select></div>
-  <div class="field" style="grid-column:span 2"><label>الكمية المضافة (كجم)</label><input type="number" id="st-qty" required placeholder="5000"></div>
+  <div class="field" style="grid-column:span 2"><label>اختر الخامة</label><select id="st-item-select" required></select></div>
+  <div class="field" style="grid-column:span 2"><label>الكمية (كجم)</label><input type="number" id="st-qty" required placeholder="5000"></div>
 </div>
 <br>
 <button class="btn" type="submit">إضافة للمخزن</button>
@@ -245,53 +337,70 @@ table{width:100%;border-collapse:collapse;margin-top:10px}th,td{padding:10px;bor
 
 <!-- Manufacture Modal -->
 <div id="manufactureModal" class="modal"><div class="modalbox">
-<h2>🏭 تصنيع علف مركز (خلطة جديدة)</h2>
+<h2>🏭 تصنيع علف مركز</h2>
 <form onsubmit="saveManufacture(event)">
 <div class="formgrid">
-  <div class="field" style="grid-column:span 2"><label>اسم العلف الناتج</label><input type="text" id="mf-name" required placeholder="علف تسمين مركز 16%"></div>
-  <div class="field"><label>كمية الذرة المستخدمة (كجم)</label><input type="number" id="mf-corn" value="0"></div>
-  <div class="field"><label>كمية الصويا المستخدمة (كجم)</label><input type="number" id="mf-soya" value="0"></div>
-  <div class="field"><label>كمية الردة / المركزات (كجم)</label><input type="number" id="mf-other" value="0"></div>
+  <div class="field" style="grid-column:span 2"><label>اسم الخلطة</label><input type="text" id="mf-name" required placeholder="علف تسمين 16%"></div>
+  <div class="field"><label>كمية الذرة (كجم)</label><input type="number" id="mf-corn" value="0"></div>
+  <div class="field"><label>كمية الصويا (كجم)</label><input type="number" id="mf-soya" value="0"></div>
+  <div class="field"><label>كمية الردة (كجم)</label><input type="number" id="mf-other" value="0"></div>
 </div>
-<p class="muted" style="margin-top:10px">سيتم خصم الكميات المحددة من مخزن الخامات وتجميعها في صنف علف جديد بحساب آلي للبروتين والتكلفة.</p>
-<button class="btn gold" type="submit">بدء التصنيع وإضافة الناتج للمخزن</button>
+<br>
+<button class="btn gold" type="submit">تصنيع وإضافة للمخزن</button>
 <button class="btn alt" type="button" onclick="closeModal('manufactureModal')">إلغاء</button>
 </form>
 </div></div>
 
+<!-- Sales Modal -->
+<div id="saleModal" class="modal"><div class="modalbox">
+<h2>🏷️ تسجيل عملية بيع عجول</h2>
+<form onsubmit="saveSaleRecord(event)">
+<div class="formgrid">
+  <div class="field" style="grid-column:span 2"><label>كود الرأس المبيعة (أو المجموعة)</label><input type="text" id="sl-code" required placeholder="SH-01-0002"></div>
+  <div class="field"><label>الوزن عند البيع (كجم)</label><input type="number" id="sl-weight" required placeholder="450"></div>
+  <div class="field"><label>سعر الكيلو قائمة (ج.م)</label><input type="number" id="sl-price" required value="180"></div>
+  <div class="field"><label>تاريخ البيع</label><input type="date" id="sl-date" required></div>
+</div>
+<br>
+<button class="btn gold" type="submit">تأكيد البيع واستبعاد من القطيع</button>
+<button class="btn alt" type="button" onclick="closeModal('saleModal')">إلغاء</button>
+</form>
+</div></div>
+
 <script>
-// --- INITIAL STATE ---
+// INITIAL DATA STORE
 let store = {
   shipments: [],
   animals: [],
+  feedDispenseLogs: [],
+  healthLogs: [],
+  deathLogs: [],
+  salesLogs: [],
   feedLibrary: [
     { name: 'ذرة صفراء', protein: 8.5, costPerKg: 16.5 },
     { name: 'كسب صويا 44%', protein: 44.0, costPerKg: 31.0 },
-    { name: 'ردة ناعمة', protein: 14.0, costPerKg: 13.0 }
+    { name: 'علف تسمين 16% مركز', protein: 16.0, costPerKg: 21.0 }
   ],
   stock: [
-    { name: 'ذرة صفراء', qtyKg: 12000, protein: 8.5, costPerKg: 16.5 },
-    { name: 'كسب صويا 44%', qtyKg: 5000, protein: 44.0, costPerKg: 31.0 }
+    { name: 'ذرة صفراء', qtyKg: 15000, protein: 8.5, costPerKg: 16.5 },
+    { name: 'كسب صويا 44%', qtyKg: 6000, protein: 44.0, costPerKg: 31.0 },
+    { name: 'علف تسمين 16% مركز', qtyKg: 8000, protein: 16.0, costPerKg: 21.0 }
   ],
-  factoryLogs: [],
-  finance: { sales: 0, cost: 0 }
+  factoryLogs: []
 };
 
 function init() {
-  const local = localStorage.getItem('agro_pro_store');
+  const local = localStorage.getItem('agro_pro_master');
   if(local) { try { store = JSON.parse(local); }catch(e){} }
   
-  // Set default dates
   const today = new Date().toISOString().split('T')[0];
-  document.getElementById('w-single-date').value = today;
-  document.getElementById('w-group-date').value = today;
-  document.getElementById('sh-date').value = today;
+  document.querySelectorAll('input[type="date"]').forEach(d => d.value = today);
 
   refreshAll();
 }
 
 function save() {
-  localStorage.setItem('agro_pro_store', JSON.stringify(store));
+  localStorage.setItem('agro_pro_master', JSON.stringify(store));
   refreshAll();
 }
 
@@ -299,16 +408,18 @@ function refreshAll() {
   renderDashboard();
   renderShipments();
   renderAnimals();
+  renderFeedDispense();
+  renderHealth();
   renderFeedLib();
   renderStock();
   renderFactory();
+  renderSales();
   updateSelects();
 }
 
 function openModal(id){ document.getElementById(id).classList.add('show'); }
 function closeModal(id){ document.getElementById(id).classList.remove('show'); }
 
-// NAVIGATION
 document.querySelectorAll('.nav').forEach(btn => {
   btn.onclick = () => {
     document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
@@ -331,42 +442,50 @@ function switchWeightTab(type) {
   }
 }
 
-// --- DASHBOARD ---
+// DASHBOARD CALCULATIONS
 function renderDashboard() {
-  const heads = store.animals.length;
-  const totalW = store.animals.reduce((s, a) => s + Number(a.currentWeight || 0), 0);
+  const liveAnimals = store.animals.filter(a => a.status === 'حي');
+  const heads = liveAnimals.length;
+  const totalW = liveAnimals.reduce((s, a) => s + Number(a.currentWeight || 0), 0);
   const avgW = heads > 0 ? Math.round(totalW / heads) : 0;
-  
-  // Estimated asset value (avg 180 EGP per kg live weight)
-  const assetVal = totalW * 180;
 
-  let stockTons = 0, stockVal = 0, totalProteinSum = 0;
-  store.stock.forEach(s => {
-    stockTons += s.qtyKg / 1000;
-    stockVal += s.qtyKg * s.costPerKg;
-    totalProteinSum += s.protein;
+  // ADG Calculation
+  let totalAdgSum = 0;
+  liveAnimals.forEach(a => {
+    const days = Math.max(1, Math.round((new Date() - new Date(a.entryDate || a.lastWeightDate)) / (1000*60*60*24)));
+    const gain = a.currentWeight - a.initialWeight;
+    totalAdgSum += (gain / days);
   });
+  const avgAdg = heads > 0 ? (totalAdgSum / heads).toFixed(2) : '0';
 
-  const avgProtein = store.stock.length > 0 ? (totalProteinSum / store.stock.length).toFixed(1) : 0;
+  // Total Feed Dispensed
+  const totalFeedKg = store.feedDispenseLogs.reduce((s, f) => s + Number(f.qty), 0);
+
+  // FCR = Total Feed Kg / Total Weight Gain Kg
+  const totalWeightGain = liveAnimals.reduce((s, a) => s + (a.currentWeight - a.initialWeight), 0);
+  const fcr = totalWeightGain > 0 ? (totalFeedKg / totalWeightGain).toFixed(1) : '0';
+
+  // Expected Revenue @ 180 EGP / kg live weight
+  const estVal = totalW * 180;
 
   document.getElementById('db-heads').innerText = heads.toLocaleString();
   document.getElementById('db-weight').innerText = (totalW/1000).toFixed(1) + ' طن';
   document.getElementById('db-avg-w').innerText = avgW + ' كجم';
-  document.getElementById('db-asset-val').innerText = assetVal.toLocaleString() + ' ج.م';
-  document.getElementById('db-stock-tons').innerText = stockTons.toFixed(1) + ' طن';
-  document.getElementById('db-stock-val').innerText = stockVal.toLocaleString() + ' ج.م';
-  document.getElementById('db-avg-protein').innerText = avgProtein + '%';
+  document.getElementById('db-adg').innerText = avgAdg + ' كجم/يوم';
+  document.getElementById('db-fcr').innerText = fcr + ' : 1';
+  document.getElementById('db-deaths').innerText = store.deathLogs.length + ' رأس';
+  document.getElementById('db-total-feed-used').innerText = (totalFeedKg/1000).toFixed(1) + ' طن';
+  document.getElementById('db-est-profit').innerText = estVal.toLocaleString() + ' ج.م';
 
-  // Barns breakdown
   const barnDiv = document.getElementById('db-barns-summary');
   barnDiv.innerHTML = '';
   ['عنبر 1', 'عنبر 2', 'عنبر 3'].forEach(b => {
-    const c = store.animals.filter(a => a.barn === b).length;
-    barnDiv.innerHTML += `<div style="display:flex;justify-content:space-between;margin:5px 0"><span>${b}:</span><b>${c} رأس</b></div>`;
+    const c = liveAnimals.filter(a => a.barn === b).length;
+    barnDiv.innerHTML += `<div style="display:flex;justify-content:space-between;margin:4px 0"><span>${b}:</span><b>${c} رأس</b></div>`;
   });
 }
 
-// --- SHIPMENTS & AUTO TAGGING ---
+// SHIPMENTS & AUTO TAGGING
 function saveShipment(e) {
   e.preventDefault();
   const code = document.getElementById('sh-code').value.toUpperCase().trim();
@@ -378,7 +497,6 @@ function saveShipment(e) {
 
   const avgW = Math.round(totalW / count);
 
-  // Auto Generate Unique Animals
   for(let i = 1; i <= count; i++) {
     const uniqueId = `${code}-${String(i).padStart(4, '0')}`;
     store.animals.push({
@@ -388,6 +506,7 @@ function saveShipment(e) {
       initialWeight: avgW,
       currentWeight: avgW,
       lastWeightDate: date,
+      entryDate: date,
       status: 'حي'
     });
   }
@@ -410,22 +529,13 @@ function renderShipments() {
         <td>${s.totalW.toLocaleString()} كجم</td>
         <td>${s.avgW} كجم</td>
         <td>${s.date}</td>
-        <td><button class="btn red action-btn" onclick="deleteShipment(${idx})">حذف</button></td>
+        <td><button class="btn red action-btn" onclick="store.shipments.splice(${idx},1);save();">حذف</button></td>
       </tr>
     `;
   });
 }
 
-function deleteShipment(idx) {
-  if(confirm('سيتم حذف الشحنة وكافة الرؤوس المرتبطة بها! هل أنت متأكد؟')) {
-    const code = store.shipments[idx].code;
-    store.shipments.splice(idx, 1);
-    store.animals = store.animals.filter(a => a.shipment !== code);
-    save();
-  }
-}
-
-// --- ANIMALS ---
+// ANIMALS
 function renderAnimals() {
   const search = document.getElementById('an-search').value.toLowerCase();
   const barn = document.getElementById('an-filter-barn').value;
@@ -437,6 +547,9 @@ function renderAnimals() {
   });
 
   filtered.forEach(a => {
+    const days = Math.max(1, Math.round((new Date() - new Date(a.entryDate || a.lastWeightDate)) / (1000*60*60*24)));
+    const adg = ((a.currentWeight - a.initialWeight) / days).toFixed(2);
+    
     tbody.innerHTML += `
       <tr>
         <td><b style="color:var(--green)">${a.id}</b></td>
@@ -444,14 +557,27 @@ function renderAnimals() {
         <td>${a.barn}</td>
         <td>${a.initialWeight} كجم</td>
         <td><b>${a.currentWeight} كجم</b></td>
-        <td>${a.lastWeightDate}</td>
-        <td><span class="badge ok">${a.status}</span></td>
+        <td><span class="badge ok">${adg} كجم/يوم</span></td>
+        <td><span class="badge ${a.status==='حي'?'ok':'danger'}">${a.status}</span></td>
+        <td><button class="btn alt action-btn" onclick="quickWeight('${a.id}')">وزن</button></td>
       </tr>
     `;
   });
 }
 
-// --- WEIGHTS MANAGEMENT ---
+function quickWeight(id) {
+  const w = prompt(`أدخل الوزن الجديد للرأس ${id}:`);
+  if(w && !isNaN(w)) {
+    const a = store.animals.find(x => x.id === id);
+    if(a) {
+      a.currentWeight = Number(w);
+      a.lastWeightDate = new Date().toISOString().split('T')[0];
+      save();
+    }
+  }
+}
+
+// WEIGHTS
 function saveSingleWeight(e) {
   e.preventDefault();
   const code = document.getElementById('w-single-code').value.trim();
@@ -459,14 +585,11 @@ function saveSingleWeight(e) {
   const date = document.getElementById('w-single-date').value;
 
   const animal = store.animals.find(a => a.id.toLowerCase() === code.toLowerCase());
-  if(!animal) {
-    alert('رقم كود الرأس غير موجود بالسجلات!');
-    return;
-  }
+  if(!animal) return alert('الكود غير موجود!');
 
   animal.currentWeight = newW;
   animal.lastWeightDate = date;
-  alert(`تم تحديث وزن الرأس ${animal.id} إلى ${newW} كجم بنجاح.`);
+  alert('تم تحديث الوزن بنجاح');
   e.target.reset();
   save();
 }
@@ -477,11 +600,8 @@ function saveGroupWeight(e) {
   const totalW = Number(document.getElementById('w-group-total').value);
   const date = document.getElementById('w-group-date').value;
 
-  const group = store.animals.filter(a => a.barn === barn);
-  if(group.length === 0) {
-    alert('لا يوجد رؤوس مسجلة في هذا العنبر!');
-    return;
-  }
+  const group = store.animals.filter(a => a.barn === barn && a.status === 'حي');
+  if(group.length === 0) return alert('لا يوجد مواشي حية بهذا العنبر!');
 
   const avgW = Math.round(totalW / group.length);
   group.forEach(a => {
@@ -489,12 +609,96 @@ function saveGroupWeight(e) {
     a.lastWeightDate = date;
   });
 
-  alert(`تم توزيع الوزن بالتساوي على ${group.length} رأس بالعنبر ${barn} بمتوسط ${avgW} كجم للرأس.`);
+  alert('تم تحديث وزن العنبر بنجاح');
   e.target.reset();
   save();
 }
 
-// --- FEED LIBRARY ---
+// FEED DISPENSE
+function saveFeedDispense(e) {
+  e.preventDefault();
+  const barn = document.getElementById('dp-barn').value;
+  const feedName = document.getElementById('dp-feed-select').value;
+  const qty = Number(document.getElementById('dp-qty').value);
+  const date = document.getElementById('dp-date').value;
+
+  const stockItem = store.stock.find(s => s.name === feedName);
+  if(!stockItem || stockItem.qtyKg < qty) {
+    return alert('الرصيد بالمخزن غير كافي لصرف هذه الكمية!');
+  }
+
+  stockItem.qtyKg -= qty;
+  const totalCost = qty * stockItem.costPerKg;
+
+  store.feedDispenseLogs.unshift({ barn, feedName, qty, totalCost, date });
+  closeModal('dispenseModal');
+  e.target.reset();
+  save();
+}
+
+function renderFeedDispense() {
+  const tbody = document.getElementById('dispense-table-body');
+  tbody.innerHTML = '';
+  store.feedDispenseLogs.forEach(f => {
+    tbody.innerHTML += `
+      <tr>
+        <td><b>${f.barn}</b></td>
+        <td>${f.feedName}</td>
+        <td>${f.qty.toLocaleString()} كجم</td>
+        <td>${f.totalCost.toLocaleString()} ج.م</td>
+        <td>${f.date}</td>
+      </tr>
+    `;
+  });
+}
+
+// VACCINES & HEALTH & MORTALITY
+function saveHealthRecord(e) {
+  e.preventDefault();
+  store.healthLogs.unshift({
+    target: document.getElementById('hl-target').value,
+    name: document.getElementById('hl-name').value,
+    cost: Number(document.getElementById('hl-cost').value),
+    date: document.getElementById('hl-date').value,
+    notes: document.getElementById('hl-notes').value
+  });
+  closeModal('vaccineModal');
+  e.target.reset();
+  save();
+}
+
+function saveDeathRecord(e) {
+  e.preventDefault();
+  const code = document.getElementById('dt-code').value.trim();
+  const date = document.getElementById('dt-date').value;
+  const reason = document.getElementById('dt-reason').value;
+
+  const animal = store.animals.find(a => a.id.toLowerCase() === code.toLowerCase());
+  if(!animal) return alert('الكود غير موجود!');
+
+  animal.status = 'نافوق';
+  store.deathLogs.unshift({ code: animal.id, date, reason });
+
+  closeModal('deathModal');
+  e.target.reset();
+  save();
+}
+
+function renderHealth() {
+  const tbody = document.getElementById('health-table-body');
+  tbody.innerHTML = '';
+  store.healthLogs.forEach(h => {
+    tbody.innerHTML += `<tr><td><b>${h.target}</b></td><td>${h.name}</td><td>${h.cost} ج.م</td><td>${h.date}</td><td>${h.notes}</td></tr>`;
+  });
+
+  const dtBody = document.getElementById('death-table-body');
+  dtBody.innerHTML = '';
+  store.deathLogs.forEach(d => {
+    dtBody.innerHTML += `<tr><td><b class="danger">${d.code}</b></td><td>${d.reason}</td><td>${d.date}</td></tr>`;
+  });
+}
+
+// FEED LIBRARY & STOCK
 function saveFeedLib(e) {
   e.preventDefault();
   store.feedLibrary.push({
@@ -523,12 +727,16 @@ function renderFeedLib() {
   });
 }
 
-// --- DETAILED STOCK ---
 function updateSelects() {
-  const sel = document.getElementById('st-item-select');
-  sel.innerHTML = '';
+  const sel1 = document.getElementById('st-item-select');
+  const sel2 = document.getElementById('dp-feed-select');
+  sel1.innerHTML = ''; sel2.innerHTML = '';
+
   store.feedLibrary.forEach(f => {
-    sel.innerHTML += `<option value="${f.name}">${f.name} (${f.protein}% بروتين)</option>`;
+    sel1.innerHTML += `<option value="${f.name}">${f.name} (${f.protein}%)</option>`;
+  });
+  store.stock.forEach(s => {
+    sel2.innerHTML += `<option value="${s.name}">${s.name} (متوفر: ${s.qtyKg} كجم)</option>`;
   });
 }
 
@@ -539,11 +747,8 @@ function saveStockAdd(e) {
   const lib = store.feedLibrary.find(f => f.name === name);
 
   const existing = store.stock.find(s => s.name === name);
-  if(existing) {
-    existing.qtyKg += qty;
-  } else {
-    store.stock.push({ name: name, qtyKg: qty, protein: lib.protein, costPerKg: lib.costPerKg });
-  }
+  if(existing) existing.qtyKg += qty;
+  else store.stock.push({ name: name, qtyKg: qty, protein: lib.protein, costPerKg: lib.costPerKg });
 
   closeModal('addStockModal');
   e.target.reset();
@@ -554,7 +759,6 @@ function renderStock() {
   const tbody = document.getElementById('stock-table-body');
   tbody.innerHTML = '';
   store.stock.forEach(s => {
-    const val = s.qtyKg * s.costPerKg;
     tbody.innerHTML += `
       <tr>
         <td><b>${s.name}</b></td>
@@ -562,45 +766,28 @@ function renderStock() {
         <td>${(s.qtyKg/1000).toFixed(2)} طن</td>
         <td>${s.protein}%</td>
         <td>${s.costPerKg} ج.م</td>
-        <td><b>${val.toLocaleString()} ج.م</b></td>
+        <td><b>${(s.qtyKg * s.costPerKg).toLocaleString()} ج.م</b></td>
       </tr>
     `;
   });
 }
 
-// --- FACTORY & MANUFACTURE ---
+// FACTORY
 function saveManufacture(e) {
   e.preventDefault();
   const name = document.getElementById('mf-name').value;
   const corn = Number(document.getElementById('mf-corn').value);
   const soya = Number(document.getElementById('mf-soya').value);
   const other = Number(document.getElementById('mf-other').value);
+  const total = corn + soya + other;
+  if(total <= 0) return;
 
-  const totalBatchQty = corn + soya + other;
-  if(totalBatchQty <= 0) return;
-
-  // Deduct from stock
-  const cornStock = store.stock.find(s => s.name.includes('ذرة'));
-  const soyaStock = store.stock.find(s => s.name.includes('صويا'));
-
-  if(cornStock) cornStock.qtyKg = Math.max(0, cornStock.qtyKg - corn);
-  if(soyaStock) soyaStock.qtyKg = Math.max(0, soyaStock.qtyKg - soya);
-
-  // Calculate Mixed Protein & Cost
   const cornP = 8.5, soyaP = 44.0, otherP = 14.0;
-  const totalProteinKg = (corn * cornP/100) + (soya * soyaP/100) + (other * otherP/100);
-  const mixProtein = ((totalProteinKg / totalBatchQty) * 100).toFixed(1);
+  const mixProtein = (((corn*cornP/100)+(soya*soyaP/100)+(other*otherP/100))/total*100).toFixed(1);
+  const cost = 21; // average estimated batch cost
 
-  const cornC = 16.5, soyaC = 31.0, otherC = 13.0;
-  const totalCost = (corn * cornC) + (soya * soyaC) + (other * otherC);
-  const costPerKg = (totalCost / totalBatchQty).toFixed(1);
-
-  // Add produced mixed feed to Stock
-  store.stock.push({ name: name, qtyKg: totalBatchQty, protein: Number(mixProtein), costPerKg: Number(costPerKg) });
-
-  store.factoryLogs.unshift({
-    name, qty: totalBatchQty, protein: mixProtein, cost: costPerKg, date: new Date().toLocaleDateString('ar-EG')
-  });
+  store.stock.push({ name, qtyKg: total, protein: Number(mixProtein), costPerKg: cost });
+  store.factoryLogs.unshift({ name, qty: total, protein: mixProtein, cost, date: new Date().toLocaleDateString('ar-EG') });
 
   closeModal('manufactureModal');
   e.target.reset();
@@ -611,19 +798,36 @@ function renderFactory() {
   const tbody = document.getElementById('factory-table-body');
   tbody.innerHTML = '';
   store.factoryLogs.forEach(f => {
-    tbody.innerHTML += `
-      <tr>
-        <td><b>${f.name}</b></td>
-        <td>${f.qty.toLocaleString()} كجم</td>
-        <td><span class="badge ok">${f.protein}% بروتين</span></td>
-        <td>${f.cost} ج.م/كجم</td>
-        <td>${f.date}</td>
-      </tr>
-    `;
+    tbody.innerHTML += `<tr><td><b>${f.name}</b></td><td>${f.qty.toLocaleString()} كجم</td><td>${f.protein}%</td><td>${f.cost} ج.م</td><td>${f.date}</td></tr>`;
   });
 }
 
-// RUN AT START
+// SALES
+function saveSaleRecord(e) {
+  e.preventDefault();
+  const code = document.getElementById('sl-code').value.trim();
+  const weight = Number(document.getElementById('sl-weight').value);
+  const price = Number(document.getElementById('sl-price').value);
+  const date = document.getElementById('sl-date').value;
+  const total = weight * price;
+
+  const animal = store.animals.find(a => a.id.toLowerCase() === code.toLowerCase());
+  if(animal) animal.status = 'مباع';
+
+  store.salesLogs.unshift({ code, weight, price, total, date });
+  closeModal('saleModal');
+  e.target.reset();
+  save();
+}
+
+function renderSales() {
+  const tbody = document.getElementById('sales-table-body');
+  tbody.innerHTML = '';
+  store.salesLogs.forEach(s => {
+    tbody.innerHTML += `<tr><td><b>${s.code}</b></td><td>${s.weight} كجم</td><td>${s.price} ج.م</td><td><b>${s.total.toLocaleString()} ج.م</b></td><td>${s.date}</td></tr>`;
+  });
+}
+
 init();
 </script>
 </body>
