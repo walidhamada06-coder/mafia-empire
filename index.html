@@ -1,200 +1,88 @@
-<!doctype html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mafia Empire</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Tahoma,Arial,sans-serif;background:#0d0f12;color:#eee;min-height:100vh}
-    .wrap{max-width:1100px;margin:auto;padding:24px}
-    .brand{font-size:32px;font-weight:800;text-align:center;margin:10px 0 25px;color:#d9a441}
-    .card{background:#171a1f;border:1px solid #292e36;border-radius:16px;padding:22px;box-shadow:0 10px 30px #0005;margin-bottom:18px}
-    .auth{max-width:430px;margin:50px auto}
-    h2,h3{margin-top:0}
-    input{width:100%;padding:13px;margin:7px 0;background:#0f1115;border:1px solid #343a43;border-radius:9px;color:#fff}
-    button{border:0;border-radius:9px;padding:12px 18px;background:#b8892d;color:#111;font-weight:700;cursor:pointer;margin:5px}
-    button.secondary{background:#303640;color:#fff}
-    button:disabled{opacity:.5;cursor:not-allowed}
-    .msg{padding:10px;border-radius:8px;background:#242932;margin-top:10px;display:none}
-    .error{background:#4a2024}.success{background:#1d422c}
-    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-    .stat{background:#101318;border-radius:12px;padding:16px;text-align:center;border:1px solid #252a31}
-    .stat b{display:block;font-size:22px;margin-top:7px;color:#d9a441}
-    .operations{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-    .op{background:#111419;border:1px solid #292e36;border-radius:12px;padding:16px}
-    .timer{font-size:18px;color:#d9a441;margin:10px 0}
-    .top{display:flex;justify-content:space-between;align-items:center;gap:10px}
-    @media(max-width:750px){.grid{grid-template-columns:repeat(2,1fr)}.operations{grid-template-columns:1fr}}
-  </style>
-</head>
-<body>
-<div class="wrap">
-  <div class="brand">MAFIA EMPIRE</div>
+-- MAFIA EMPIRE - Phase 1
+-- Run this once in Supabase SQL Editor.
+-- This creates a separate operations table and a secure server-side completion function.
 
-  <section id="authCard" class="card auth">
-    <h2 id="authTitle">تسجيل الدخول</h2>
-    <input id="email" type="email" placeholder="البريد الإلكتروني">
-    <input id="password" type="password" placeholder="كلمة المرور">
-    <input id="username" type="text" placeholder="اسم اللاعب (عند إنشاء حساب)" style="display:none">
-    <div>
-      <button id="loginBtn">دخول</button>
-      <button id="signupBtn" class="secondary">إنشاء حساب</button>
-    </div>
-    <div id="authMsg" class="msg"></div>
-  </section>
+create table if not exists public.player_operations (
+  id uuid primary key default gen_random_uuid(),
+  player_id uuid not null references public.players(id) on delete cascade,
+  operation_type text not null check (operation_type in ('bike','car')),
+  started_at timestamptz not null default now(),
+  finish_at timestamptz not null,
+  status text not null default 'running' check (status in ('running','completed','failed')),
+  reward integer not null default 0,
+  xp_reward integer not null default 0,
+  wanted_gain integer not null default 0,
+  created_at timestamptz not null default now()
+);
 
-  <section id="game" style="display:none">
-    <div class="card">
-      <div class="top">
-        <div>
-          <h2 id="welcome">مرحبًا</h2>
-          <div id="rank">الرتبة: -</div>
-        </div>
-        <button id="logoutBtn" class="secondary">تسجيل الخروج</button>
-      </div>
-    </div>
+create index if not exists player_operations_player_idx
+  on public.player_operations(player_id, status);
 
-    <div class="grid">
-      <div class="stat">المستوى<b id="level">-</b></div>
-      <div class="stat">الخبرة XP<b id="xp">-</b></div>
-      <div class="stat">النقدية<b id="money">-</b></div>
-      <div class="stat">البنك<b id="bank">-</b></div>
-      <div class="stat">الصحة<b id="health">-</b></div>
-      <div class="stat">المطلوب<b id="wanted">-</b></div>
-      <div class="stat">السمعة<b id="reputation">-</b></div>
-      <div class="stat">الحالة<b id="alive">-</b></div>
-    </div>
+alter table public.player_operations enable row level security;
 
-    <div class="card">
-      <h2>العمليات</h2>
-      <p>المرحلة الأولى: العمليات ستعمل بمؤقت حقيقي محفوظ على السيرفر.</p>
-      <div class="operations">
-        <div class="op">
-          <h3>🏍️ سرقة دراجة نارية</h3>
-          <div>المدة: دقيقتان</div>
-          <div>مكافأة تجريبية: $800</div>
-          <div class="timer" id="bikeTimer">جاهزة</div>
-          <button disabled>ابدأ السرقة</button>
-        </div>
-        <div class="op">
-          <h3>🚗 سرقة سيارة</h3>
-          <div>المدة: 3 دقائق</div>
-          <div>مكافأة تجريبية: $1,500</div>
-          <div class="timer">جاهزة</div>
-          <button disabled>ابدأ السرقة</button>
-        </div>
-      </div>
-    </div>
+drop policy if exists "players can read own operations" on public.player_operations;
+create policy "players can read own operations"
+on public.player_operations for select
+to authenticated
+using (player_id = auth.uid());
 
-    <div class="card">
-      <h3>حالة الاتصال</h3>
-      <div id="connection">متصل بقاعدة البيانات</div>
-    </div>
-  </section>
-</div>
+drop policy if exists "players can create own operations" on public.player_operations;
+create policy "players can create own operations"
+on public.player_operations for insert
+to authenticated
+with check (player_id = auth.uid());
 
-<script>
-const SUPABASE_URL = "https://vhbhbzcywtmtwtpqvnhw.supabase.co";
-const SUPABASE_KEY = "sb_publishable_LXRs70nbUvJljFiRyCT2UA_-hZDkuf3";
-const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+create or replace function public.finish_player_operation(p_operation_id uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  op public.player_operations;
+  p public.players;
+begin
+  select * into op
+  from public.player_operations
+  where id = p_operation_id
+    and player_id = auth.uid()
+  for update;
 
-const $ = id => document.getElementById(id);
-function msg(text, type="") {
-  $("authMsg").textContent = text;
-  $("authMsg").className = "msg " + type;
-  $("authMsg").style.display = "block";
-}
+  if not found then
+    raise exception 'Operation not found';
+  end if;
 
-$("signupBtn").onclick = async () => {
-  const email = $("email").value.trim();
-  const password = $("password").value;
-  const username = $("username").value.trim();
+  if op.status <> 'running' then
+    return jsonb_build_object('ok', false, 'message', 'Operation already finished');
+  end if;
 
-  if (!email || !password || !username) {
-    $("username").style.display = "block";
-    $("authTitle").textContent = "إنشاء حساب";
-    msg("اكتب البريد وكلمة المرور واسم اللاعب.", "error");
-    return;
-  }
+  if now() < op.finish_at then
+    raise exception 'Operation is not finished yet';
+  end if;
 
-  const {data, error} = await db.auth.signUp({
-    email,
-    password,
-    options: { data: { username } }
-  });
+  select * into p
+  from public.players
+  where id = auth.uid()
+  for update;
 
-  if (error) return msg(error.message, "error");
+  update public.players
+  set money = coalesce(money,0) + op.reward,
+      xp = coalesce(xp,0) + op.xp_reward,
+      wanted_level = coalesce(wanted_level,0) + op.wanted_gain
+  where id = auth.uid();
 
-  if (data.session) {
-    await loadPlayer();
-  } else {
-    msg("تم إنشاء الحساب. إذا كان تأكيد البريد مفعّلًا، افتح رسالة التأكيد ثم سجل الدخول.", "success");
-  }
-};
+  update public.player_operations
+  set status = 'completed'
+  where id = op.id;
 
-$("loginBtn").onclick = async () => {
-  const email = $("email").value.trim();
-  const password = $("password").value;
+  return jsonb_build_object(
+    'ok', true,
+    'reward', op.reward,
+    'xp', op.xp_reward,
+    'wanted_gain', op.wanted_gain
+  );
+end;
+$$;
 
-  if (!email || !password) return msg("اكتب البريد وكلمة المرور.", "error");
-
-  const {error} = await db.auth.signInWithPassword({email, password});
-  if (error) return msg(error.message, "error");
-  await loadPlayer();
-};
-
-$("logoutBtn").onclick = async () => {
-  await db.auth.signOut();
-  showAuth();
-};
-
-async function loadPlayer() {
-  const {data:{user}, error:userError} = await db.auth.getUser();
-  if (userError || !user) return showAuth();
-
-  const {data:player, error} = await db
-    .from("players")
-    .select("id,username,level,xp,money,bank_money,health,max_health,wanted_level,alive,rank,reputation")
-    .eq("id", user.id)
-    .single();
-
-  if (error) {
-    console.error(error);
-    msg("تم تسجيل الدخول، لكن لم يتم العثور على شخصية اللاعب.", "error");
-    return;
-  }
-
-  $("authCard").style.display = "none";
-  $("game").style.display = "block";
-
-  $("welcome").textContent = "مرحبًا، " + player.username;
-  $("rank").textContent = "الرتبة: " + player.rank;
-  $("level").textContent = player.level;
-  $("xp").textContent = Number(player.xp).toLocaleString("ar-EG");
-  $("money").textContent = "$" + Number(player.money).toLocaleString("en-US");
-  $("bank").textContent = "$" + Number(player.bank_money).toLocaleString("en-US");
-  $("health").textContent = `${player.health}/${player.max_health}`;
-  $("wanted").textContent = player.wanted_level;
-  $("reputation").textContent = player.reputation;
-  $("alive").textContent = player.alive ? "حي" : "ميت";
-}
-
-function showAuth() {
-  $("game").style.display = "none";
-  $("authCard").style.display = "block";
-}
-
-db.auth.onAuthStateChange((event) => {
-  if (event === "SIGNED_IN") loadPlayer();
-  if (event === "SIGNED_OUT") showAuth();
-});
-
-(async () => {
-  const {data:{session}} = await db.auth.getSession();
-  if (session) loadPlayer();
-})();
-</script>
-</body>
-</html>
+revoke all on function public.finish_player_operation(uuid) from public;
+grant execute on function public.finish_player_operation(uuid) to authenticated;
