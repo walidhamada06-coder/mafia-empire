@@ -557,27 +557,63 @@ function refreshAllUI() {
   renderDispense();
   renderStock();
   updateSelectOptions();
-  function checkStockDepletion() {
+ async function checkStockDepletion() {
   const alertContainer = document.getElementById('stock-alerts-list');
-  if(!alertContainer) return;
-  
-  alertContainer.innerHTML = '';
-  
-  // افتراض متوسط استهلاك المزرعة اليومي
+  if (!alertContainer) return;
+
+  alertContainer.innerHTML = '<p style="color:#aaa; font-size:12px;">جاري تحميل بيانات المخزون...</p>';
+
+  // متوسط الاستهلاك اليومي المعتاد (كجم)
   const dailyConsumptionKg = 500; 
 
-  if (typeof store !== 'undefined' && store.stock) {
-    store.stock.forEach(item => {
-      const daysLeft = Math.floor(item.qty_kg / dailyConsumptionKg);
+  try {
+    // جلب بيانات المخزن مباشرة من سوبابيز
+    let { data: items, error } = await _supabase.from('feed_stock').select('*');
+    
+    // لو الجدول اسمه مختلف، يجرب يقرأ من الستور المحلي
+    if (error || !items || items.length === 0) {
+      items = (typeof store !== 'undefined' && (store.stock || store.rawMaterials)) ? (store.stock || store.rawMaterials) : [];
+    }
+
+    alertContainer.innerHTML = '';
+
+    if (!items || items.length === 0) {
+      alertContainer.innerHTML = '<p style="color:#888; margin:0;">لا توجد خامات مسجلة بالمخزن حالياً.</p>';
+      return;
+    }
+
+    items.forEach(item => {
+      const qty = Number(item.qty_kg || item.quantity || item.amount || 0);
+      const name = item.name || item.item_name || item.material_name || 'خامة';
+      const daysLeft = Math.floor(qty / dailyConsumptionKg);
+
       let statusColor = 'var(--accent-green)';
       let warningText = `يكفي لمدة ${daysLeft} يوم تشغيل.`;
 
-      if(daysLeft <= 3) {
+      if (daysLeft <= 3) {
         statusColor = 'var(--accent-red)';
         warningText = `🚨 خطر! المخزون حرج جداً ويكفي لمدة ${daysLeft} أيام فقط!`;
-      } else if(daysLeft <= 7) {
+      } else if (daysLeft <= 7) {
         statusColor = 'var(--accent-gold)';
         warningText = `⚠️ تنبيه: يفضل عمل طلب شراء جديد (يكفي ${daysLeft} أيام).`;
+      }
+
+      alertContainer.innerHTML += `
+        <div style="padding: 10px; background: #111715; border-radius: 8px; margin-bottom: 8px; display:flex; justify-content:space-between; align-items:center; border-right: 3px solid ${statusColor};">
+          <span><b>${name}</b> (الرصيد: ${qty} كجم)</span>
+          <span style="color:${statusColor}; font-weight:bold; font-size:13px;">${warningText}</span>
+        </div>
+      `;
+    });
+  } catch (err) {
+    console.error(err);
+    alertContainer.innerHTML = '<p style="color:var(--accent-red); margin:0;">حدث خطأ أثناء جلب بيانات المخزون.</p>';
+  }
+}
+
+// تشغيل الدالة فور تحميل الصفحة وكل 5 ثوانٍ لضمان التحديث
+setTimeout(checkStockDepletion, 1000);
+setInterval(checkStockDepletion, 5000);
       }
 
       alertContainer.innerHTML += `
