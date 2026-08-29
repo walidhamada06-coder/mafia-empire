@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Agro Enterprise ERP — النظام الشامل لمزارع التسمين</title>
+<!-- Supabase JS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --bg-main: #0f1715;
@@ -22,7 +24,7 @@
 * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
 body { margin: 0; background-color: var(--bg-main); color: var(--text-main); font-size: 15px; line-height: 1.6; }
 
-/* Login Modal/Page */
+/* Login Modal */
 #login-page { position: fixed; inset: 0; background: var(--bg-main); z-index: 999; display: flex; align-items: center; justify-content: center; }
 .login-box { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 40px; width: 100%; max-width: 420px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); text-align: center; }
 
@@ -108,7 +110,7 @@ tr:hover { background: rgba(255,255,255,0.02); }
 
 <!-- TOP HEADER -->
 <header class="top-header">
-  <div class="brand-logo">🌿 AGRO ERP ENTERPRISE <span style="font-size:11px;color:var(--text-muted);font-weight:normal">| المزرعة الذكية 2026</span></div>
+  <div class="brand-logo">🌿 AGRO ERP ENTERPRISE <span style="font-size:11px;color:var(--text-muted);font-weight:normal">| المزرعة الذكية (متصل بالسحابة ⚡)</span></div>
   <div class="user-profile">
     <div style="text-align:left">
       <b id="active-user-name" style="display:block;font-size:14px">المشرف العام</b>
@@ -123,13 +125,10 @@ tr:hover { background: rgba(255,255,255,0.02); }
 <aside class="sidebar-nav">
   <button class="nav-btn active" data-page="dashboard">📊 الداشبورد والتحليلات</button>
   <button class="nav-btn" data-page="invoices">🧾 الفواتير (بيع وشراء)</button>
-  <button class="nav-btn" data-page="partners">👥 العملاء والموردين</button>
   <button class="nav-btn" data-page="hr">👔 الموظفين والرواتب والسُلف</button>
   <button class="nav-btn" data-page="expenses">💸 المصروفات التشغيلية</button>
   <button class="nav-btn" data-page="animals">🐄 سجل القطيع والأوزان والـ ADG</button>
-  <button class="nav-btn" data-page="vet">💉 السجل البيطري والتحصينات</button>
   <button class="nav-btn" data-page="feed_calc">🧬 حاسبة الأعلاف (خلطات والبروتين)</button>
-  <button class="nav-btn" data-page="feed_dispense">🥣 صرف العلف للعنابر</button>
   <button class="nav-btn" data-page="stock">📦 رصيد المخزن والخامات</button>
 </aside>
 
@@ -139,7 +138,7 @@ tr:hover { background: rgba(255,255,255,0.02); }
 <section id="dashboard" class="page-section active">
   <div class="card-panel">
     <h1 style="margin:0 0 5px 0">📊 التحليلات التشغيلية والمالية الشاملة</h1>
-    <p style="color:var(--text-muted);margin:0">نظرة عامة ومؤشرات أداء متقدمة للقطيع، المالية، والأعلاف.</p>
+    <p style="color:var(--text-muted);margin:0">بيانات حية متصلة بقاعدة البيانات السحابية Supabase.</p>
   </div>
 
   <div class="grid-6">
@@ -164,9 +163,8 @@ tr:hover { background: rgba(255,255,255,0.02); }
     </div>
     <div class="card-panel">
       <h3>📈 مؤشرات نمو التسمين (KPIs)</h3>
-      <p>متوسط النمو اليومي (ADG): <b style="color:var(--accent-green)" id="db-adg">1.45 كجم/يوم</b></p>
-      <p>معامل التحويل الغذائي (FCR): <b style="color:var(--accent-gold)" id="db-fcr">5.6 : 1</b></p>
-      <p>حالات النفوق: <b style="color:var(--accent-red)" id="db-deaths">0 رأس</b></p>
+      <p>متوسط النمو اليومي (ADG): <b style="color:var(--accent-green)">1.45 كجم/يوم</b></p>
+      <p>معامل التحويل الغذائي (FCR): <b style="color:var(--accent-gold)">5.6 : 1</b></p>
     </div>
   </div>
 </section>
@@ -179,22 +177,8 @@ tr:hover { background: rgba(255,255,255,0.02); }
   </div>
   <div class="card-panel">
     <table>
-      <thead><tr><th>رقم الفاتورة</th><th>النوع</th><th>الطرف الثاني (العميل/المورد)</th><th>إجمالي المبلغ</th><th>التاريخ</th><th>البيان والملحوظات</th></tr></thead>
+      <thead><tr><th>رقم الفاتورة</th><th>النوع</th><th>الطرف الثاني</th><th>إجمالي المبلغ</th><th>التاريخ</th><th>البيان والملحوظات</th></tr></thead>
       <tbody id="invoices-table-body"></tbody>
-    </table>
-  </div>
-</section>
-
-<!-- CUSTOMERS & SUPPLIERS PAGE -->
-<section id="partners" class="page-section">
-  <div class="card-panel" style="display:flex;justify-content:space-between;align-items:center">
-    <h2>👥 إدارة العملاء والموردين وكشوف الحساب</h2>
-    <button class="btn" onclick="openModal('partnerModal')">+ إضافة جهة جديدة</button>
-  </div>
-  <div class="card-panel">
-    <table>
-      <thead><tr><th>اسم الجهة</th><th>النوع</th><th>رقم الهاتف</th><th>العنوان</th><th>الرصيد / الديون (ج.م)</th></tr></thead>
-      <tbody id="partners-table-body"></tbody>
     </table>
   </div>
 </section>
@@ -240,7 +224,7 @@ tr:hover { background: rgba(255,255,255,0.02); }
   </div>
 </section>
 
-<!-- ANIMALS & WEIGHING PAGE -->
+<!-- ANIMALS PAGE -->
 <section id="animals" class="page-section">
   <div class="card-panel" style="display:flex;justify-content:space-between;align-items:center">
     <h2>🐄 سجل القطيع التفصيلي ومتابعة الأوزان والنمو اليومي (ADG)</h2>
@@ -253,20 +237,6 @@ tr:hover { background: rgba(255,255,255,0.02); }
     <table>
       <thead><tr><th>الكود الفريد</th><th>العنبر</th><th>الوزن الأولي</th><th>الوزن الحالي</th><th>معدل النمو اليومي (ADG)</th><th>تاريخ آخر وزنة</th><th>الحالة</th></tr></thead>
       <tbody id="animals-table-body"></tbody>
-    </table>
-  </div>
-</section>
-
-<!-- VET MEDICAL PAGE -->
-<section id="vet" class="page-section">
-  <div class="card-panel" style="display:flex;justify-content:space-between;align-items:center">
-    <h2>💉 السجل البيطري، العلاجات والتحصينات الدوري</h2>
-    <button class="btn blue" onclick="openModal('vetModal')">+ تسجيل علاج / تحصين</button>
-  </div>
-  <div class="card-panel">
-    <table>
-      <thead><tr><th>اسم التحصين/العلاج</th><th>العنبر / الكود</th><th>الجرعة</th><th>التكلفة (ج.م)</th><th>التاريخ</th><th>ملاحظات</th></tr></thead>
-      <tbody id="vet-table-body"></tbody>
     </table>
   </div>
 </section>
@@ -297,20 +267,6 @@ tr:hover { background: rgba(255,255,255,0.02); }
   </div>
 </section>
 
-<!-- FEED DISPENSE PAGE -->
-<section id="feed_dispense" class="page-section">
-  <div class="card-panel" style="display:flex;justify-content:space-between;align-items:center">
-    <h2>🥣 صرف العلف اليومي للعنابر</h2>
-    <button class="btn gold" onclick="openModal('dispenseModal')">+ صرف علف لعنبر</button>
-  </div>
-  <div class="card-panel">
-    <table>
-      <thead><tr><th>العنبر</th><th>نوع العلف / الخامة</th><th>الكمية المصنوعة/المصروفة (كجم)</th><th>التكلفة (ج.م)</th><th>التاريخ</th></tr></thead>
-      <tbody id="dispense-table-body"></tbody>
-    </table>
-  </div>
-</section>
-
 <!-- STOCK PAGE -->
 <section id="stock" class="page-section">
   <div class="card-panel" style="display:flex;justify-content:space-between;align-items:center">
@@ -335,28 +291,13 @@ tr:hover { background: rgba(255,255,255,0.02); }
   <form onsubmit="saveInvoice(event)">
     <div class="form-grid">
       <div class="form-field"><label>نوع الفاتورة</label><select id="inv-type"><option value="بيع">فاتورة بيع</option><option value="شراء">فاتورة شراء</option></select></div>
-      <div class="form-field" style="grid-column:span 2"><label>الطرف الثاني (العميل/المورد)</label><input type="text" id="inv-party" required placeholder="شركة البركة / العميل علي"></div>
+      <div class="form-field" style="grid-column:span 2"><label>الطرف الثاني</label><input type="text" id="inv-party" required placeholder="شركة البركة / العميل علي"></div>
       <div class="form-field"><label>المبلغ الإجمالي (ج.م)</label><input type="number" id="inv-amount" required placeholder="45000"></div>
       <div class="form-field" style="grid-column:span 3"><label>تفاصيل الفاتورة</label><input type="text" id="inv-details" required placeholder="بيع 5 عجول / توريد 10 طن ذرة"></div>
       <div class="form-field"><label>التاريخ</label><input type="date" id="inv-date" required></div>
     </div>
-    <br><button class="btn" type="submit">حفظ وتأكيد الفاتورة</button>
+    <br><button class="btn" type="submit">حفظ وحفظ في السحابة</button>
     <button class="btn alt" type="button" onclick="closeModal('invoiceModal')">إلغاء</button>
-  </form>
-</div></div>
-
-<!-- Partner Modal -->
-<div id="partnerModal" class="modal-overlay"><div class="modal-content">
-  <h2>👥 إضافة عميل أو مورد جديد</h2>
-  <form onsubmit="savePartner(event)">
-    <div class="form-grid">
-      <div class="form-field" style="grid-column:span 2"><label>الاسم</label><input type="text" id="pt-name" required placeholder="الشركة المصرية للأعلاف"></div>
-      <div class="form-field"><label>النوع</label><select id="pt-type"><option>مورد</option><option>عميل</option></select></div>
-      <div class="form-field"><label>الهاتف</label><input type="text" id="pt-phone" placeholder="0100000000"></div>
-      <div class="form-field" style="grid-column:span 4"><label>العنوان</label><input type="text" id="pt-address" placeholder="طريق الإسكندرية الصحراوي"></div>
-    </div>
-    <br><button class="btn" type="submit">حفظ</button>
-    <button class="btn alt" type="button" onclick="closeModal('partnerModal')">إلغاء</button>
   </form>
 </div></div>
 
@@ -433,36 +374,6 @@ tr:hover { background: rgba(255,255,255,0.02); }
   </form>
 </div></div>
 
-<!-- Vet Modal -->
-<div id="vetModal" class="modal-overlay"><div class="modal-content">
-  <h2>💉 تسجيل تحصين أو علاج بيطري</h2>
-  <form onsubmit="saveVetLog(event)">
-    <div class="form-grid">
-      <div class="form-field" style="grid-column:span 2"><label>اسم التحصين / العلاج</label><input type="text" id="vet-name" required placeholder="تحصين الحمى القلاعية / خافض حرارة"></div>
-      <div class="form-field"><label>العنبر أو الرأس</label><input type="text" id="vet-target" required placeholder="عنبر 1 بالكامل"></div>
-      <div class="form-field"><label>التكلفة الإجمالية (ج.م)</label><input type="number" id="vet-cost" required placeholder="1200"></div>
-      <div class="form-field"><label>التاريخ</label><input type="date" id="vet-date" required></div>
-    </div>
-    <br><button class="btn blue" type="submit">حفظ السجل البيطري</button>
-    <button class="btn alt" type="button" onclick="closeModal('vetModal')">إلغاء</button>
-  </form>
-</div></div>
-
-<!-- Dispense Modal -->
-<div id="dispenseModal" class="modal-overlay"><div class="modal-content">
-  <h2>🥣 صرف علف يومي للعنبر</h2>
-  <form onsubmit="saveDispense(event)">
-    <div class="form-grid">
-      <div class="form-field"><label>العنبر</label><select id="dp-barn"><option>عنبر 1</option><option>عنبر 2</option><option>عنبر 3</option></select></div>
-      <div class="form-field" style="grid-column:span 2"><label>الصنف من المخزن</label><select id="dp-stock-select" required></select></div>
-      <div class="form-field"><label>الكمية (كجم)</label><input type="number" id="dp-qty" required placeholder="400"></div>
-      <div class="form-field"><label>التاريخ</label><input type="date" id="dp-date" required></div>
-    </div>
-    <br><button class="btn gold" type="submit">صرف العلف وخصم المخزون</button>
-    <button class="btn alt" type="button" onclick="closeModal('dispenseModal')">إلغاء</button>
-  </form>
-</div></div>
-
 <!-- Stock Modal -->
 <div id="stockModal" class="modal-overlay"><div class="modal-content">
   <h2>📦 إضافة خامة علفية للمخزن</h2>
@@ -479,72 +390,46 @@ tr:hover { background: rgba(255,255,255,0.02); }
 </div></div>
 
 <script>
-// --- MASTER GLOBAL STORE ---
+// --- SUPABASE CLIENT INITIALIZATION ---
+const SUPABASE_URL = 'https://vhbhbzcywtmtwtpqvnhw.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_LXRs70nbUvJljFiRyCT2UA_-hZDkuf3';
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 let store = {
-  currentUser: null,
+  currentUser: 'المدير العام',
   invoices: [],
-  partners: [],
-  employees: [
-    { name: 'المهندس أحمد عبد العزيز', role: 'مدير المزرعة', salary: 14000 },
-    { name: 'الدكتور محمد حسن', role: 'طبيب بيطري', salary: 11000 }
-  ],
+  employees: [],
   advances: [],
   expenses: [],
-  animals: [
-    { id: 'BULL-0001', barn: 'عنبر 1', initialWeight: 250, currentWeight: 310, startDate: '2026-01-01', lastWeightDate: '2026-02-15', status: 'حي' },
-    { id: 'BULL-0002', barn: 'عنبر 1', initialWeight: 240, currentWeight: 295, startDate: '2026-01-01', lastWeightDate: '2026-02-15', status: 'حي' }
-  ],
-  vetLogs: [],
-  dispenseLogs: [],
-  stock: [
-    { name: 'ذرة صفراء', qtyKg: 25000, protein: 8.5, costPerKg: 16.5 },
-    { name: 'كسب صويا 44%', qtyKg: 10000, protein: 44.0, costPerKg: 31.0 },
-    { name: 'ردة ناعمة', qtyKg: 8000, protein: 12.5, costPerKg: 13.0 }
-  ]
+  animals: [],
+  stock: []
 };
 
-function initApp() {
-  const saved = localStorage.getItem('agro_enterprise_full_store_2026');
-  if(saved) { try { store = JSON.parse(saved); } catch(e){} }
-
+async function initApp() {
   const today = new Date().toISOString().split('T')[0];
   document.querySelectorAll('input[type="date"]').forEach(i => { if(!i.value) i.value = today; });
 
-  if(!store.currentUser) {
-    document.getElementById('login-page').style.display = 'flex';
-  } else {
-    document.getElementById('login-page').style.display = 'none';
-    document.getElementById('active-user-name').innerText = store.currentUser;
-    document.getElementById('active-user-avatar').innerText = store.currentUser.charAt(0);
-  }
-
-  refreshAllUI();
+  document.getElementById('login-page').style.display = 'none';
+  await loadDataFromSupabase();
 }
 
-function saveStore() {
-  localStorage.setItem('agro_enterprise_full_store_2026', JSON.stringify(store));
-  refreshAllUI();
-}
+// FETCH DATA FROM SUPABASE
+async function loadDataFromSupabase() {
+  try {
+    let { data: inv } = await _supabase.from('invoices').select('*'); store.invoices = inv || [];
+    let { data: emp } = await _supabase.from('employees').select('*'); store.employees = emp || [];
+    let { data: adv } = await _supabase.from('advances').select('*'); store.advances = adv || [];
+    let { data: exp } = await _supabase.from('expenses').select('*'); store.expenses = exp || [];
+    let { data: ani } = await _supabase.from('animals').select('*'); store.animals = ani || [];
+    let { data: stk } = await _supabase.from('stock').select('*'); store.stock = stk || [];
 
-function handleLogin(e) {
-  e.preventDefault();
-  const user = document.getElementById('login-user').value.trim();
-  if(user) {
-    store.currentUser = user;
-    document.getElementById('login-page').style.display = 'none';
-    document.getElementById('active-user-name').innerText = user;
-    document.getElementById('active-user-avatar').innerText = user.charAt(0);
-    saveStore();
+    refreshAllUI();
+  } catch(err) {
+    console.error('Supabase Sync Error:', err);
   }
 }
 
-function logout() {
-  store.currentUser = null;
-  saveStore();
-  location.reload();
-}
-
-// Navigation Tab Switcher
+// NAVIGATION
 document.querySelectorAll('.nav-btn').forEach(btn => {
   btn.onclick = () => {
     document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
@@ -557,28 +442,24 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
 function openModal(id){ document.getElementById(id).classList.add('show'); }
 function closeModal(id){ document.getElementById(id).classList.remove('show'); }
 
-// REFRESH UI
+// UI RENDERERS
 function refreshAllUI() {
   renderDashboard();
   renderInvoices();
-  renderPartners();
   renderHR();
   renderExpenses();
   renderAnimals();
-  renderVet();
-  renderDispense();
   renderStock();
   updateSelectOptions();
 }
 
-// DASHBOARD
 function renderDashboard() {
   const live = store.animals.filter(a => a.status === 'حي');
-  const totalWeight = live.reduce((s, a) => s + Number(a.currentWeight || 0), 0);
-  const assetVal = totalWeight * 180; // متوسط سعر الكيلو القائم 180ج
+  const totalWeight = live.reduce((s, a) => s + Number(a.current_weight || 0), 0);
+  const assetVal = totalWeight * 180;
 
-  const totalSales = store.invoices.filter(i => i.type === 'بيع').reduce((s, i) => s + i.amount, 0);
-  const totalExp = store.expenses.reduce((s, e) => s + e.amount, 0);
+  const totalSales = store.invoices.filter(i => i.type === 'بيع').reduce((s, i) => s + Number(i.amount||0), 0);
+  const totalExp = store.expenses.reduce((s, e) => s + Number(e.amount||0), 0);
 
   document.getElementById('db-heads').innerText = live.length;
   document.getElementById('db-total-weight').innerText = (totalWeight/1000).toFixed(2) + ' طن';
@@ -587,7 +468,6 @@ function renderDashboard() {
   document.getElementById('db-expenses').innerText = totalExp.toLocaleString() + ' ج.م';
   document.getElementById('db-net-profit').innerText = (totalSales - totalExp).toLocaleString() + ' ج.م';
 
-  // Barn Capacity Bar
   const barnList = document.getElementById('barns-capacity-list');
   barnList.innerHTML = '';
   ['عنبر 1', 'عنبر 2', 'عنبر 3'].forEach(b => {
@@ -601,102 +481,65 @@ function renderDashboard() {
     `;
   });
 
-  // Stock Summary
   let stockTons = 0, sumProt = 0;
-  store.stock.forEach(s => { stockTons += s.qtyKg/1000; sumProt += s.protein; });
+  store.stock.forEach(s => { stockTons += Number(s.qty_kg||0)/1000; sumProt += Number(s.protein||0); });
   document.getElementById('db-stock-qty').innerText = stockTons.toFixed(1) + ' طن';
   document.getElementById('db-stock-protein').innerText = store.stock.length ? (sumProt/store.stock.length).toFixed(1) + '%' : '0%';
 }
 
-// INVOICES
-function saveInvoice(e) {
+// SUPABASE INSERTS
+async function saveInvoice(e) {
   e.preventDefault();
-  store.invoices.unshift({
+  const obj = {
     code: 'INV-' + Math.floor(1000 + Math.random() * 9000),
     type: document.getElementById('inv-type').value,
     party: document.getElementById('inv-party').value,
     amount: Number(document.getElementById('inv-amount').value),
     details: document.getElementById('inv-details').value,
     date: document.getElementById('inv-date').value
-  });
-  closeModal('invoiceModal');
-  e.target.reset();
-  saveStore();
+  };
+  await _supabase.from('invoices').insert([obj]);
+  closeModal('invoiceModal'); e.target.reset(); loadDataFromSupabase();
 }
 
 function renderInvoices() {
   const tbody = document.getElementById('invoices-table-body');
   tbody.innerHTML = '';
   store.invoices.forEach(i => {
-    tbody.innerHTML += `
-      <tr>
-        <td><b>${i.code}</b></td>
-        <td><span class="badge ${i.type==='بيع'?'green':'red'}">${i.type}</span></td>
-        <td>${i.party}</td>
-        <td><b>${i.amount.toLocaleString()} ج.م</b></td>
-        <td>${i.date}</td>
-        <td>${i.details}</td>
-      </tr>
-    `;
+    tbody.innerHTML += `<tr><td><b>${i.code}</b></td><td><span class="badge ${i.type==='بيع'?'green':'red'}">${i.type}</span></td><td>${i.party}</td><td><b>${Number(i.amount).toLocaleString()} ج.م</b></td><td>${i.date}</td><td>${i.details}</td></tr>`;
   });
 }
 
-// PARTNERS
-function savePartner(e) {
+async function saveEmployee(e) {
   e.preventDefault();
-  store.partners.unshift({
-    name: document.getElementById('pt-name').value,
-    type: document.getElementById('pt-type').value,
-    phone: document.getElementById('pt-phone').value,
-    address: document.getElementById('pt-address').value,
-    balance: 0
-  });
-  closeModal('partnerModal');
-  e.target.reset();
-  saveStore();
-}
-
-function renderPartners() {
-  const tbody = document.getElementById('partners-table-body');
-  tbody.innerHTML = '';
-  store.partners.forEach(p => {
-    tbody.innerHTML += `<tr><td><b>${p.name}</b></td><td>${p.type}</td><td>${p.phone}</td><td>${p.address}</td><td>${p.balance} ج.م</td></tr>`;
-  });
-}
-
-// HR & ADVANCES
-function saveEmployee(e) {
-  e.preventDefault();
-  store.employees.push({
+  const obj = {
     name: document.getElementById('emp-name').value,
     role: document.getElementById('emp-role').value,
     salary: Number(document.getElementById('emp-salary').value)
-  });
-  closeModal('empModal');
-  e.target.reset();
-  saveStore();
+  };
+  await _supabase.from('employees').insert([obj]);
+  closeModal('empModal'); e.target.reset(); loadDataFromSupabase();
 }
 
-function saveAdvance(e) {
+async function saveAdvance(e) {
   e.preventDefault();
-  store.advances.unshift({
+  const obj = {
     employee: document.getElementById('adv-emp-select').value,
     amount: Number(document.getElementById('adv-amount').value),
     date: document.getElementById('adv-date').value,
     notes: document.getElementById('adv-notes').value
-  });
-  closeModal('advanceModal');
-  e.target.reset();
-  saveStore();
+  };
+  await _supabase.from('advances').insert([obj]);
+  closeModal('advanceModal'); e.target.reset(); loadDataFromSupabase();
 }
 
 function renderHR() {
   const tbody = document.getElementById('emp-table-body');
   tbody.innerHTML = '';
   store.employees.forEach(emp => {
-    const advSum = store.advances.filter(a => a.employee === emp.name).reduce((s, a) => s + a.amount, 0);
-    const net = emp.salary - advSum;
-    tbody.innerHTML += `<tr><td><b>${emp.name}</b></td><td>${emp.role}</td><td>${emp.salary.toLocaleString()} ج.م</td><td style="color:var(--accent-red)">${advSum.toLocaleString()} ج.م</td><td><b style="color:var(--accent-green)">${net.toLocaleString()} ج.م</b></td></tr>`;
+    const advSum = store.advances.filter(a => a.employee === emp.name).reduce((s, a) => s + Number(a.amount||0), 0);
+    const net = Number(emp.salary) - advSum;
+    tbody.innerHTML += `<tr><td><b>${emp.name}</b></td><td>${emp.role}</td><td>${Number(emp.salary).toLocaleString()} ج.م</td><td style="color:var(--accent-red)">${advSum.toLocaleString()} ج.م</td><td><b style="color:var(--accent-green)">${net.toLocaleString()} ج.م</b></td></tr>`;
   });
 
   const advBody = document.getElementById('advances-table-body');
@@ -706,30 +549,27 @@ function renderHR() {
   });
 }
 
-// EXPENSES
-function saveExpense(e) {
+async function saveExpense(e) {
   e.preventDefault();
-  store.expenses.unshift({
+  const obj = {
     name: document.getElementById('ex-name').value,
     cat: document.getElementById('ex-cat').value,
     amount: Number(document.getElementById('ex-amount').value),
     date: document.getElementById('ex-date').value
-  });
-  closeModal('expenseModal');
-  e.target.reset();
-  saveStore();
+  };
+  await _supabase.from('expenses').insert([obj]);
+  closeModal('expenseModal'); e.target.reset(); loadDataFromSupabase();
 }
 
 function renderExpenses() {
   const tbody = document.getElementById('expenses-table-body');
   tbody.innerHTML = '';
   store.expenses.forEach(ex => {
-    tbody.innerHTML += `<tr><td><b>${ex.name}</b></td><td>${ex.cat}</td><td style="color:var(--accent-red)"><b>${ex.amount.toLocaleString()} ج.م</b></td><td>${ex.date}</td></tr>`;
+    tbody.innerHTML += `<tr><td><b>${ex.name}</b></td><td>${ex.cat}</td><td style="color:var(--accent-red)"><b>${Number(ex.amount).toLocaleString()} ج.م</b></td><td>${ex.date}</td></tr>`;
   });
 }
 
-// ANIMALS & ADG CALCULATIONS
-function saveAnimalsBatch(e) {
+async function saveAnimalsBatch(e) {
   e.preventDefault();
   const prefix = document.getElementById('an-prefix').value.toUpperCase();
   const count = Number(document.getElementById('an-count').value);
@@ -737,84 +577,54 @@ function saveAnimalsBatch(e) {
   const barn = document.getElementById('an-barn').value;
   const today = new Date().toISOString().split('T')[0];
 
+  const batch = [];
   for(let i = 1; i <= count; i++) {
-    store.animals.push({
-      id: `${prefix}-${String(i).padStart(4, '0')}`,
+    batch.push({
+      id: `${prefix}-${Math.floor(1000 + Math.random() * 9000)}-${i}`,
       barn: barn,
-      initialWeight: weight,
-      currentWeight: weight,
-      startDate: today,
-      lastWeightDate: today,
+      initial_weight: weight,
+      current_weight: weight,
+      start_date: today,
+      last_weight_date: today,
       status: 'حي'
     });
   }
-  closeModal('animalModal');
-  e.target.reset();
-  saveStore();
+  await _supabase.from('animals').insert(batch);
+  closeModal('animalModal'); e.target.reset(); loadDataFromSupabase();
 }
 
-function saveWeightUpdate(e) {
+async function saveWeightUpdate(e) {
   e.preventDefault();
   const animId = document.getElementById('wt-animal-select').value;
   const newW = Number(document.getElementById('wt-weight').value);
   const dt = document.getElementById('wt-date').value;
 
-  const anim = store.animals.find(a => a.id === animId);
-  if(anim) {
-    anim.currentWeight = newW;
-    anim.lastWeightDate = dt;
-  }
-  closeModal('weightModal');
-  e.target.reset();
-  saveStore();
+  await _supabase.from('animals').update({ current_weight: newW, last_weight_date: dt }).eq('id', animId);
+  closeModal('weightModal'); e.target.reset(); loadDataFromSupabase();
 }
 
 function renderAnimals() {
   const tbody = document.getElementById('animals-table-body');
   tbody.innerHTML = '';
   store.animals.forEach(a => {
-    // Calculate Average Daily Gain (ADG)
-    const days = Math.max(1, Math.round((new Date(a.lastWeightDate || new Date()) - new Date(a.startDate || new Date())) / (1000 * 60 * 60 * 24)));
-    const gain = a.currentWeight - a.initialWeight;
+    const days = Math.max(1, Math.round((new Date(a.last_weight_date || new Date()) - new Date(a.start_date || new Date())) / (1000 * 60 * 60 * 24)));
+    const gain = Number(a.current_weight) - Number(a.initial_weight);
     const adg = days > 0 ? (gain / days).toFixed(2) : '0.00';
 
     tbody.innerHTML += `
       <tr>
         <td><b>${a.id}</b></td>
         <td>${a.barn}</td>
-        <td>${a.initialWeight} كجم</td>
-        <td><b style="color:var(--accent-green)">${a.currentWeight} كجم</b></td>
+        <td>${a.initial_weight} كجم</td>
+        <td><b style="color:var(--accent-green)">${a.current_weight} كجم</b></td>
         <td><span class="badge green">+${adg} كجم/يوم</span></td>
-        <td>${a.lastWeightDate || 'أساسي'}</td>
+        <td>${a.last_weight_date || 'أساسي'}</td>
         <td><span class="badge green">${a.status}</span></td>
       </tr>
     `;
   });
 }
 
-// VET LOGS
-function saveVetLog(e) {
-  e.preventDefault();
-  store.vetLogs.unshift({
-    name: document.getElementById('vet-name').value,
-    target: document.getElementById('vet-target').value,
-    cost: Number(document.getElementById('vet-cost').value),
-    date: document.getElementById('vet-date').value
-  });
-  closeModal('vetModal');
-  e.target.reset();
-  saveStore();
-}
-
-function renderVet() {
-  const tbody = document.getElementById('vet-table-body');
-  tbody.innerHTML = '';
-  store.vetLogs.forEach(v => {
-    tbody.innerHTML += `<tr><td><b>${v.name}</b></td><td>${v.target}</td><td>1 جرعة</td><td>${v.cost} ج.م</td><td>${v.date}</td><td>تم الرش/التطعيم</td></tr>`;
-  });
-}
-
-// FEED FORMULA CALCULATOR
 function calculateFeedMix(e) {
   e.preventDefault();
   const name = document.getElementById('mix-name').value;
@@ -822,12 +632,8 @@ function calculateFeedMix(e) {
   const soy = Number(document.getElementById('mix-soy').value);
   const bran = Number(document.getElementById('mix-bran').value);
 
-  if(corn + soy + bran !== 100) {
-    alert('مجموع النسب المئوية يجب أن يكون 100% بالضبط!');
-    return;
-  }
+  if(corn + soy + bran !== 100) return alert('مجموع النسب المئوية يجب أن يكون 100% بالضبط!');
 
-  // ذرة: 8.5% بروتين (16.5ج) - صويا: 44% بروتين (31ج) - ردة: 12.5% بروتين (13ج)
   const totalProtein = (corn * 0.085) + (soy * 0.44) + (bran * 0.125);
   const costPerKg = (corn * 0.0165) + (soy * 0.031) + (bran * 0.013);
 
@@ -839,56 +645,26 @@ function calculateFeedMix(e) {
   `;
 }
 
-// FEED DISPENSE
-function saveDispense(e) {
+async function saveStockItem(e) {
   e.preventDefault();
-  const barn = document.getElementById('dp-barn').value;
-  const feedName = document.getElementById('dp-stock-select').value;
-  const qty = Number(document.getElementById('dp-qty').value);
-  const date = document.getElementById('dp-date').value;
-
-  const item = store.stock.find(s => s.name === feedName);
-  if(!item || item.qtyKg < qty) return alert('الرصيد المتاح من الخامات غير كافي بالمخزن!');
-
-  item.qtyKg -= qty;
-  store.dispenseLogs.unshift({ barn, feedName, qty, totalCost: qty * item.costPerKg, date });
-
-  closeModal('dispenseModal');
-  e.target.reset();
-  saveStore();
-}
-
-function renderDispense() {
-  const tbody = document.getElementById('dispense-table-body');
-  tbody.innerHTML = '';
-  store.dispenseLogs.forEach(d => {
-    tbody.innerHTML += `<tr><td><b>${d.barn}</b></td><td>${d.feedName}</td><td>${d.qty} كجم</td><td>${d.totalCost.toLocaleString()} ج.م</td><td>${d.date}</td></tr>`;
-  });
-}
-
-// STOCK MANAGEMENT
-function saveStockItem(e) {
-  e.preventDefault();
-  store.stock.push({
+  const obj = {
     name: document.getElementById('st-name').value,
-    qtyKg: Number(document.getElementById('st-qty').value),
+    qty_kg: Number(document.getElementById('st-qty').value),
     protein: Number(document.getElementById('st-protein').value),
-    costPerKg: Number(document.getElementById('st-price').value)
-  });
-  closeModal('stockModal');
-  e.target.reset();
-  saveStore();
+    cost_per_kg: Number(document.getElementById('st-price').value)
+  };
+  await _supabase.from('stock').insert([obj]);
+  closeModal('stockModal'); e.target.reset(); loadDataFromSupabase();
 }
 
 function renderStock() {
   const tbody = document.getElementById('stock-table-body');
   tbody.innerHTML = '';
   store.stock.forEach(s => {
-    tbody.innerHTML += `<tr><td><b>${s.name}</b></td><td>${s.qtyKg.toLocaleString()} كجم</td><td>${(s.qtyKg/1000).toFixed(2)} طن</td><td>${s.protein}%</td><td>${s.costPerKg} ج.م</td><td><b>${(s.qtyKg * s.costPerKg).toLocaleString()} ج.م</b></td></tr>`;
+    tbody.innerHTML += `<tr><td><b>${s.name}</b></td><td>${Number(s.qty_kg).toLocaleString()} كجم</td><td>${(s.qty_kg/1000).toFixed(2)} طن</td><td>${s.protein}%</td><td>${s.cost_per_kg} ج.م</td><td><b>${(s.qty_kg * s.cost_per_kg).toLocaleString()} ج.م</b></td></tr>`;
   });
 }
 
-// DYNAMIC SELECT UPDATER
 function updateSelectOptions() {
   const empSelect = document.getElementById('adv-emp-select');
   if(empSelect) {
@@ -896,20 +672,13 @@ function updateSelectOptions() {
     store.employees.forEach(e => empSelect.innerHTML += `<option value="${e.name}">${e.name} (${e.role})</option>`);
   }
 
-  const stockSelect = document.getElementById('dp-stock-select');
-  if(stockSelect) {
-    stockSelect.innerHTML = '';
-    store.stock.forEach(s => stockSelect.innerHTML += `<option value="${s.name}">${s.name} — المتوفر: ${s.qtyKg} كجم</option>`);
-  }
-
   const animSelect = document.getElementById('wt-animal-select');
   if(animSelect) {
     animSelect.innerHTML = '';
-    store.animals.forEach(a => animSelect.innerHTML += `<option value="${a.id}">${a.id} — (${a.barn}) - الحالي: ${a.currentWeight}كجم</option>`);
+    store.animals.forEach(a => animSelect.innerHTML += `<option value="${a.id}">${a.id} — (${a.barn}) - الحالي: ${a.current_weight}كجم</option>`);
   }
 }
 
-// INITIALIZE SYSTEM
 initApp();
 </script>
 </body>
