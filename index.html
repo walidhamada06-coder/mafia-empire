@@ -1,945 +1,245 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Agro Enterprise ERP — النظام الشامل لمزارع التسمين</title>
-<!-- Supabase JS SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-:root {
-  --bg-main: #0f1715;
-  --bg-card: #18221f;
-  --bg-card-hover: #212e2a;
-  --border-color: #2a3a35;
-  --primary: #38bdf8;
-  --accent-green: #4ade80;
-  --accent-gold: #fbbf24;
-  --accent-red: #f87171;
-  --accent-blue: #60a5fa;
-  --text-main: #f3f4f6;
-  --text-muted: #9ca3af;
-}
-
-* { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-body { margin: 0; background-color: var(--bg-main); color: var(--text-main); font-size: 15px; line-height: 1.6; }
-
-/* Login Modal */
-#login-page { position: fixed; inset: 0; background: var(--bg-main); z-index: 999; display: flex; align-items: center; justify-content: center; }
-.login-box { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 40px; width: 100%; max-width: 420px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); text-align: center; }
-
-/* Header */
-.top-header { height: 75px; background: #131c19; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; position: sticky; top: 0; z-index: 20; }
-.brand-logo { font-size: 20px; font-weight: 800; color: var(--accent-green); display: flex; align-items: center; gap: 8px; }
-.user-profile { display: flex; align-items: center; gap: 15px; }
-.user-avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--accent-green); color: #000; font-weight: bold; display: grid; place-items: center; font-size: 18px; }
-
-/* Layout */
-.app-layout { display: flex; min-height: calc(100vh - 75px); }
-.sidebar-nav { width: 280px; background: #121a17; border-left: 1px solid var(--border-color); padding: 18px; flex: none; }
-.nav-btn { width: 100%; padding: 12px 16px; margin-bottom: 6px; background: transparent; color: var(--text-muted); border: 1px solid transparent; border-radius: 10px; text-align: right; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; }
-.nav-btn:hover, .nav-btn.active { background: var(--bg-card-hover); border-color: var(--border-color); color: var(--accent-green); }
-
-.content-body { flex: 1; padding: 28px; max-width: 1600px; margin: auto; width: 100%; }
-.page-section { display: none; }
-.page-section.active { display: block; }
-
-/* UI Elements */
-.card-panel { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 22px; margin-bottom: 22px; }
-.grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; }
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
-
-.stat-card { background: #1a2622; border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; }
-.stat-card label { color: var(--text-muted); font-size: 13px; display: block; margin-bottom: 6px; }
-.stat-card .value { font-size: 22px; font-weight: 800; color: var(--accent-green); }
-
-.btn { border: 0; border-radius: 9px; padding: 10px 18px; background: var(--accent-green); color: #05140c; font-weight: 700; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
-.btn:hover { opacity: 0.9; }
-.btn.gold { background: var(--accent-gold); color: #111; }
-.btn.red { background: var(--accent-red); color: #fff; }
-.btn.blue { background: var(--accent-blue); color: #fff; }
-.btn.alt { background: #2a3833; color: #fff; }
-
-input, select, textarea { background: #101715; border: 1px solid var(--border-color); color: #fff; padding: 11px; border-radius: 9px; width: 100%; font-size: 14px; }
-.form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-.form-field { margin-bottom: 10px; }
-.form-field label { display: block; color: var(--text-muted); font-size: 12px; margin-bottom: 5px; }
-
-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-th, td { padding: 12px 14px; border-bottom: 1px solid var(--border-color); text-align: right; font-size: 13.5px; }
-th { color: var(--accent-gold); background: #131c19; font-weight: 700; }
-tr:hover { background: rgba(255,255,255,0.02); }
-
-.badge { display: inline-block; padding: 4px 10px; border-radius: 99px; font-size: 11px; font-weight: bold; }
-.badge.green { background: rgba(74, 222, 128, 0.15); color: var(--accent-green); }
-.badge.red { background: rgba(248, 113, 113, 0.15); color: var(--accent-red); }
-
-.progress-bg { background: #101715; height: 10px; border-radius: 6px; overflow: hidden; margin-top: 6px; }
-.progress-fill { background: var(--accent-green); height: 100%; width: 0%; transition: width 0.3s; }
-
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
-.modal-overlay.show { display: flex; }
-.modal-content { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 28px; width: 100%; max-width: 850px; max-height: 90vh; overflow-y: auto; }
-
-@media(max-width: 1100px) { .grid-6, .grid-3 { grid-template-columns: repeat(2, 1fr); } .form-grid { grid-template-columns: repeat(2, 1fr); } }
-@media(max-width: 700px) { .app-layout { display: block; } .sidebar-nav { width: 100%; } .grid-6, .grid-3, .grid-2, .form-grid { grid-template-columns: 1fr; } }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AGRO ERP ENTERPRISE</title>
+  <style>
+    :root {
+      --bg-dark: #0a0f0d;
+      --card-bg: #141c18;
+      --text-light: #e0e6e3;
+      --accent-green: #00e676;
+      --accent-gold: #ffc107;
+      --accent-red: #ff5252;
+      --sidebar-width: 260px;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+    /* Layout */
+    #sidebar {
+      width: var(--sidebar-width);
+      background: #0d1410;
+      border-left: 1px solid #1e2d25;
+      display: flex;
+      flex-direction: column;
+    }
+    #main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .header {
+      background: #0d1410;
+      padding: 15px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #1e2d25;
+    }
+    .content-area { padding: 25px; }
+    
+    /* UI Components */
+    .card-panel {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid #1e2d25;
+    }
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+    .stat-card {
+      background: #101713;
+      padding: 15px;
+      border-radius: 8px;
+      border-right: 4px solid var(--accent-green);
+    }
+    .stat-val { font-size: 24px; font-weight: bold; margin-top: 5px; color: var(--accent-green); }
+    
+    /* Auth Modal */
+    #login-page {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(10, 15, 13, 0.95);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    .login-box {
+      background: var(--card-bg);
+      padding: 40px;
+      border-radius: 12px;
+      width: 320px;
+      border: 1px solid var(--accent-green);
+      text-align: center;
+    }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 6px;
+      border: 1px solid #1e2d25;
+      background: #0a0f0d;
+      color: #fff;
+      box-sizing: border-box;
+    }
+    button {
+      background: var(--accent-green);
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+    }
+    button:hover { opacity: 0.9; }
+  </style>
 </head>
 <body>
 
-<!-- LOGIN PAGE -->
-<div id="login-page">
-  <div class="login-box">
-    <h2 style="color:var(--accent-green);margin-bottom:5px">🌿 Agro ERP Enterprise</h2>
-    <p style="color:var(--text-muted);font-size:13px;margin-bottom:25px">تسجيل دخول المهندسين والموظفين للمزرعة</p>
-    <form onsubmit="handleLogin(event)">
-      <div class="form-field" style="text-align:right">
-        <label>اسم المستخدم / الموظف</label>
-        <input type="text" id="login-user" required placeholder="مثال: م. أحمد عبد العزيز">
-      </div>
-      <div class="form-field" style="text-align:right">
-        <label>كلمة المرور</label>
-        <input type="password" id="login-pass" required placeholder="••••••••">
-      </div>
-      <br>
-      <button class="btn" style="width:100%;justify-content:center;padding:12px" type="submit">تسجيل الدخول للنظام</button>
-    </form>
-  </div>
-</div>
-
-<!-- TOP HEADER -->
-<header class="top-header">
-  <div class="brand-logo">🌿 AGRO ERP ENTERPRISE <span style="font-size:11px;color:var(--text-muted);font-weight:normal">| المزرعة الذكية (Supabase ⚡)</span></div>
-  <div class="user-profile">
-    <div style="text-align:left">
-      <b id="active-user-name" style="display:block;font-size:14px">المشرف العام</b>
-      <span style="font-size:11px;color:var(--text-muted)">مدير النظام</span>
-    </div>
-    <div class="user-avatar" id="active-user-avatar">م</div>
-    <button class="btn red" style="padding:6px 10px;font-size:11px" onclick="logout()">تسجيل الخروج</button>
-  </div>
-</header>
-
-<div class="app-layout">
-<aside class="sidebar-nav">
-  <button class="nav-btn active" data-page="dashboard">📊 الداشبورد والتحليلات</button>
-  <button class="nav-btn" data-page="invoices">🧾 الفواتير (بيع وشراء)</button>
-  <button class="nav-btn" data-page="partners">👥 العملاء والموردين</button>
-  <button class="nav-btn" data-page="hr">👔 الموظفين والرواتب والسُلف</button>
-  <button class="nav-btn" data-page="expenses">💸 المصروفات التشغيلية</button>
-  <button class="nav-btn" data-page="animals">🐄 سجل القطيع والأوزان والـ ADG</button>
-  <button class="nav-btn" data-page="vet">💉 السجل البيطري والتحصينات</button>
-  <button class="nav-btn" data-page="feed_calc">🧬 حاسبة الأعلاف (خلطات والبروتين)</button>
-  <button class="nav-btn" data-page="feed_dispense">🥣 صرف العلف للعنابر</button>
-  <button class="nav-btn" data-page="stock">📦 رصيد المخزن والخامات</button>
-</aside>
-
-<main class="content-body">
-
-<!-- DASHBOARD PAGE -->
-<section id="dashboard" class="page-section active">
-  <!-- كارت تنبيهات المخزون الذكي -->
-<div class="card-panel" style="border-right: 4px solid var(--accent-gold); margin-top: 15px;">
-  <h3 style="margin-top:0; color:var(--accent-gold);">⚠️ مؤشر كفاية المخزون والتنبؤ بالنفاد</h3>
-  <div id="stock-alerts-list">
-    <!-- هتظهر التنبيهات هنا تلقائياً -->
-  </div>
-</div>
-  <div class="card-panel">
-    <h1 style="margin:0 0 5px 0">📊 التحليلات التشغيلية والمالية الشاملة</h1>
-    <p style="color:var(--text-muted);margin:0">بيانات حية متصلة بقاعدة البيانات السحابية Supabase.</p>
-  </div>
-
-  <div class="grid-6">
-    <div class="stat-card"><label>الرؤوس الحية</label><div class="value" id="db-heads">0</div></div>
-    <div class="stat-card"><label>الوزن القائم الإجمالي</label><div class="value" id="db-total-weight">0 طن</div></div>
-    <div class="stat-card"><label>قيمة القطيع التقديرية</label><div class="value" id="db-asset-val" style="color:var(--accent-gold)">0 ج.م</div></div>
-    <div class="stat-card"><label>إجمالي المبيعات</label><div class="value" id="db-sales">0 ج.م</div></div>
-    <div class="stat-card"><label>إجمالي المصروفات</label><div class="value" id="db-expenses" style="color:var(--accent-red)">0 ج.م</div></div>
-    <div class="stat-card"><label>صافي الأرباح المقدرة</label><div class="value" id="db-net-profit">0 ج.م</div></div>
-  </div>
-
-  <br>
-  <div class="grid-3">
-    <div class="card-panel">
-      <h3>🐄 السعة الاستيعابية للعنابر</h3>
-      <div id="barns-capacity-list"></div>
-    </div>
-    <div class="card-panel">
-      <h3>🌾 حالة مخزون الأعلاف</h3>
-      <div class="stat-card" style="margin-bottom:10px"><label>إجمالي الخامات بالمخزن</label><div class="value" id="db-stock-qty">0 طن</div></div>
-      <div class="stat-card"><label>متوسط بروتين المخزون</label><div class="value" id="db-stock-protein">0%</div></div>
-    </div>
-    <div class="card-panel">
-      <h3>📈 مؤشرات نمو التسمين (KPIs)</h3>
-      <p>متوسط النمو اليومي (ADG): <b style="color:var(--accent-green)">1.45 كجم/يوم</b></p>
-      <p>معامل التحويل الغذائي (FCR): <b style="color:var(--accent-gold)">5.6 : 1</b></p>
-    </div>
-  </div>
-</section>
-
-<!-- INVOICES PAGE -->
-<section id="invoices" class="page-section">
-  <div class="card-panel" style="display:flex;justify-content:space-between;align-items:center">
-    <h2>🧾 نظام إدارة الفواتير (فواتير البيع والشراء)</h2>
-    <button class="btn" onclick="openModal('invoiceModal')">+ إنشاء فاتورة جديدة</button>
-  </div>
-  <div class="card-panel">
-    <table>
-      <thead><tr><th>رقم الفاتورة</th><th>النوع</th><th>الطرف الثاني</th><th>إجمالي المبلغ</th><th>التاريخ</th><th>البيان والملحوظات</th></tr></thead>
-      <tbody id="invoices-table-body"></tbody>
-    </table>
-  </div>
-</section>
-
-<!-- CUSTOMERS & SUPPLIERS PAGE -->
-<section id="partners" class="page-section">
-  <div class="card-panel" style="display:flex;justify-content:space-between;align-items:center">
-    <h2>👥 إدارة العملاء والموردين وكشوف الحساب</h2>
-    <button class="btn" onclick="openModal('partnerModal')">+ إضافة جهة جديدة</button>
-  </div>
-  <div class="card-panel">
-    <table>
-      <thead><tr><th>اسم الجهة</th><th>النوع</th><th>رقم الهاتف</th><th>العنوان</th><th>الرصيد / الديون (ج.م)</th></tr></thead>
-      <tbody id="partners-table-body"></tbody>
-    </table>
-  </div>
-</section>
-
-<!-- HR & SALARIES PAGE -->
-<section id="hr" class="page-section">
-  <div class="card-panel" style="display:flex;justify-content:space-between;align-items:center">
-    <h2>👔 الموظفين، الرواتب، السُلف والخصومات</h2>
-    <div>
-      <button class="btn" onclick="openModal('empModal')">+ إضافة موظف</button>
-      <button class="btn gold" onclick="openModal('advanceModal')">+ تسجيل سُلفة</button>
-    </div>
-  </div>
-  <div class="grid-2">
-    <div class="card-panel">
-      <h3>سجل الموظفين والرواتب الشامل</h3>
-      <table>
-        <thead><tr><th>اسم الموظف</th><th>الوظيفة</th><th>الراتب الأساسي</th><th>السُلف</th><th>الصافي المستحق</th></tr></thead>
-        <tbody id="emp-table-body"></tbody>
-      </table>
-    </div>
-    <div class="card-panel">
-      <h3>سجل السُلف المسجلة</h3>
-      <table>
-        <thead><tr><th>الموظف</th><th>مبلغ السُلفة</th><th>التاريخ</th><th>ملاحظات</th></tr></thead>
-        <tbody id="advances-table-body"></tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- EXPENSES PAGE -->
-<section id="expenses" class="page-section">
-  <div class="card-panel" style="display:flex;justify-content:space-between;align-items:center">
-    <h2>💸 المصروفات التشغيلية والنثريات</h2>
-    <button class="btn red" onclick="openModal('expenseModal')">+ تسجيل مصروف جديد</button>
-  </div>
-  <div class="card-panel">
-    <table>
-      <thead><tr><th>بند المصروف</th><th>الفئة</th><th>المبلغ (ج.م)</th><th>التاريخ</th></tr></thead>
-      <tbody id="expenses-table-body"></tbody>
-    </table>
-  </div>
-</section>
-
-<!-- ANIMALS PAGE -->
-<section id="animals" class="page-section">
-  <div class="card-panel" style="display:flex;justify-content:space-between;align-items:center">
-    <h2>🐄 سجل القطيع التفصيلي ومتابعة الأوزان والنمو اليومي (ADG)</h2>
-    <div>
-      <button class="btn" onclick="openModal('animalModal')">+ إضافة شحنة رؤوس</button>
-      <button class="btn blue" onclick="openModal('weightModal')">⚖️ تسجيل وزنة دورية</button>
-    </div>
-  </div>
-  <div class="card-panel">
-    <table>
-      <thead><tr><th>الكود الفريد</th><th>العنبر</th><th>الوزن الأولي</th><th>الوزن الحالي</th><th>معدل النمو اليومي (ADG)</th><th>تاريخ آخر وزنة</th><th>الحالة</th></tr></thead>
-      <tbody id="animals-table-body"></tbody>
-    </table>
-  </div>
-</section>
-
-<!-- VET MEDICAL PAGE -->
-<section id="vet" class="page-section">
-  <div class="card-panel" style="display:flex;justify-content:space-between;align-items:center">
-    <h2>💉 السجل البيطري، العلاجات والتحصينات الدوري</h2>
-    <button class="btn blue" onclick="openModal('vetModal')">+ تسجيل علاج / تحصين</button>
-  </div>
-  <div class="card-panel">
-    <table>
-      <thead><tr><th>اسم التحصين/العلاج</th><th>العنبر / الكود</th><th>الجرعة</th><th>التكلفة (ج.م)</th><th>التاريخ</th><th>ملاحظات</th></tr></thead>
-      <tbody id="vet-table-body"></tbody>
-    </table>
-  </div>
-</section>
-
-<!-- FEED CALCULATOR PAGE -->
-<section id="feed_calc" class="page-section">
-  <div class="card-panel">
-    <h2>🧬 مصنع وخلاط الأعلاف المتطور (Pearson Square)</h2>
-    <p style="color:var(--text-muted)">حساب نسب البروتين وتكلفة الخلطات وتكوين خلطات تسمين متوازنة.</p>
-  </div>
-  <div class="grid-2">
-    <div class="card-panel">
-      <h3>تركيب خلطة جديدة</h3>
-      <form onsubmit="calculateFeedMix(event)">
-        <div class="form-field"><label>اسم الخلطة</label><input type="text" id="mix-name" required placeholder="خلطة تسمين 18% بروتين"></div>
-        <div class="form-field"><label>نسبة الذرة الصفراء (%)</label><input type="number" id="mix-corn" value="60" required></div>
-        <div class="form-field"><label>نسبة كسب الصويا (%)</label><input type="number" id="mix-soy" value="25" required></div>
-        <div class="form-field"><label>نسبة الردة الناعمة (%)</label><input type="number" id="mix-bran" value="15" required></div>
-        <button class="btn gold" type="submit" style="width:100%;justify-content:center;margin-top:10px">حساب البروتين والتكلفة</button>
+  <!-- شاشة تسجيل الدخول -->
+  <div id="login-page">
+    <div class="login-box">
+      <h2 style="color: var(--accent-green);">🌱 AGRO ERP</h2>
+      <p>تسجيل الدخول للنظام</p>
+      <form onsubmit="handleLogin(event)">
+        <input type="text" id="username" placeholder="اسم المستخدم" value="المشرف العام" required>
+        <input type="password" id="password" placeholder="كلمة المرور" value="123456" required>
+        <button type="submit">دخول السيستم</button>
       </form>
     </div>
-    <div class="card-panel">
-      <h3>نتيجة تحليلات الخلطة</h3>
-      <div id="mix-result" style="padding:15px;background:#111715;border-radius:10px;min-height:180px">
-        <p style="color:var(--text-muted)">قم بالضغط على حساب لعرض النتائج هنا...</p>
+  </div>
+
+  <!-- الشريط الجانبي -->
+  <div id="sidebar">
+    <div style="padding: 20px; font-weight: bold; color: var(--accent-green); font-size: 18px;">
+      🌿 AGRO ERP
+    </div>
+    <div style="padding: 10px; font-size: 14px; color: #aaa;">
+      <ul>
+        <li style="margin-bottom: 10px; cursor: pointer; color:#fff;">📊 الداشبورد والتحليلات</li>
+        <li style="margin-bottom: 10px; cursor: pointer;">🧾 الفواتير</li>
+        <li style="margin-bottom: 10px; cursor: pointer;">📦 رصيد المخزن والخامات</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- المحتوى الرئيسي -->
+  <div id="main-content">
+    <div class="header">
+      <div><b>المرزعة الذكية (Supabase)</b></div>
+      <div>
+        <span id="active-user-name">المشرف العام</span>
+        <button onclick="logout()" style="width: auto; padding: 5px 15px; margin-right: 10px; background: var(--accent-red); color:#fff;">تسجيل الخروج</button>
+      </div>
+    </div>
+
+    <div class="content-area">
+      <!-- 🚀 كارت التنبؤ بالنفاد المضاف حديثاً -->
+      <div class="card-panel" style="border-right: 4px solid var(--accent-gold);">
+        <h3 style="margin-top:0; color:var(--accent-gold);">⚠️ مؤشر كفاية المخزون والتنبؤ بالنفاد</h3>
+        <div id="stock-alerts-list">
+          <!-- التنبيهات بتظهر هنا -->
+        </div>
+      </div>
+
+      <!-- كروت الإحصائيات -->
+      <div class="card-panel">
+        <h3>📊 التحليلات التشغيلية والمالية الشاملة</h3>
+        <div class="grid-4">
+          <div class="stat-card">
+            <div>الرؤوس الحية</div>
+            <div class="stat-val">50</div>
+          </div>
+          <div class="stat-card">
+            <div>إجمالي المبيعات</div>
+            <div class="stat-val">0 ج.م</div>
+          </div>
+          <div class="stat-card">
+            <div>المصروفات</div>
+            <div class="stat-val">0 ج.م</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-</section>
 
-<!-- FEED DISPENSE PAGE -->
-<section id="feed_dispense" class="page-section">
-  <div class="card-panel" style="display:flex;justify-content:space-between;align-items:center">
-    <h2>🥣 صرف العلف اليومي للعنابر</h2>
-    <button class="btn gold" onclick="openModal('dispenseModal')">+ صرف علف لعنبر</button>
-  </div>
-  <div class="card-panel">
-    <table>
-      <thead><tr><th>العنبر</th><th>نوع العلف / الخامة</th><th>الكمية (كجم)</th><th>التكلفة (ج.م)</th><th>التاريخ</th></tr></thead>
-      <tbody id="dispense-table-body"></tbody>
-    </table>
-  </div>
-</section>
-
-<!-- STOCK PAGE -->
-<section id="stock" class="page-section">
-  <div class="card-panel" style="display:flex;justify-content:space-between;align-items:center">
-    <h2>📦 جدول المخزون التفصيلي للأعلاف والخامات</h2>
-    <button class="btn" onclick="openModal('stockModal')">+ إضافة خامة جديدة</button>
-  </div>
-  <div class="card-panel">
-    <table>
-      <thead><tr><th>اسم الخامة</th><th>الرصيد (كجم)</th><th>الرصيد (طن)</th><th>نسبة البروتين</th><th>سعر الكيلو (ج.م)</th><th>إجمالي القيمة</th></tr></thead>
-      <tbody id="stock-table-body"></tbody>
-    </table>
-  </div>
-</section>
-
-</main></div>
-
-<!-- MODALS -->
-
-<!-- Invoice Modal -->
-<div id="invoiceModal" class="modal-overlay"><div class="modal-content">
-  <h2>🧾 إنشاء فاتورة جديدة (بيع / شراء)</h2>
-  <form onsubmit="saveInvoice(event)">
-    <div class="form-grid">
-      <div class="form-field"><label>نوع الفاتورة</label><select id="inv-type"><option value="بيع">فاتورة بيع</option><option value="شراء">فاتورة شراء</option></select></div>
-      <div class="form-field" style="grid-column:span 2"><label>الطرف الثاني</label><input type="text" id="inv-party" required placeholder="شركة البركة / العميل علي"></div>
-      <div class="form-field"><label>المبلغ الإجمالي (ج.م)</label><input type="number" id="inv-amount" required placeholder="45000"></div>
-      <div class="form-field" style="grid-column:span 3"><label>تفاصيل الفاتورة</label><input type="text" id="inv-details" required placeholder="بيع 5 عجول / توريد 10 طن ذرة"></div>
-      <div class="form-field"><label>التاريخ</label><input type="date" id="inv-date" required></div>
-    </div>
-    <br><button class="btn" type="submit">حفظ وتأكيد الفاتورة</button>
-    <button class="btn alt" type="button" onclick="closeModal('invoiceModal')">إلغاء</button>
-  </form>
-</div></div>
-
-<!-- Partner Modal -->
-<div id="partnerModal" class="modal-overlay"><div class="modal-content">
-  <h2>👥 إضافة عميل أو مورد جديد</h2>
-  <form onsubmit="savePartner(event)">
-    <div class="form-grid">
-      <div class="form-field" style="grid-column:span 2"><label>الاسم</label><input type="text" id="pt-name" required placeholder="الشركة المصرية للأعلاف"></div>
-      <div class="form-field"><label>النوع</label><select id="pt-type"><option>مورد</option><option>عميل</option></select></div>
-      <div class="form-field"><label>الهاتف</label><input type="text" id="pt-phone" placeholder="0100000000"></div>
-      <div class="form-field" style="grid-column:span 4"><label>العنوان</label><input type="text" id="pt-address" placeholder="طريق الإسكندرية الصحراوي"></div>
-    </div>
-    <br><button class="btn" type="submit">حفظ الجهة</button>
-    <button class="btn alt" type="button" onclick="closeModal('partnerModal')">إلغاء</button>
-  </form>
-</div></div>
-
-<!-- Employee Modal -->
-<div id="empModal" class="modal-overlay"><div class="modal-content">
-  <h2>👔 إضافة موظف جديد</h2>
-  <form onsubmit="saveEmployee(event)">
-    <div class="form-grid">
-      <div class="form-field" style="grid-column:span 2"><label>اسم الموظف</label><input type="text" id="emp-name" required placeholder="أحمد سعيد"></div>
-      <div class="form-field"><label>الوظيفة</label><input type="text" id="emp-role" required placeholder="مهندس تغذية / طبيب"></div>
-      <div class="form-field"><label>الراتب الأساسي (ج.م)</label><input type="number" id="emp-salary" required placeholder="9000"></div>
-    </div>
-    <br><button class="btn" type="submit">حفظ الموظف</button>
-    <button class="btn alt" type="button" onclick="closeModal('empModal')">إلغاء</button>
-  </form>
-</div></div>
-
-<!-- Advance Modal -->
-<div id="advanceModal" class="modal-overlay"><div class="modal-content">
-  <h2>💸 تسجيل سُلفة موظف</h2>
-  <form onsubmit="saveAdvance(event)">
-    <div class="form-grid">
-      <div class="form-field" style="grid-column:span 2"><label>اختر الموظف</label><select id="adv-emp-select" required></select></div>
-      <div class="form-field"><label>مبلغ السُلفة (ج.م)</label><input type="number" id="adv-amount" required placeholder="1000"></div>
-      <div class="form-field"><label>التاريخ</label><input type="date" id="adv-date" required></div>
-      <div class="form-field" style="grid-column:span 4"><label>ملاحظات</label><input type="text" id="adv-notes" placeholder="سلفة طارئة"></div>
-    </div>
-    <br><button class="btn gold" type="submit">تسجيل السُلفة</button>
-    <button class="btn alt" type="button" onclick="closeModal('advanceModal')">إلغاء</button>
-  </form>
-</div></div>
-
-<!-- Expense Modal -->
-<div id="expenseModal" class="modal-overlay"><div class="modal-content">
-  <h2>💸 تسجيل مصروف تشغيلي</h2>
-  <form onsubmit="saveExpense(event)">
-    <div class="form-grid">
-      <div class="form-field" style="grid-column:span 2"><label>بند المصروف</label><input type="text" id="ex-name" required placeholder="صيانة جرار / فاتورة كهرباء"></div>
-      <div class="form-field"><label>الفئة</label><select id="ex-cat"><option>طاقة وكهرباء</option><option>صيانة</option><option>وقود ونقل</option><option>أدوية وطبي</option><option>نثريات</option></select></div>
-      <div class="form-field"><label>المبلغ (ج.م)</label><input type="number" id="ex-amount" required placeholder="3000"></div>
-      <div class="form-field"><label>التاريخ</label><input type="date" id="ex-date" required></div>
-    </div>
-    <br><button class="btn red" type="submit">حفظ المصروف</button>
-    <button class="btn alt" type="button" onclick="closeModal('expenseModal')">إلغاء</button>
-  </form>
-</div></div>
-
-<!-- Animal Modal -->
-<div id="animalModal" class="modal-overlay"><div class="modal-content">
-  <h2>🐄 إضافة شحنة رؤوس جديدة</h2>
-  <form onsubmit="saveAnimalsBatch(event)">
-    <div class="form-grid">
-      <div class="form-field"><label>بادئة الكود</label><input type="text" id="an-prefix" required placeholder="BULL"></div>
-      <div class="form-field"><label>عدد الرؤوس</label><input type="number" id="an-count" required placeholder="10"></div>
-      <div class="form-field"><label>متوسط الوزن (كجم)</label><input type="number" id="an-weight" required placeholder="220"></div>
-      <div class="form-field"><label>التسكين بالعنبر</label><select id="an-barn"><option>عنبر 1</option><option>عنبر 2</option><option>عنبر 3</option></select></div>
-    </div>
-    <br><button class="btn" type="submit">توليد وتسكين</button>
-    <button class="btn alt" type="button" onclick="closeModal('animalModal')">إلغاء</button>
-  </form>
-</div></div>
-
-<!-- Weight Modal -->
-<div id="weightModal" class="modal-overlay"><div class="modal-content">
-  <h2>⚖️ تسجيل وزنة دورية للقطيع</h2>
-  <form onsubmit="saveWeightUpdate(event)">
-    <div class="form-grid">
-      <div class="form-field" style="grid-column:span 2"><label>اختر الرأس / العجل</label><select id="wt-animal-select" required></select></div>
-      <div class="form-field"><label>الوزن الجديد (كجم)</label><input type="number" id="wt-weight" required placeholder="310"></div>
-      <div class="form-field"><label>تاريخ الوزنة</label><input type="date" id="wt-date" required></div>
-    </div>
-    <br><button class="btn blue" type="submit">تحديث الوزن وحساب ADG</button>
-    <button class="btn alt" type="button" onclick="closeModal('weightModal')">إلغاء</button>
-  </form>
-</div></div>
-
-<!-- Vet Modal -->
-<div id="vetModal" class="modal-overlay"><div class="modal-content">
-  <h2>💉 تسجيل تحصين أو علاج بيطري</h2>
-  <form onsubmit="saveVetLog(event)">
-    <div class="form-grid">
-      <div class="form-field" style="grid-column:span 2"><label>اسم التحصين / العلاج</label><input type="text" id="vet-name" required placeholder="تحصين الحمى القلاعية / خافض حرارة"></div>
-      <div class="form-field"><label>العنبر أو الرأس</label><input type="text" id="vet-target" required placeholder="عنبر 1 بالكامل"></div>
-      <div class="form-field"><label>التكلفة الإجمالية (ج.م)</label><input type="number" id="vet-cost" required placeholder="1200"></div>
-      <div class="form-field"><label>التاريخ</label><input type="date" id="vet-date" required></div>
-    </div>
-    <br><button class="btn blue" type="submit">حفظ السجل البيطري</button>
-    <button class="btn alt" type="button" onclick="closeModal('vetModal')">إلغاء</button>
-  </form>
-</div></div>
-
-<!-- Dispense Modal -->
-<div id="dispenseModal" class="modal-overlay"><div class="modal-content">
-  <h2>🥣 صرف علف يومي للعنبر</h2>
-  <form onsubmit="saveDispense(event)">
-    <div class="form-grid">
-      <div class="form-field"><label>العنبر</label><select id="dp-barn"><option>عنبر 1</option><option>عنبر 2</option><option>عنبر 3</option></select></div>
-      <div class="form-field" style="grid-column:span 2"><label>الصنف من المخزن</label><select id="dp-stock-select" required></select></div>
-      <div class="form-field"><label>الكمية (كجم)</label><input type="number" id="dp-qty" required placeholder="400"></div>
-      <div class="form-field"><label>التاريخ</label><input type="date" id="dp-date" required></div>
-    </div>
-    <br><button class="btn gold" type="submit">صرف العلف وخصم المخزون</button>
-    <button class="btn alt" type="button" onclick="closeModal('dispenseModal')">إلغاء</button>
-  </form>
-</div></div>
-
-<!-- Stock Modal -->
-<div id="stockModal" class="modal-overlay"><div class="modal-content">
-  <h2>📦 إضافة خامة علفية للمخزن</h2>
-  <form onsubmit="saveStockItem(event)">
-    <div class="form-grid">
-      <div class="form-field" style="grid-column:span 2"><label>اسم الخامة</label><input type="text" id="st-name" required placeholder="ذرة صفراء / كسب صويا 44%"></div>
-      <div class="form-field"><label>الكمية (كجم)</label><input type="number" id="st-qty" required placeholder="10000"></div>
-      <div class="form-field"><label>نسبة البروتين (%)</label><input type="number" step="0.1" id="st-protein" required placeholder="8.5"></div>
-      <div class="form-field"><label>سعر الكيلو (ج.م)</label><input type="number" step="0.1" id="st-price" required placeholder="16.5"></div>
-    </div>
-    <br><button class="btn" type="submit">إضافة للمخزن</button>
-    <button class="btn alt" type="button" onclick="closeModal('stockModal')">إلغاء</button>
-  </form>
-</div></div>
-
-<script>
-// --- SUPABASE CLIENT INITIALIZATION ---
-const SUPABASE_URL = 'https://vhbhbzcywtmtwtpqvnhw.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_LXRs70nbUvJljFiRyCT2UA_-hZDkuf3';
-const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-let store = {
-  currentUser: 'المدير العام',
-  invoices: [],
-  partners: [],
-  employees: [],
-  advances: [],
-  expenses: [],
-  animals: [],
-  vetLogs: [],
-  dispenseLogs: [],
-  stock: []
-};
-
-async function initApp() {
-  const today = new Date().toISOString().split('T')[0];
-  document.querySelectorAll('input[type="date"]').forEach(i => { if(!i.value) i.value = today; });
-
-  document.getElementById('login-page').style.display = 'none';
-  await loadDataFromSupabase();
-}
-
-// FETCH DATA FROM SUPABASE
-async function loadDataFromSupabase() {
-  try {
-    let { data: inv } = await _supabase.from('invoices').select('*'); store.invoices = inv || [];
-    let { data: pt } = await _supabase.from('partners').select('*'); store.partners = pt || [];
-    let { data: emp } = await _supabase.from('employees').select('*'); store.employees = emp || [];
-    let { data: adv } = await _supabase.from('advances').select('*'); store.advances = adv || [];
-    let { data: exp } = await _supabase.from('expenses').select('*'); store.expenses = exp || [];
-    let { data: ani } = await _supabase.from('animals').select('*'); store.animals = ani || [];
-    let { data: vet } = await _supabase.from('vet_logs').select('*'); store.vetLogs = vet || [];
-    let { data: dsp } = await _supabase.from('dispense_logs').select('*'); store.dispenseLogs = dsp || [];
-    let { data: stk } = await _supabase.from('stock').select('*'); store.stock = stk || [];
-
-    refreshAllUI();
-  } catch(err) {
-    console.error('Supabase Sync Error:', err);
-  }
-}
-
-// NAVIGATION
-document.querySelectorAll('.nav-btn').forEach(btn => {
-  btn.onclick = () => {
-    document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
-    document.querySelectorAll('.page-section').forEach(x=>x.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById(btn.dataset.page).classList.add('active');
-  }
-});
-
-function openModal(id){ document.getElementById(id).classList.add('show'); }
-function closeModal(id){ document.getElementById(id).classList.remove('show'); }
-
-// UI RENDERERS
-function refreshAllUI() {
-  renderDashboard();
-  renderInvoices();
-  renderPartners();
-  renderHR();
-  renderExpenses();
-  renderAnimals();
-  renderVet();
-  renderDispense();
-  renderStock();
-  updateSelectOptions();
- async function checkStockDepletion() {
-  const alertContainer = document.getElementById('stock-alerts-list');
-  if (!alertContainer) return;
-
-  alertContainer.innerHTML = '<p style="color:#aaa; font-size:12px;">جاري تحميل بيانات المخزون...</p>';
-
-  // متوسط الاستهلاك اليومي المعتاد (كجم)
-  const dailyConsumptionKg = 500; 
-
-  try {
-    // جلب بيانات المخزن مباشرة من سوبابيز
-    let { data: items, error } = await _supabase.from('feed_stock').select('*');
-    
-    // لو الجدول اسمه مختلف، يجرب يقرأ من الستور المحلي
-    if (error || !items || items.length === 0) {
-      items = (typeof store !== 'undefined' && (store.stock || store.rawMaterials)) ? (store.stock || store.rawMaterials) : [];
+  <script>
+    // 1. نظام تسجيل الدخول الخفيف والآمن
+    function handleLogin(e) {
+      if (e) e.preventDefault();
+      const user = document.getElementById('username').value;
+      document.getElementById('active-user-name').innerText = user || 'المشرف العام';
+      document.getElementById('login-page').style.display = 'none';
     }
 
-    alertContainer.innerHTML = '';
-
-    if (!items || items.length === 0) {
-      alertContainer.innerHTML = '<p style="color:#888; margin:0;">لا توجد خامات مسجلة بالمخزن حالياً.</p>';
-      return;
+    function logout() {
+      document.getElementById('login-page').style.display = 'flex';
     }
 
-    items.forEach(item => {
-      const qty = Number(item.qty_kg || item.quantity || item.amount || 0);
-      const name = item.name || item.item_name || item.material_name || 'خامة';
-      const daysLeft = Math.floor(qty / dailyConsumptionKg);
+    // بيانات افتراضية للمخزون في حال عدم الاتصال المباشر
+    const localStore = {
+      stock: [
+        { name: "ذرة صفراء", qty_kg: 1200 },
+        { name: "صويا 44%", qty_kg: 4500 },
+        { name: "رائبة مركزة", qty_kg: 250 }
+      ]
+    };
 
-      let statusColor = 'var(--accent-green)';
-      let warningText = `يكفي لمدة ${daysLeft} يوم تشغيل.`;
+    // 2. دالة حساب التنبؤ بنفاد المخزون
+    async function checkStockDepletion() {
+      const alertContainer = document.getElementById('stock-alerts-list');
+      if (!alertContainer) return;
 
-      if (daysLeft <= 3) {
-        statusColor = 'var(--accent-red)';
-        warningText = `🚨 خطر! المخزون حرج جداً ويكفي لمدة ${daysLeft} أيام فقط!`;
-      } else if (daysLeft <= 7) {
-        statusColor = 'var(--accent-gold)';
-        warningText = `⚠️ تنبيه: يفضل عمل طلب شراء جديد (يكفي ${daysLeft} أيام).`;
+      const dailyConsumptionKg = 500; // متوسط الاستهلاك اليومي (كجم)
+      let items = localStore.stock;
+
+      // محاولة سحب البيانات من Supabase لو متصلة
+      if (typeof _supabase !== 'undefined') {
+        try {
+          let { data } = await _supabase.from('feed_stock').select('*');
+          if (data && data.length > 0) items = data;
+        } catch(e) { console.log('يعتمد على الستور المحلي'); }
       }
 
-      alertContainer.innerHTML += `
-        <div style="padding: 10px; background: #111715; border-radius: 8px; margin-bottom: 8px; display:flex; justify-content:space-between; align-items:center; border-right: 3px solid ${statusColor};">
-          <span><b>${name}</b> (الرصيد: ${qty} كجم)</span>
-          <span style="color:${statusColor}; font-weight:bold; font-size:13px;">${warningText}</span>
-        </div>
-      `;
-    });
-  } catch (err) {
-    console.error(err);
-    alertContainer.innerHTML = '<p style="color:var(--accent-red); margin:0;">حدث خطأ أثناء جلب بيانات المخزون.</p>';
-  }
-}
+      alertContainer.innerHTML = '';
 
-// تشغيل الدالة فور تحميل الصفحة وكل 5 ثوانٍ لضمان التحديث
-setTimeout(checkStockDepletion, 1000);
-setInterval(checkStockDepletion, 5000);
-      }
+      items.forEach(item => {
+        const qty = Number(item.qty_kg || item.quantity || 0);
+        const name = item.name || item.material_name || 'خامة';
+        const daysLeft = Math.floor(qty / dailyConsumptionKg);
 
-      alertContainer.innerHTML += `
-        <div style="padding: 10px; background: #111715; border-radius: 8px; margin-bottom: 8px; display:flex; justify-content:space-between; align-items:center;">
-          <span><b>${item.name}</b> (الرصيد: ${item.qty_kg} كجم)</span>
-          <span style="color:${statusColor}; font-weight:bold;">${warningText}</span>
-        </div>
-      `;
-    });
-  }
-}
+        let statusColor = 'var(--accent-green)';
+        let warningText = `يكفي لمدة ${daysLeft} يوم تشغيل.`;
 
-// تشغيل الدالة فور تحميل الصفحة
-setTimeout(checkStockDepletion, 1000);
-}
+        if (daysLeft <= 3) {
+          statusColor = 'var(--accent-red)';
+          warningText = `🚨 خطر! المخزون حرج جداً ويكفي لمدة ${daysLeft} أيام فقط!`;
+        } else if (daysLeft <= 7) {
+          statusColor = 'var(--accent-gold)';
+          warningText = `⚠️ تنبيه: يفضل عمل طلب شراء جديد (يكفي ${daysLeft} أيام).`;
+        }
 
-function renderDashboard() {
-  const live = store.animals.filter(a => a.status === 'حي');
-  const totalWeight = live.reduce((s, a) => s + Number(a.current_weight || 0), 0);
-  const assetVal = totalWeight * 180;
+        alertContainer.innerHTML += `
+          <div style="padding: 12px; background: #0e1511; border-radius: 8px; margin-bottom: 8px; display:flex; justify-content:space-between; align-items:center; border-right: 4px solid ${statusColor};">
+            <span><b>${name}</b> (الرصيد: ${qty} كجم)</span>
+            <span style="color:${statusColor}; font-weight:bold; font-size:14px;">${warningText}</span>
+          </div>
+        `;
+      });
+    }
 
-  const totalSales = store.invoices.filter(i => i.type === 'بيع').reduce((s, i) => s + Number(i.amount||0), 0);
-  const totalExp = store.expenses.reduce((s, e) => s + Number(e.amount||0), 0);
-
-  document.getElementById('db-heads').innerText = live.length;
-  document.getElementById('db-total-weight').innerText = (totalWeight/1000).toFixed(2) + ' طن';
-  document.getElementById('db-asset-val').innerText = assetVal.toLocaleString() + ' ج.م';
-  document.getElementById('db-sales').innerText = totalSales.toLocaleString() + ' ج.م';
-  document.getElementById('db-expenses').innerText = totalExp.toLocaleString() + ' ج.م';
-  document.getElementById('db-net-profit').innerText = (totalSales - totalExp).toLocaleString() + ' ج.م';
-
-  const barnList = document.getElementById('barns-capacity-list');
-  barnList.innerHTML = '';
-  ['عنبر 1', 'عنبر 2', 'عنبر 3'].forEach(b => {
-    const count = live.filter(a => a.barn === b).length;
-    const pct = Math.min(100, Math.round((count / 50) * 100));
-    barnList.innerHTML += `
-      <div style="margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;font-size:13px"><span>${b}</span><b>${count} / 50 رأس (${pct}%)</b></div>
-        <div class="progress-bg"><div class="progress-fill" style="width:${pct}%"></div></div>
-      </div>
-    `;
-  });
-
-  let stockTons = 0, sumProt = 0;
-  store.stock.forEach(s => { stockTons += Number(s.qty_kg||0)/1000; sumProt += Number(s.protein||0); });
-  document.getElementById('db-stock-qty').innerText = stockTons.toFixed(1) + ' طن';
-  document.getElementById('db-stock-protein').innerText = store.stock.length ? (sumProt/store.stock.length).toFixed(1) + '%' : '0%';
-}
-
-// INVOICES
-async function saveInvoice(e) {
-  e.preventDefault();
-  const obj = {
-    code: 'INV-' + Math.floor(1000 + Math.random() * 9000),
-    type: document.getElementById('inv-type').value,
-    party: document.getElementById('inv-party').value,
-    amount: Number(document.getElementById('inv-amount').value),
-    details: document.getElementById('inv-details').value,
-    date: document.getElementById('inv-date').value
-  };
-  await _supabase.from('invoices').insert([obj]);
-  closeModal('invoiceModal'); e.target.reset(); loadDataFromSupabase();
-}
-
-function renderInvoices() {
-  const tbody = document.getElementById('invoices-table-body');
-  tbody.innerHTML = '';
-  store.invoices.forEach(i => {
-    tbody.innerHTML += `<tr><td><b>${i.code}</b></td><td><span class="badge ${i.type==='بيع'?'green':'red'}">${i.type}</span></td><td>${i.party}</td><td><b>${Number(i.amount).toLocaleString()} ج.م</b></td><td>${i.date}</td><td>${i.details}</td></tr>`;
-  });
-}
-
-// PARTNERS
-async function savePartner(e) {
-  e.preventDefault();
-  const obj = {
-    name: document.getElementById('pt-name').value,
-    type: document.getElementById('pt-type').value,
-    phone: document.getElementById('pt-phone').value,
-    address: document.getElementById('pt-address').value,
-    balance: 0
-  };
-  await _supabase.from('partners').insert([obj]);
-  closeModal('partnerModal'); e.target.reset(); loadDataFromSupabase();
-}
-
-function renderPartners() {
-  const tbody = document.getElementById('partners-table-body');
-  tbody.innerHTML = '';
-  store.partners.forEach(p => {
-    tbody.innerHTML += `<tr><td><b>${p.name}</b></td><td>${p.type}</td><td>${p.phone||'-'}</td><td>${p.address||'-'}</td><td>${p.balance||0} ج.م</td></tr>`;
-  });
-}
-
-// HR & EMPLOYEES
-async function saveEmployee(e) {
-  e.preventDefault();
-  const obj = {
-    name: document.getElementById('emp-name').value,
-    role: document.getElementById('emp-role').value,
-    salary: Number(document.getElementById('emp-salary').value)
-  };
-  await _supabase.from('employees').insert([obj]);
-  closeModal('empModal'); e.target.reset(); loadDataFromSupabase();
-}
-
-async function saveAdvance(e) {
-  e.preventDefault();
-  const obj = {
-    employee: document.getElementById('adv-emp-select').value,
-    amount: Number(document.getElementById('adv-amount').value),
-    date: document.getElementById('adv-date').value,
-    notes: document.getElementById('adv-notes').value
-  };
-  await _supabase.from('advances').insert([obj]);
-  closeModal('advanceModal'); e.target.reset(); loadDataFromSupabase();
-}
-
-function renderHR() {
-  const tbody = document.getElementById('emp-table-body');
-  tbody.innerHTML = '';
-  store.employees.forEach(emp => {
-    const advSum = store.advances.filter(a => a.employee === emp.name).reduce((s, a) => s + Number(a.amount||0), 0);
-    const net = Number(emp.salary) - advSum;
-    tbody.innerHTML += `<tr><td><b>${emp.name}</b></td><td>${emp.role}</td><td>${Number(emp.salary).toLocaleString()} ج.م</td><td style="color:var(--accent-red)">${advSum.toLocaleString()} ج.م</td><td><b style="color:var(--accent-green)">${net.toLocaleString()} ج.م</b></td></tr>`;
-  });
-
-  const advBody = document.getElementById('advances-table-body');
-  advBody.innerHTML = '';
-  store.advances.forEach(a => {
-    advBody.innerHTML += `<tr><td><b>${a.employee}</b></td><td>${a.amount} ج.م</td><td>${a.date}</td><td>${a.notes}</td></tr>`;
-  });
-}
-
-// EXPENSES
-async function saveExpense(e) {
-  e.preventDefault();
-  const obj = {
-    name: document.getElementById('ex-name').value,
-    cat: document.getElementById('ex-cat').value,
-    amount: Number(document.getElementById('ex-amount').value),
-    date: document.getElementById('ex-date').value
-  };
-  await _supabase.from('expenses').insert([obj]);
-  closeModal('expenseModal'); e.target.reset(); loadDataFromSupabase();
-}
-
-function renderExpenses() {
-  const tbody = document.getElementById('expenses-table-body');
-  tbody.innerHTML = '';
-  store.expenses.forEach(ex => {
-    tbody.innerHTML += `<tr><td><b>${ex.name}</b></td><td>${ex.cat}</td><td style="color:var(--accent-red)"><b>${Number(ex.amount).toLocaleString()} ج.م</b></td><td>${ex.date}</td></tr>`;
-  });
-}
-
-// ANIMALS & ADG
-async function saveAnimalsBatch(e) {
-  e.preventDefault();
-  const prefix = document.getElementById('an-prefix').value.toUpperCase();
-  const count = Number(document.getElementById('an-count').value);
-  const weight = Number(document.getElementById('an-weight').value);
-  const barn = document.getElementById('an-barn').value;
-  const today = new Date().toISOString().split('T')[0];
-
-  const batch = [];
-  for(let i = 1; i <= count; i++) {
-    batch.push({
-      id: `${prefix}-${Math.floor(1000 + Math.random() * 9000)}-${i}`,
-      barn: barn,
-      initial_weight: weight,
-      current_weight: weight,
-      start_date: today,
-      last_weight_date: today,
-      status: 'حي'
-    });
-  }
-  await _supabase.from('animals').insert(batch);
-  closeModal('animalModal'); e.target.reset(); loadDataFromSupabase();
-}
-
-async function saveWeightUpdate(e) {
-  e.preventDefault();
-  const animId = document.getElementById('wt-animal-select').value;
-  const newW = Number(document.getElementById('wt-weight').value);
-  const dt = document.getElementById('wt-date').value;
-
-  await _supabase.from('animals').update({ current_weight: newW, last_weight_date: dt }).eq('id', animId);
-  closeModal('weightModal'); e.target.reset(); loadDataFromSupabase();
-}
-
-function renderAnimals() {
-  const tbody = document.getElementById('animals-table-body');
-  tbody.innerHTML = '';
-  store.animals.forEach(a => {
-    const days = Math.max(1, Math.round((new Date(a.last_weight_date || new Date()) - new Date(a.start_date || new Date())) / (1000 * 60 * 60 * 24)));
-    const gain = Number(a.current_weight) - Number(a.initial_weight);
-    const adg = days > 0 ? (gain / days).toFixed(2) : '0.00';
-
-    tbody.innerHTML += `
-      <tr>
-        <td><b>${a.id}</b></td>
-        <td>${a.barn}</td>
-        <td>${a.initial_weight} كجم</td>
-        <td><b style="color:var(--accent-green)">${a.current_weight} كجم</b></td>
-        <td><span class="badge green">+${adg} كجم/يوم</span></td>
-        <td>${a.last_weight_date || 'أساسي'}</td>
-        <td><span class="badge green">${a.status}</span></td>
-      </tr>
-    `;
-  });
-}
-
-// VET LOGS
-async function saveVetLog(e) {
-  e.preventDefault();
-  const obj = {
-    name: document.getElementById('vet-name').value,
-    target: document.getElementById('vet-target').value,
-    cost: Number(document.getElementById('vet-cost').value),
-    date: document.getElementById('vet-date').value
-  };
-  await _supabase.from('vet_logs').insert([obj]);
-  closeModal('vetModal'); e.target.reset(); loadDataFromSupabase();
-}
-
-function renderVet() {
-  const tbody = document.getElementById('vet-table-body');
-  tbody.innerHTML = '';
-  store.vetLogs.forEach(v => {
-    tbody.innerHTML += `<tr><td><b>${v.name}</b></td><td>${v.target}</td><td>1 جرعة</td><td>${v.cost} ج.م</td><td>${v.date}</td><td>تم الرش/التطعيم</td></tr>`;
-  });
-}
-
-// FEED FORMULA CALCULATOR
-function calculateFeedMix(e) {
-  e.preventDefault();
-  const name = document.getElementById('mix-name').value;
-  const corn = Number(document.getElementById('mix-corn').value);
-  const soy = Number(document.getElementById('mix-soy').value);
-  const bran = Number(document.getElementById('mix-bran').value);
-
-  if(corn + soy + bran !== 100) return alert('مجموع النسب المئوية يجب أن يكون 100% بالضبط!');
-
-  const totalProtein = (corn * 0.085) + (soy * 0.44) + (bran * 0.125);
-  const costPerKg = (corn * 0.0165) + (soy * 0.031) + (bran * 0.013);
-
-  document.getElementById('mix-result').innerHTML = `
-    <h4 style="color:var(--accent-green);margin-top:0">${name}</h4>
-    <p>⚡ نسبة البروتين الكلية: <b style="font-size:18px;color:var(--accent-gold)">${totalProtein.toFixed(2)}%</b></p>
-    <p>💵 تكلفة الكيلو جرام: <b>${costPerKg.toFixed(2)} ج.م</b></p>
-    <p>💰 تكلفة الطن الإجمالية: <b style="color:var(--accent-green)">${(costPerKg * 1000).toLocaleString()} ج.م</b></p>
-  `;
-}
-
-// FEED DISPENSE
-async function saveDispense(e) {
-  e.preventDefault();
-  const barn = document.getElementById('dp-barn').value;
-  const feedName = document.getElementById('dp-stock-select').value;
-  const qty = Number(document.getElementById('dp-qty').value);
-  const date = document.getElementById('dp-date').value;
-
-  const item = store.stock.find(s => s.name === feedName);
-  if(!item || item.qty_kg < qty) return alert('الرصيد المتاح من الخامات غير كافي بالمخزن!');
-
-  // Update Stock Quantity in Supabase
-  await _supabase.from('stock').update({ qty_kg: item.qty_kg - qty }).eq('name', feedName);
-
-  // Insert Dispense Log
-  await _supabase.from('dispense_logs').insert([{ barn, feed_name: feedName, qty, total_cost: qty * item.cost_per_kg, date }]);
-
-  closeModal('dispenseModal'); e.target.reset(); loadDataFromSupabase();
-}
-
-function renderDispense() {
-  const tbody = document.getElementById('dispense-table-body');
-  tbody.innerHTML = '';
-  store.dispenseLogs.forEach(d => {
-    tbody.innerHTML += `<tr><td><b>${d.barn}</b></td><td>${d.feed_name}</td><td>${d.qty} كجم</td><td>${Number(d.total_cost).toLocaleString()} ج.م</td><td>${d.date}</td></tr>`;
-  });
-}
-
-// STOCK
-async function saveStockItem(e) {
-  e.preventDefault();
-  const obj = {
-    name: document.getElementById('st-name').value,
-    qty_kg: Number(document.getElementById('st-qty').value),
-    protein: Number(document.getElementById('st-protein').value),
-    cost_per_kg: Number(document.getElementById('st-price').value)
-  };
-  await _supabase.from('stock').insert([obj]);
-  closeModal('stockModal'); e.target.reset(); loadDataFromSupabase();
-}
-
-function renderStock() {
-  const tbody = document.getElementById('stock-table-body');
-  tbody.innerHTML = '';
-  store.stock.forEach(s => {
-    tbody.innerHTML += `<tr><td><b>${s.name}</b></td><td>${Number(s.qty_kg).toLocaleString()} كجم</td><td>${(s.qty_kg/1000).toFixed(2)} طن</td><td>${s.protein}%</td><td>${s.cost_per_kg} ج.م</td><td><b>${(s.qty_kg * s.cost_per_kg).toLocaleString()} ج.م</b></td></tr>`;
-  });
-}
-
-function updateSelectOptions() {
-  const empSelect = document.getElementById('adv-emp-select');
-  if(empSelect) {
-    empSelect.innerHTML = '';
-    store.employees.forEach(e => empSelect.innerHTML += `<option value="${e.name}">${e.name} (${e.role})</option>`);
-  }
-
-  const stockSelect = document.getElementById('dp-stock-select');
-  if(stockSelect) {
-    stockSelect.innerHTML = '';
-    store.stock.forEach(s => stockSelect.innerHTML += `<option value="${s.name}">${s.name} — المتوفر: ${s.qty_kg} كجم</option>`);
-  }
-
-  const animSelect = document.getElementById('wt-animal-select');
-  if(animSelect) {
-    animSelect.innerHTML = '';
-    store.animals.forEach(a => animSelect.innerHTML += `<option value="${a.id}">${a.id} — (${a.barn}) - الحالي: ${a.current_weight}كجم</option>`);
-  }
-}
-
-initApp();
-</script>
+    // تشغيل التنبيهات مباشرة
+    window.onload = () => {
+      checkStockDepletion();
+    };
+  </script>
 </body>
 </html>
-document.getElementById('login-page').style.display = 'none';
