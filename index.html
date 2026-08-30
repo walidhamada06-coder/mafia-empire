@@ -726,7 +726,33 @@
             </div>
         </div>
     </div>
+<!-- صفحة الإعدادات والنسخ الاحتياطي -->
+<div id="settingsTab" class="view-panel" style="display: none;">
+    <h2><i class="fa-solid fa-gear"></i> إعدادات النظام والنسخ الاحتياطي</h2>
+    <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
 
+    <div style="background: #fff; border: 1px solid #ddd; padding: 25px; border-radius: 8px; margin-top: 15px;">
+        <h3 style="color: var(--primary); margin-bottom: 10px;">
+            <i class="fa-solid fa-database"></i> إدارة النسخ الاحتياطي (Backup & Restore)
+        </h3>
+        <p style="font-size: 14px; color: #666; margin-bottom: 20px;">
+            يمكنك حفظ نسخة من جميع بيانات المزرعة على جهازك، أو استعادتها في أي وقت من ملف سابق.
+        </p>
+
+        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+            <!-- زر تنزيل النسخة -->
+            <button type="button" class="btn btn-save" onclick="exportLocalBackup()">
+                <i class="fa-solid fa-download"></i> تنزيل نسخة احتياطية (Backup)
+            </button>
+
+            <!-- زر رفع واسترجاع النسخة -->
+            <label class="btn btn-search" style="cursor: pointer; margin: 0; display: inline-flex; align-items: center; gap: 5px;">
+                <i class="fa-solid fa-upload"></i> استرجاع نسخة من ملف (Restore)
+                <input type="file" id="backupFileInput" accept=".json" onchange="importLocalBackup(event)" style="display: none;">
+            </label>
+        </div>
+    </div>
+</div>
     <script>
         let statusChartInst = null;
         let feedChartInst = null;
