@@ -18,7 +18,7 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 .btn{border:0;border-radius:6px;padding:9px 14px;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:6px}
 .btn-primary{background:var(--secondary);color:#fff}.btn-blue{background:var(--accent);color:#fff}.btn-warn{background:var(--warning);color:#fff}.btn-danger{background:var(--danger);color:#fff}.btn-dark{background:var(--primary);color:#fff}.btn-light{background:#eef2f3;color:#2c3e50}
 .msg{padding:10px;border-radius:7px;margin-top:10px;font-size:13px}.msg.err{background:#fdeeee;color:#8b2626}.msg.ok{background:#eaf7f2;color:#176b51}.hidden{display:none!important}
-.app{display:none;height:100dvh}.sidebar{width:280px;min-width:280px;background:var(--primary);color:#fff;display:flex;flex-direction:column}.brand{padding:18px;text-align:center;background:#1a252f;border-bottom:1px solid #ffffff18}.brand strong{display:block;font-size:18px}.brand span{font-size:11px;color:#bcc8ce}
+.app{display:none;height:100dvh}.app.visible{display:flex}.sidebar{width:280px;min-width:280px;background:var(--primary);color:#fff;display:flex;flex-direction:column}.brand{padding:18px;text-align:center;background:#1a252f;border-bottom:1px solid #ffffff18}.brand strong{display:block;font-size:18px}.brand span{font-size:11px;color:#bcc8ce}
 .menu{overflow:auto;padding:9px 0;flex:1}.head{padding:9px 19px;color:#bfc9cd;background:#0002;font-size:11px;font-weight:800;margin-top:4px}.item{padding:10px 21px;display:flex;gap:10px;align-items:center;cursor:pointer;font-size:13px}.item:hover,.item.active{background:var(--secondary);border-right:4px solid #fff}.userbar{padding:12px 16px;background:#1a252f;border-top:1px solid #ffffff18;display:flex;justify-content:space-between;align-items:center;font-size:12px}
 .main{flex:1;display:flex;flex-direction:column;min-width:0}.topbar{background:#fff;height:65px;display:flex;justify-content:space-between;align-items:center;padding:0 20px;border-bottom:1px solid var(--line)}.topbar .title{font-weight:800}.topbar .meta{font-size:12px;color:#7f8c8d}
 .work{flex:1;overflow:auto;padding:18px}.view{display:none}.view.active{display:block}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px;padding-bottom:14px;border-bottom:1px solid #eee}
@@ -28,7 +28,31 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 .cards{grid-template-columns:repeat(3,minmax(220px,1fr))}.badge{display:inline-block;padding:4px 8px;border-radius:20px;background:#edf2f3;font-size:11px}.ok{color:#16825d}.warn{color:#b36b00}.bad{color:#b3261e}.muted{color:#7f8c8d;font-size:12px}.split{display:grid;grid-template-columns:1fr 1fr;gap:15px}.chart{background:#fff;border:1px solid var(--line);border-radius:9px;padding:14px}
 .toast{position:fixed;left:18px;bottom:18px;background:#263746;color:#fff;padding:12px 16px;border-radius:8px;display:none;z-index:99}
 @media(max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr)}.formgrid{grid-template-columns:repeat(2,1fr)}.cards{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:700px){.app{display:block}.sidebar{width:100%;min-width:0;height:auto}.menu{display:grid;grid-template-columns:repeat(2,1fr);max-height:310px}.head{grid-column:1/-1}.item{font-size:12px}.work{padding:10px}.kpis,.formgrid,.cards,.split{grid-template-columns:1fr}.topbar{height:auto;padding:10px}}
+@media(max-width:700px){
+  body{overflow:hidden}
+  .app.visible{display:block;height:100dvh}
+  .sidebar{position:fixed;inset:0 auto 0 0;width:min(300px,86vw);min-width:0;height:100dvh;z-index:50;transform:translateX(105%);transition:transform .22s ease;box-shadow:0 0 30px #0005}
+  .app.menu-open .sidebar{transform:translateX(0)}
+  .menu{display:block;max-height:none;overflow-y:auto}
+  .head{grid-column:auto}
+  .item{font-size:13px;padding:12px 16px}
+  .mobile-overlay{display:block;position:fixed;inset:0;background:#0006;z-index:40;opacity:0;pointer-events:none;transition:opacity .22s}
+  .app.menu-open .mobile-overlay{opacity:1;pointer-events:auto}
+  .main{width:100%;min-width:0;height:100dvh}
+  .topbar{height:58px;padding:8px 10px;position:sticky;top:0;z-index:20}
+  .topbar .title{font-size:15px}
+  .topbar .meta{font-size:10px}
+  .mobile-menu-btn{display:inline-flex!important}
+  .work{padding:10px;overflow:auto;height:calc(100dvh - 58px)}
+  .card{padding:12px;border-radius:8px}
+  .kpis,.formgrid,.cards,.split{grid-template-columns:1fr}
+  .kpi{padding:12px}
+  .kpi b{font-size:20px}
+  .table th,.table td{padding:8px;font-size:11px}
+  .toolbar{gap:6px}
+  .btn{padding:8px 10px;font-size:12px}
+  .chart{padding:10px}
+}
 
 .settings-logo-preview{display:flex;align-items:center;gap:14px;padding:10px;background:#f8fafb;border:1px solid #e3e7e9;border-radius:8px}
 .settings-logo-preview img{width:64px;height:64px;object-fit:contain;border-radius:10px;background:#fff;border:1px solid #ddd}
@@ -93,7 +117,14 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 </aside>
 
 <main class="main">
-<header class="topbar"><div><div class="title" id="pageTitle">لوحة المؤشرات</div><div class="meta" id="farmTitle">-</div></div><div class="meta">متصل بـ Supabase ✅</div></header>
+<header class="topbar">
+<div style="display:flex;align-items:center;gap:9px">
+<button class="btn btn-dark mobile-menu-btn" style="display:none;padding:8px 10px" onclick="toggleMobileMenu()" aria-label="فتح القائمة"><i class="fa-solid fa-bars"></i></button>
+<div><div class="title" id="pageTitle">لوحة المؤشرات</div><div class="meta" id="farmTitle">-</div></div>
+</div>
+<div class="meta">متصل بـ Supabase ✅</div>
+</header>
+<div class="mobile-overlay" onclick="closeMobileMenu()"></div>
 <div class="work">
 
 <section id="dashboard" class="view active">
@@ -377,7 +408,10 @@ function exportTable(id,name){const t=$(id);if(!t)return;const wb=XLSX.utils.tab
 function setDates(){["shDate","headDate","bwDate","wDate","fDate","bfDate","dDate","moDate","boatDate"].forEach(id=>{if($(id)&&!$(id).value)$(id).value=today()})}
 
 document.querySelectorAll(".item[data-page]").forEach(x=>x.onclick=()=>openPage(x.dataset.page));
+function toggleMobileMenu(){document.getElementById("app").classList.toggle("menu-open")}
+function closeMobileMenu(){document.getElementById("app").classList.remove("menu-open")}
 function openPage(page){
+ closeMobileMenu();
  document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));
  document.querySelectorAll(".item[data-page]").forEach(x=>x.classList.remove("active"));
  $(page).classList.add("active");document.querySelector(`.item[data-page="${page}"]`)?.classList.add("active");
