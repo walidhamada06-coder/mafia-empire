@@ -1472,6 +1472,68 @@
         window.onload = function() {
             ensureUsersDB();
             renderEmployees();
+            // 1. تصدير كافة بيانات النظام في ملف JSON
+function exportLocalBackup() {
+    try {
+        const keys = [
+            'db_users', 'db_boats', 'db_items', 'db_customers', 
+            'db_batches', 'db_heads', 'db_barns', 'db_barn_moves', 
+            'db_batch_feed', 'db_feed', 'db_batch_weights', 'db_weights', 
+            'db_sales', 'db_deaths', 'db_vehicles', 'db_vehicle_expenses', 
+            'db_inventory', 'db_manufacturing', 'sys_company_name'
+        ];
+
+        let backupData = {};
+        keys.forEach(key => {
+            backupData[key] = JSON.parse(localStorage.getItem(key) || '[]');
+        });
+
+        const jsonStr = JSON.stringify(backupData, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        const dateStr = new Date().toISOString().slice(0, 10);
+        a.download = `Farm_System_Backup_${dateStr}.json`;
+        a.click();
+        
+        alert('تم تنزيل النسخة الاحتياطية بنجاح على جهازك!');
+    } catch (err) {
+        console.error(err);
+        alert('حدث خطأ أثناء استخراج البيانات');
+    }
+}
+
+// 2. استرجاع البيانات من ملف JSON وحفظها في localStorage
+function importLocalBackup(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (!confirm('تنبيه: استرجاع النسخة الاحتياطية ستقوم باستبدال البيانات الحالية بالبيانات الموجودة في الملف. هل تريد الاستمرار؟')) {
+        event.target.value = '';
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const backupData = JSON.parse(e.target.result);
+            
+            // رفع وتخزين كل البيانات في الـ LocalStorage
+            Object.keys(backupData).forEach(key => {
+                localStorage.setItem(key, JSON.stringify(backupData[key]));
+            });
+
+            alert('تم استرجاع البيانات بنجاح! سيتم إعادة تحميل الصفحة الآن.');
+            location.reload();
+        } catch (err) {
+            console.error(err);
+            alert('الملف غير صالح أو حدث خطأ أثناء الاسترجاع');
+        }
+    };
+    reader.readAsText(file);
+}
         };
     </script>
 </body>
