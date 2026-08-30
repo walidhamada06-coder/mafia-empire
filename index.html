@@ -1,259 +1,401 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Agro Green Farm ERP - Online V2</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>نظام إدارة المزرعة المتكامل - Agro Green Farm ERP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-:root{--p:#263746;--g:#16a085;--a:#2980b9;--w:#f39c12;--d:#c0392b;--bg:#eef2f3;--line:#dce2e5}
-*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI",Tahoma,Arial;background:var(--bg);color:#263238}
-button,input,select{font:inherit}.hidden{display:none!important}
-.login{min-height:100vh;display:grid;place-items:center;background:linear-gradient(135deg,var(--p),#34495e)}
-.login-card{width:min(430px,92vw);background:#fff;border-radius:14px;padding:28px;box-shadow:0 20px 50px #0004}
-.login-card h1{margin:0 0 4px}.muted{color:#718096;font-size:13px}.field{margin:10px 0}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:5px}
-input,select{width:100%;padding:10px;border:1px solid #cfd6da;border-radius:7px;background:#fff}
-.btn{border:0;border-radius:7px;padding:10px 14px;cursor:pointer;font-weight:700}.primary{background:var(--g);color:#fff}.secondary{background:#34495e;color:#fff}.warning{background:var(--w);color:#fff}
-.app{min-height:100vh;display:flex}.side{width:245px;background:var(--p);color:#fff;padding:14px;flex:none}.brand{padding:14px;font-weight:800;text-align:center;border-bottom:1px solid #ffffff22;margin-bottom:8px}
-.nav{width:100%;border:0;background:transparent;color:#dfe8ea;padding:10px;border-radius:8px;text-align:right;cursor:pointer}.nav:hover,.nav.active{background:var(--g)}
-.main{flex:1;min-width:0}.top{height:65px;background:#fff;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;padding:0 18px}.content{padding:18px;max-width:1400px;margin:auto}
-.page{display:none}.page.active{display:block}.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:15px}
-.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.stat{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px}.stat small{color:#718096}.stat b{display:block;font-size:23px;color:var(--g);margin-top:5px}
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.formgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:10px;border-bottom:1px solid #e5e7eb;text-align:right}th{background:var(--p);color:#fff}
-.notice{padding:10px;border-radius:8px;background:#eef8f5;margin:10px 0}.error{background:#fdeeee;color:#8b2525}.ok{color:#16704d}
-@media(max-width:900px){.side{width:190px}.stats{grid-template-columns:repeat(2,1fr)}.formgrid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:650px){.app{display:block}.side{width:100%;display:grid;grid-template-columns:repeat(2,1fr)}.formgrid,.stats{grid-template-columns:1fr}.top{height:auto;padding:10px}}
+:root{--primary:#2c3e50;--secondary:#16a085;--accent:#2980b9;--danger:#c0392b;--bg:#ecf0f1;--warning:#f39c12;--white:#fff;--line:#dfe4e7}
+*{box-sizing:border-box;font-family:"Segoe UI",Tahoma,Arial,sans-serif;margin:0;padding:0}
+html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
+.login{height:100dvh;display:grid;place-items:center;background:linear-gradient(135deg,#263746,#34495e)}
+.login-card{width:min(430px,92vw);background:#fff;border-radius:14px;padding:34px;box-shadow:0 15px 45px #0004}
+.login-card h1{font-size:23px;margin-bottom:5px;color:var(--primary)}.login-card .brand2{color:#7f8c8d;font-size:12px;margin-bottom:22px}
+.input{margin:12px 0}.input label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}.input input{width:100%;padding:11px;border:1px solid #cfd6db;border-radius:7px}
+.btn{border:0;border-radius:6px;padding:9px 14px;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--secondary);color:#fff}.btn-blue{background:var(--accent);color:#fff}.btn-warn{background:var(--warning);color:#fff}.btn-danger{background:var(--danger);color:#fff}.btn-dark{background:var(--primary);color:#fff}.btn-light{background:#eef2f3;color:#2c3e50}
+.msg{padding:10px;border-radius:7px;margin-top:10px;font-size:13px}.msg.err{background:#fdeeee;color:#8b2626}.msg.ok{background:#eaf7f2;color:#176b51}.hidden{display:none!important}
+.app{display:none;height:100dvh}.sidebar{width:280px;min-width:280px;background:var(--primary);color:#fff;display:flex;flex-direction:column}.brand{padding:18px;text-align:center;background:#1a252f;border-bottom:1px solid #ffffff18}.brand strong{display:block;font-size:18px}.brand span{font-size:11px;color:#bcc8ce}
+.menu{overflow:auto;padding:9px 0;flex:1}.head{padding:9px 19px;color:#bfc9cd;background:#0002;font-size:11px;font-weight:800;margin-top:4px}.item{padding:10px 21px;display:flex;gap:10px;align-items:center;cursor:pointer;font-size:13px}.item:hover,.item.active{background:var(--secondary);border-right:4px solid #fff}.userbar{padding:12px 16px;background:#1a252f;border-top:1px solid #ffffff18;display:flex;justify-content:space-between;align-items:center;font-size:12px}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}.topbar{background:#fff;height:65px;display:flex;justify-content:space-between;align-items:center;padding:0 20px;border-bottom:1px solid var(--line)}.topbar .title{font-weight:800}.topbar .meta{font-size:12px;color:#7f8c8d}
+.work{flex:1;overflow:auto;padding:18px}.view{display:none}.view.active{display:block}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px;padding-bottom:14px;border-bottom:1px solid #eee}
+.card{background:#fff;border:1px solid var(--line);border-radius:9px;padding:16px;margin-bottom:15px}.grid{display:grid;gap:12px}.kpis{grid-template-columns:repeat(5,minmax(140px,1fr))}.kpi{background:#fff;border:1px solid var(--line);border-radius:9px;padding:15px;display:flex;gap:12px;align-items:center}.kpi-icon{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#fff;flex:none}.kpi small{display:block;color:#7f8c8d;font-size:11px}.kpi b{font-size:23px;color:var(--primary)}
+.form{background:#f7f9fa;border:1px solid #e6eaec;border-radius:7px;padding:14px}.formgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.field label{display:block;font-size:12px;font-weight:800;margin-bottom:4px}.field input,.field select,.field textarea{width:100%;padding:9px;border:1px solid #ccd4d8;border-radius:6px;background:#fff}.field textarea{min-height:70px;resize:vertical}
+.tablewrap{overflow:auto;border:1px solid #ddd;border-radius:6px}.table{width:100%;border-collapse:collapse;font-size:12px;background:#fff}.table th,.table td{padding:9px;border-bottom:1px solid #e5e7e9;text-align:right;white-space:nowrap}.table th{background:var(--primary);color:#fff}.table tr:nth-child(even){background:#fbfbfb}
+.cards{grid-template-columns:repeat(3,minmax(220px,1fr))}.badge{display:inline-block;padding:4px 8px;border-radius:20px;background:#edf2f3;font-size:11px}.ok{color:#16825d}.warn{color:#b36b00}.bad{color:#b3261e}.muted{color:#7f8c8d;font-size:12px}.split{display:grid;grid-template-columns:1fr 1fr;gap:15px}.chart{background:#fff;border:1px solid var(--line);border-radius:9px;padding:14px}
+.toast{position:fixed;left:18px;bottom:18px;background:#263746;color:#fff;padding:12px 16px;border-radius:8px;display:none;z-index:99}
+@media(max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr)}.formgrid{grid-template-columns:repeat(2,1fr)}.cards{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.app{display:block}.sidebar{width:100%;min-width:0;height:auto}.menu{display:grid;grid-template-columns:repeat(2,1fr);max-height:310px}.head{grid-column:1/-1}.item{font-size:12px}.work{padding:10px}.kpis,.formgrid,.cards,.split{grid-template-columns:1fr}.topbar{height:auto;padding:10px}}
 </style>
 </head>
 <body>
 
-<section id="loginScreen" class="login">
-<div class="login-card">
-  <h1>🌿 Agro Green Farm ERP</h1>
-  <div class="muted">شركة اجرو جرين للاستيراد والتصدير — مزرعة شمال التحرير</div>
-  <div class="field"><label>البريد الإلكتروني</label><input id="loginEmail" type="email" placeholder="البريد المستخدم في Supabase"></div>
-  <div class="field"><label>كلمة المرور</label><input id="loginPassword" type="password"></div>
-  <button class="btn primary" style="width:100%" onclick="login()">تسجيل الدخول</button>
-  <div id="loginMsg" class="notice hidden"></div>
-</div>
+<section id="login" class="login">
+  <div class="login-card">
+    <div style="text-align:center;font-size:34px;color:#16a085;margin-bottom:10px"><i class="fa-solid fa-tractor"></i></div>
+    <h1>الإدارة الشاملة للمزرعة</h1>
+    <div class="brand2">شركة اجرو جرين للاستيراد والتصدير — مزرعة شمال التحرير</div>
+    <div class="input"><label>البريد الإلكتروني</label><input id="email" type="email" placeholder="البريد المسجل في Supabase"></div>
+    <div class="input"><label>كلمة المرور</label><input id="password" type="password"></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="login()">تسجيل الدخول</button>
+    <div id="loginMsg"></div>
+  </div>
 </section>
 
-<section id="app" class="app hidden">
-<aside class="side">
-  <div class="brand">🌿 AGRO GREEN<br><span class="muted" style="color:#aebdc2">Farm ERP Online</span></div>
-  <button class="nav active" data-page="home">🏠 الرئيسية</button>
-  <button class="nav" data-page="shipments">🚢 الشحنات</button>
-  <button class="nav" data-page="animals">🐄 الحيوانات</button>
-  <button class="nav" data-page="barns">🏚️ العنابر</button>
-  <button class="nav" data-page="stock">📦 المخزون</button>
-  <button class="nav" data-page="weights">⚖️ الأوزان</button>
-  <button class="nav" data-page="feed">🌾 صرف العلف</button>
-  <button class="nav" data-page="sales">💰 المبيعات</button>
-  <button class="nav" data-page="deaths">☠️ النفوق</button>
-  <button class="nav" data-page="reports">📈 التقارير</button>
-  <button class="nav" data-page="settings">⚙️ الإعدادات</button>
+<section id="app" class="app">
+<aside class="sidebar">
+  <div class="brand"><strong><i class="fa-solid fa-tractor"></i> سيستم المزرعة (Online)</strong><span>AGRO GREEN FARM ERP</span></div>
+  <div class="menu">
+    <div class="item active" data-page="dashboard"><i class="fa-solid fa-chart-pie"></i> لوحة المؤشرات</div>
+
+    <div class="head">البيانات الأساسية</div>
+    <div class="item" data-page="boats"><i class="fa-solid fa-ship"></i> المراكب والشحنات</div>
+    <div class="item" data-page="items"><i class="fa-solid fa-boxes-stacked"></i> تعريف الأعلاف والبروتين</div>
+    <div class="item" data-page="customers"><i class="fa-solid fa-users"></i> تعريف العملاء</div>
+
+    <div class="head">حركات الماشية</div>
+    <div class="item" data-page="bulk"><i class="fa-solid fa-layer-group"></i> استلام شحنة / مجموعة</div>
+    <div class="item" data-page="heads"><i class="fa-solid fa-tags"></i> التكويد الفردي</div>
+    <div class="item" data-page="barns"><i class="fa-solid fa-warehouse"></i> إدارة العنابر</div>
+    <div class="item" data-page="batchFeed"><i class="fa-solid fa-wheat-awn"></i> صرف علف للمجموعات</div>
+    <div class="item" data-page="feed"><i class="fa-solid fa-wheat-awn"></i> صرف العلف للأفراد</div>
+    <div class="item" data-page="batchWeights"><i class="fa-solid fa-weight-scale"></i> أوزان المجموعات</div>
+    <div class="item" data-page="weights"><i class="fa-solid fa-weight-scale"></i> أوزان الأفراد</div>
+    <div class="item" data-page="sales"><i class="fa-solid fa-hand-holding-dollar"></i> مبيعات العجول</div>
+    <div class="item" data-page="deaths"><i class="fa-solid fa-skull"></i> تسجيل النفوق</div>
+
+    <div class="head">التحليلات والإدارة</div>
+    <div class="item" data-page="analytics"><i class="fa-solid fa-chart-column"></i> مركز التحليلات والأداء</div>
+    <div class="item" data-page="fleet"><i class="fa-solid fa-truck-fast"></i> نظام متابعة الأسطول</div>
+
+    <div class="head">المخزون والتصنيع</div>
+    <div class="item" data-page="inventory"><i class="fa-solid fa-boxes-stacked"></i> مخزون الأعلاف</div>
+    <div class="item" data-page="manufacturing"><i class="fa-solid fa-industry"></i> تصنيع العلف</div>
+
+    <div class="head">الإدارة والتحكم</div>
+    <div class="item" data-page="employees"><i class="fa-solid fa-user-shield"></i> الموظفون والصلاحيات</div>
+    <div class="item" data-page="settings"><i class="fa-solid fa-gear"></i> الإعدادات</div>
+
+    <div class="head">التقارير</div>
+    <div class="item" data-page="batchReport"><i class="fa-solid fa-chart-line"></i> تقرير أداء المجموعات</div>
+    <div class="item" data-page="fcrReport"><i class="fa-solid fa-magnifying-glass-chart"></i> التقرير الشامل للأفراد</div>
+  </div>
+  <div class="userbar"><span><i class="fa-solid fa-user"></i> <b id="currentUserName">-</b></span><button class="btn btn-light" onclick="logout()" style="padding:5px 8px"><i class="fa-solid fa-power-off"></i></button></div>
 </aside>
 
 <main class="main">
-<header class="top">
-  <div><b id="pageTitle">لوحة التحكم</b><div class="muted" id="who">-</div></div>
-  <button class="btn secondary" onclick="logout()">خروج</button>
-</header>
+<header class="topbar"><div><div class="title" id="pageTitle">لوحة المؤشرات</div><div class="meta" id="farmTitle">-</div></div><div class="meta">متصل بـ Supabase ✅</div></header>
+<div class="work">
 
-<div class="content">
-<section id="home" class="page active">
-  <div class="card"><h2>لوحة التحكم</h2><p class="muted">البيانات المعروضة هنا تُقرأ مباشرة من Supabase.</p></div>
-  <div class="stats">
-    <div class="stat"><small>إجمالي الحيوانات</small><b id="kTotal">0</b></div>
-    <div class="stat"><small>حي</small><b id="kAlive">0</b></div>
-    <div class="stat"><small>مباع</small><b id="kSold">0</b></div>
-    <div class="stat"><small>نافق</small><b id="kDead">0</b></div>
-    <div class="stat"><small>عدد العنابر</small><b id="kBarns">0</b></div>
-  </div>
-  <div class="card">
-    <h3>حالة الاتصال</h3>
-    <div id="connection" class="ok">متصل بـ Supabase</div>
-  </div>
-</section>
-
-<section id="shipments" class="page">
-  <div class="card">
-    <h2>🚢 استلام شحنة</h2>
-    <p class="muted">العملية تستخدم دالة السيرفر <code>receive_shipment()</code> لإنشاء الشحنة والرؤوس تلقائيًا.</p>
-    <div class="formgrid">
-      <div class="field"><label>كود الشحنة</label><input id="sCode" placeholder="J-22"></div>
-      <div class="field"><label>المركب</label><select id="sBoat"></select></div>
-      <div class="field"><label>النوع</label><input id="sType" value="هولشتاين"></div>
-      <div class="field"><label>عدد الرؤوس</label><input id="sCount" type="number" min="1" value="100"></div>
-      <div class="field"><label>إجمالي الوزن كجم</label><input id="sWeight" type="number" min="1"></div>
-      <div class="field"><label>تاريخ الوصول</label><input id="sDate" type="date"></div>
-      <div class="field"><label>عنبر الاستلام</label><select id="sBarn"></select></div>
-    </div>
-    <button class="btn primary" onclick="receiveShipment()">استلام الشحنة وإنشاء الرؤوس</button>
-    <div id="shipmentMsg" class="notice hidden"></div>
-  </div>
-  <div class="card">
-    <h3>الشحنات</h3>
-    <table><thead><tr><th>الكود</th><th>النوع</th><th>العدد</th><th>الوزن</th><th>التاريخ</th><th>الحالة</th></tr></thead><tbody id="shipmentsTable"></tbody></table>
-  </div>
-</section>
-
-<section id="animals" class="page">
-  <div class="card"><h2>🐄 الحيوانات</h2><div class="toolbar"><button class="btn secondary" onclick="loadAnimals()">تحديث</button></div>
-  <table><thead><tr><th>الكود</th><th>الشحنة</th><th>العنبر</th><th>النوع</th><th>الوزن الابتدائي</th><th>الحالة</th></tr></thead><tbody id="animalsTable"></tbody></table></div>
-</section>
-
-<section id="barns" class="page">
-  <div class="card"><h2>🏚️ العنابر</h2>
-  <table><thead><tr><th>الكود</th><th>العنبر</th><th>السعة</th><th>الحالي</th><th>المتاح</th></tr></thead><tbody id="barnsTable"></tbody></table></div>
-</section>
-
-<section id="stock" class="page">
-  <div class="card"><h2>📦 المخزون</h2><p class="muted">الرصيد الحقيقي من جدول stock.</p>
-  <table><thead><tr><th>الصنف</th><th>المخزن</th><th>الوحدة</th><th>الرصيد</th><th>البروتين</th><th>تكلفة/كجم</th><th>الحالة</th></tr></thead><tbody id="stockTable"></tbody></table></div>
-</section>
-
-<section id="weights" class="page">
-  <div class="card"><h2>⚖️ تسجيل وزن</h2>
-  <div class="formgrid">
-    <div class="field"><label>الحيوان</label><select id="wAnimal"></select></div>
-    <div class="field"><label>الوزن كجم</label><input id="wWeight" type="number" min="0.1" step="0.001"></div>
-    <div class="field"><label>التاريخ</label><input id="wDate" type="date"></div>
-    <div class="field"><label>ملاحظات</label><input id="wNotes"></div>
-  </div>
-  <button class="btn primary" onclick="recordWeight()">حفظ الوزن</button>
-  <div id="weightMsg" class="notice hidden"></div></div>
-</section>
-
-<section id="feed" class="page">
-  <div class="card"><h2>🌾 صرف علف</h2>
-  <div class="formgrid">
-    <div class="field"><label>المخزن</label><select id="fWarehouse"></select></div>
-    <div class="field"><label>الصنف</label><select id="fStock"></select></div>
-    <div class="field"><label>الكمية كجم</label><input id="fQty" type="number" min="0.001" step="0.001"></div>
-    <div class="field"><label>التاريخ</label><input id="fDate" type="date"></div>
-    <div class="field"><label>إلى العنبر (اختياري)</label><select id="fBarn"></select></div>
-    <div class="field"><label>مرجع</label><input id="fRef" value="feed_issue"></div>
-  </div>
-  <button class="btn primary" onclick="issueStock()">تسجيل الصرف</button>
-  <div id="feedMsg" class="notice hidden"></div></div>
-</section>
-
-<section id="sales" class="page"><div class="card"><h2>💰 المبيعات</h2><p class="muted">جاهز للربط مع دالة البيع بعد اعتماد سير العمل المحاسبي.</p></div></section>
-<section id="deaths" class="page"><div class="card"><h2>☠️ النفوق</h2><p class="muted">جاهز لاستخدام <code>register_animal_death()</code>.</p></div></section>
-<section id="reports" class="page"><div class="card"><h2>📈 التقارير</h2><p>سيتم تحويل مؤشرات ADG وFCR والمخزون من بيانات Supabase في الخطوة التالية.</p></div></section>
-<section id="settings" class="page"><div class="card"><h2>⚙️ الإعدادات</h2><p class="muted">إدارة اسم المنشأة والصلاحيات ستتصل بجدول user_profiles.</p></div></section>
+<section id="dashboard" class="view active">
+<div class="grid kpis">
+<div class="kpi"><div class="kpi-icon" style="background:#2c3e50"><i class="fa-solid fa-cow"></i></div><div><small>إجمالي الرؤوس</small><b id="kTotal">0</b></div></div>
+<div class="kpi"><div class="kpi-icon" style="background:#16a085"><i class="fa-solid fa-check"></i></div><div><small>الرصيد الحي</small><b id="kAlive">0</b></div></div>
+<div class="kpi"><div class="kpi-icon" style="background:#2980b9"><i class="fa-solid fa-cart-shopping"></i></div><div><small>المباع</small><b id="kSold">0</b></div></div>
+<div class="kpi"><div class="kpi-icon" style="background:#c0392b"><i class="fa-solid fa-skull"></i></div><div><small>النافق</small><b id="kDead">0</b></div></div>
+<div class="kpi"><div class="kpi-icon" style="background:#f39c12"><i class="fa-solid fa-warehouse"></i></div><div><small>العنابر</small><b id="kBarns">0</b></div></div>
 </div>
-</main>
+<div class="split">
+<div class="chart"><h3 style="margin-bottom:12px">حالة القطيع</h3><canvas id="statusChart" height="220"></canvas></div>
+<div class="chart"><h3 style="margin-bottom:12px">المخزون حسب الصنف</h3><canvas id="stockChart" height="220"></canvas></div>
+</div>
 </section>
+
+<section id="boats" class="view">
+<div class="card"><h2>المراكب والشحنات</h2><div class="form">
+<div class="formgrid"><div class="field"><label>اسم المركب</label><input id="boatName"></div><div class="field"><label>تاريخ الوصول</label><input id="boatDate" type="date"></div></div>
+<button class="btn btn-primary" onclick="addBoat()"><i class="fa-solid fa-plus"></i> حفظ المركب</button></div></div>
+<div class="card"><table class="table"><thead><tr><th>المركب</th><th>تاريخ الوصول</th></tr></thead><tbody id="boatsRows"></tbody></table></div>
+</section>
+
+<section id="items" class="view">
+<div class="card"><h2>تعريف الأعلاف والبروتين</h2><div class="form"><div class="formgrid">
+<div class="field"><label>الكود</label><input id="itemCode"></div><div class="field"><label>اسم الصنف</label><input id="itemName"></div><div class="field"><label>المجموعة</label><select id="itemGroup"><option value="feed">أعلاف</option><option value="medicine">أدوية</option><option value="additive">إضافات</option><option value="other">أخرى</option></select></div><div class="field"><label>البروتين %</label><input id="itemProtein" type="number" step="0.01"></div>
+<div class="field"><label>تكلفة/كجم</label><input id="itemCost" type="number" step="0.0001"></div>
+</div><button class="btn btn-primary" onclick="addFeedItem()">حفظ الصنف</button></div></div>
+<div class="card"><table class="table"><thead><tr><th>الكود</th><th>الصنف</th><th>المجموعة</th><th>البروتين %</th><th>التكلفة</th></tr></thead><tbody id="itemsRows"></tbody></table></div>
+</section>
+
+<section id="customers" class="view">
+<div class="card"><h2>تعريف العملاء</h2><div class="form"><div class="formgrid"><div class="field"><label>اسم العميل</label><input id="custName"></div><div class="field"><label>الهاتف</label><input id="custPhone"></div><div class="field"><label>ملاحظات</label><input id="custNotes"></div></div><button class="btn btn-primary" onclick="addCustomer()">حفظ العميل</button></div></div>
+<div class="card"><table class="table"><thead><tr><th>العميل</th><th>الهاتف</th><th>الملاحظات</th></tr></thead><tbody id="customersRows"></tbody></table></div>
+</section>
+
+<section id="bulk" class="view">
+<div class="card"><h2>استلام شحنة / مجموعة</h2><p class="muted">الدالة على السيرفر هي التي تنشئ الشحنة وتولد الأكواد الفردية وتتحقق من سعة العنبر.</p>
+<div class="form"><div class="formgrid">
+<div class="field"><label>كود الشحنة</label><input id="shCode" placeholder="J-22"></div>
+<div class="field"><label>المركب</label><select id="shBoat"></select></div>
+<div class="field"><label>النوع</label><input id="shType" value="هولشتاين"></div>
+<div class="field"><label>عدد الرؤوس</label><input id="shCount" type="number" min="1" value="100"></div>
+<div class="field"><label>إجمالي الوزن (كجم)</label><input id="shWeight" type="number" min="1"></div>
+<div class="field"><label>التاريخ</label><input id="shDate" type="date"></div>
+<div class="field"><label>عنبر الاستلام</label><select id="shBarn"></select></div>
+<div class="field"><label>بلد المنشأ</label><input id="shOrigin"></div>
+</div><button class="btn btn-primary" onclick="receiveShipment()">استلام وإنشاء الرؤوس</button><div id="shipmentMsg"></div></div></div>
+<div class="card"><table class="table"><thead><tr><th>الشحنة</th><th>المركب</th><th>العدد</th><th>الوزن</th><th>التاريخ</th><th>الحالة</th></tr></thead><tbody id="shipmentsRows"></tbody></table></div>
+</section>
+
+<section id="heads" class="view">
+<div class="card"><h2>التكويد الفردي</h2><div class="form"><div class="formgrid"><div class="field"><label>الكود</label><input id="headTag"></div><div class="field"><label>النوع</label><input id="headType"></div><div class="field"><label>الشحنة</label><select id="headShipment"></select></div><div class="field"><label>العنبر</label><select id="headBarn"></select></div><div class="field"><label>الوزن الابتدائي</label><input id="headWeight" type="number"></div><div class="field"><label>التاريخ</label><input id="headDate" type="date"></div></div><button class="btn btn-primary" onclick="addSingleAnimal()">حفظ الرأس</button></div></div>
+<div class="card"><table class="table"><thead><tr><th>الكود</th><th>الشحنة</th><th>العنبر</th><th>الوزن</th><th>الحالة</th></tr></thead><tbody id="headsRows"></tbody></table></div>
+</section>
+
+<section id="barns" class="view">
+<div class="card"><h2>إدارة العنابر</h2><div class="form"><div class="formgrid"><div class="field"><label>الكود</label><input id="barnCode"></div><div class="field"><label>اسم العنبر</label><input id="barnName"></div><div class="field"><label>السعة</label><input id="barnCapacity" type="number"></div><div class="field"><label>ملاحظات</label><input id="barnNotes"></div></div><button class="btn btn-primary" onclick="addBarn()">إضافة عنبر</button></div></div>
+<div class="card"><table class="table"><thead><tr><th>الكود</th><th>العنبر</th><th>السعة</th><th>الحالي</th><th>المتاح</th></tr></thead><tbody id="barnsRows"></tbody></table></div>
+</section>
+
+<section id="batchFeed" class="view">
+<div class="card"><h2>صرف علف للمجموعات</h2><div class="form"><div class="formgrid"><div class="field"><label>المخزن</label><select id="bfWarehouse"></select></div><div class="field"><label>الصنف</label><select id="bfStock"></select></div><div class="field"><label>الكمية كجم</label><input id="bfQty" type="number"></div><div class="field"><label>المجموعة / الشحنة</label><select id="bfShipment"></select></div><div class="field"><label>العنبر</label><select id="bfBarn"></select></div><div class="field"><label>التاريخ</label><input id="bfDate" type="date"></div></div><button class="btn btn-primary" onclick="issueGroupFeed()">حفظ إذن الصرف</button><div id="bfMsg"></div></div></div>
+</section>
+
+<section id="feed" class="view">
+<div class="card"><h2>صرف العلف للأفراد</h2><div class="form"><div class="formgrid"><div class="field"><label>المخزن</label><select id="fWarehouse"></select></div><div class="field"><label>الصنف</label><select id="fStock"></select></div><div class="field"><label>الكمية الإجمالية</label><input id="fQty" type="number"></div><div class="field"><label>العنبر</label><select id="fBarn"></select></div><div class="field"><label>التاريخ</label><input id="fDate" type="date"></div></div><p class="muted" style="margin:8px 0">الإصدار الآمن يخصم الرصيد من السيرفر. يمكننا إضافة توزيع فردي مفصل بعد اختبار حركة المخزون.</p><button class="btn btn-primary" onclick="issueIndividualFeed()">حفظ الصرف</button><div id="fMsg"></div></div></div>
+</section>
+
+<section id="batchWeights" class="view">
+<div class="card"><h2>تسجيل أوزان المجموعات</h2><div class="form"><div class="formgrid"><div class="field"><label>الشحنة</label><select id="bwShipment"></select></div><div class="field"><label>إجمالي الوزن كجم</label><input id="bwWeight" type="number"></div><div class="field"><label>عدد الرؤوس</label><input id="bwCount" type="number"></div><div class="field"><label>التاريخ</label><input id="bwDate" type="date"></div></div><button class="btn btn-primary" onclick="saveBatchWeight()">حفظ الوزن</button></div></div>
+<div class="card"><table class="table"><thead><tr><th>الشحنة</th><th>الإجمالي</th><th>العدد</th><th>المتوسط</th><th>التاريخ</th></tr></thead><tbody id="bwRows"></tbody></table></div>
+</section>
+
+<section id="weights" class="view">
+<div class="card"><h2>تسجيل أوزان الأفراد</h2><div class="form"><div class="formgrid"><div class="field"><label>الحيوان</label><select id="wAnimal"></select></div><div class="field"><label>الوزن</label><input id="wWeight" type="number"></div><div class="field"><label>التاريخ</label><input id="wDate" type="date"></div><div class="field"><label>ملاحظات</label><input id="wNotes"></div></div><button class="btn btn-primary" onclick="recordWeight()">حفظ الوزن</button><div id="wMsg"></div></div></div>
+<div class="card"><table class="table"><thead><tr><th>الحيوان</th><th>الوزن</th><th>التاريخ</th></tr></thead><tbody id="weightsRows"></tbody></table></div>
+</section>
+
+<section id="sales" class="view"><div class="card"><h2>مبيعات العجول</h2><p class="muted">سنربط فاتورة البيع متعددة الرؤوس بعد نجاح الربط الأساسي؛ وظيفة البيع الفردي موجودة على السيرفر.</p></div></section>
+<section id="deaths" class="view"><div class="card"><h2>تسجيل النفوق</h2><div class="form"><div class="formgrid"><div class="field"><label>الحيوان</label><select id="dAnimal"></select></div><div class="field"><label>التاريخ</label><input id="dDate" type="date"></div><div class="field"><label>السبب</label><input id="dReason"></div><div class="field"><label>ملاحظات</label><input id="dNotes"></div></div><button class="btn btn-danger" onclick="registerDeath()">تسجيل النفوق</button><div id="dMsg"></div></div></div>
+<div class="card"><table class="table"><thead><tr><th>الحيوان</th><th>التاريخ</th><th>السبب</th></tr></thead><tbody id="deathsRows"></tbody></table></div></section>
+
+<section id="analytics" class="view"><div class="card"><h2>مركز التحليلات والأداء</h2><div class="grid kpis">
+<div class="kpi"><div class="kpi-icon" style="background:#16a085"><i class="fa-solid fa-arrow-trend-up"></i></div><div><small>ADG</small><b id="aAdg">-</b></div></div>
+<div class="kpi"><div class="kpi-icon" style="background:#8e44ad"><i class="fa-solid fa-scale-balanced"></i></div><div><small>FCR</small><b id="aFcr">-</b></div></div>
+<div class="kpi"><div class="kpi-icon" style="background:#f39c12"><i class="fa-solid fa-wheat-awn"></i></div><div><small>العلف المصروف</small><b id="aFeed">0</b></div></div>
+</div><div class="card"><table class="table"><thead><tr><th>الحيوان</th><th>أول وزن</th><th>آخر وزن</th><th>الزيادة</th><th>ADG</th></tr></thead><tbody id="analyticsRows"></tbody></table></div></section>
+
+<section id="fleet" class="view"><div class="card"><h2>نظام متابعة الأسطول</h2><div class="form"><div class="formgrid"><div class="field"><label>رقم السيارة</label><input id="vNo"></div><div class="field"><label>اللوحة</label><input id="vPlate"></div><div class="field"><label>النوع</label><input id="vType"></div><div class="field"><label>الموديل</label><input id="vModel"></div><div class="field"><label>السائق</label><input id="vDriver"></div><div class="field"><label>هاتف السائق</label><input id="vPhone"></div><div class="field"><label>العداد</label><input id="vOdo" type="number"></div><div class="field"><label>الوقود</label><select id="vFuel"><option>سولار</option><option>بنزين</option><option>غاز</option><option>كهرباء</option></select></div></div><button class="btn btn-primary" onclick="addVehicle()">حفظ السيارة</button></div></div>
+<div class="card"><table class="table"><thead><tr><th>السيارة</th><th>اللوحة</th><th>السائق</th><th>العداد</th><th>الحالة</th></tr></thead><tbody id="vehiclesRows"></tbody></table></div></section>
+
+<section id="inventory" class="view"><div class="card"><h2>مخزون الأعلاف</h2><div class="form"><div class="formgrid"><div class="field"><label>المخزن</label><select id="iWarehouse"></select></div><div class="field"><label>اسم الصنف</label><input id="iName"></div><div class="field"><label>الوحدة</label><input id="iUnit" value="kg"></div><div class="field"><label>الرصيد الافتتاحي</label><input id="iOpening" type="number"></div><div class="field"><label>البروتين %</label><input id="iProtein" type="number"></div><div class="field"><label>التكلفة/كجم</label><input id="iCost" type="number" step="0.0001"></div><div class="field"><label>حد الطلب</label><input id="iMin" type="number"></div></div><button class="btn btn-primary" onclick="addStock()">إضافة المخزون</button></div></div>
+<div class="card"><table class="table"><thead><tr><th>الصنف</th><th>المخزن</th><th>الرصيد</th><th>البروتين</th><th>التكلفة</th><th>الحالة</th></tr></thead><tbody id="inventoryRows"></tbody></table></div></section>
+
+<section id="manufacturing" class="view"><div class="card"><h2>تصنيع العلف</h2><p class="muted">نحتفظ بشاشة التصنيع، وبعد اختبار المخزون سنربط الاستهلاك والإنتاج بدالة ذرية واحدة لمنع أي تلاعب أو رصيد سالب.</p><div class="form"><div class="formgrid"><div class="field"><label>رقم أمر التصنيع</label><input id="moNo"></div><div class="field"><label>المنتج النهائي</label><input id="moProduct"></div><div class="field"><label>التاريخ</label><input id="moDate" type="date"></div><div class="field"><label>إجمالي الإنتاج كجم</label><input id="moQty" type="number"></div></div><button class="btn btn-primary" onclick="createMO()">إنشاء أمر تصنيع</button></div></div>
+<div class="card"><table class="table"><thead><tr><th>الأمر</th><th>المنتج</th><th>الإنتاج</th><th>التاريخ</th></tr></thead><tbody id="moRows"></tbody></table></div></section>
+
+<section id="employees" class="view"><div class="card"><h2>الموظفون والصلاحيات</h2><p class="muted">حسابات الدخول الفعلية تُدار من Supabase Authentication، والجدول هنا يحدد الدور والصلاحيات المرتبطة بالمزرعة.</p><div class="card" style="margin:0;background:#f8fafb"><table class="table"><thead><tr><th>المستخدم</th><th>الاسم</th><th>الدور</th><th>الحالة</th><th>المزرعة</th></tr></thead><tbody id="usersRows"></tbody></table></div></div></section>
+
+<section id="settings" class="view"><div class="card"><h2>الإعدادات</h2><div class="form"><div class="formgrid"><div class="field"><label>اسم الشركة</label><input id="setCompany"></div><div class="field"><label>اسم المزرعة</label><input id="setFarm"></div><div class="field"><label>حد FCR</label><input id="setFcr" type="number" step="0.1"></div><div class="field"><label>حد النفوق %</label><input id="setMort" type="number" step="0.1"></div></div><button class="btn btn-primary" onclick="saveFarmSettings()">حفظ الإعدادات</button></div></div></section>
+
+<section id="batchReport" class="view"><div class="card"><h2>تقرير أداء المجموعات</h2><div class="toolbar"><button class="btn btn-blue" onclick="refreshBatchReport()"><i class="fa-solid fa-rotate"></i> تحديث</button><button class="btn btn-light" onclick="exportTable('batchReportTable','تقرير_المجموعات')"><i class="fa-solid fa-file-excel"></i> تصدير</button></div><table class="table" id="batchReportTable"><thead><tr><th>الشحنة</th><th>العدد</th><th>أول متوسط</th><th>آخر متوسط</th><th>الزيادة</th><th>ADG</th></tr></thead><tbody id="batchReportRows"></tbody></table></div></section>
+
+<section id="fcrReport" class="view"><div class="card"><h2>التقرير الشامل للأفراد</h2><div class="toolbar"><button class="btn btn-blue" onclick="refreshFcrReport()"><i class="fa-solid fa-rotate"></i> تحديث</button><button class="btn btn-light" onclick="exportTable('fcrTable','تقرير_FCR_الأفراد')"><i class="fa-solid fa-file-excel"></i> تصدير</button></div><table class="table" id="fcrTable"><thead><tr><th>الحيوان</th><th>الشحنة</th><th>أول وزن</th><th>آخر وزن</th><th>الزيادة</th><th>ADG</th></tr></thead><tbody id="fcrRows"></tbody></table></div></section>
+
+</div></main></section>
+<div id="toast" class="toast"></div>
 
 <script>
 const SUPABASE_URL="https://vhbhbzcywtmtwtpqvnhw.supabase.co";
 const SUPABASE_KEY="sb_publishable_LXRs70nbUvJljFiRyCT2UA_-hZDkuf3";
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let currentUser=null, currentProfile=null, farmId=null;
+let farmId=null,user=null,profile=null,statusChart=null,stockChart=null;
 
 const $=id=>document.getElementById(id);
-function showMsg(id,text,error=false){const el=$(id);el.textContent=text;el.className="notice"+(error?" error":"");el.classList.remove("hidden")}
-function today(el){if($(el)&&!$(el).value)$(el).value=new Date().toISOString().slice(0,10)}
-function nav(page){
- document.querySelectorAll(".nav").forEach(x=>x.classList.toggle("active",x.dataset.page===page));
- document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===page));
- $("pageTitle").textContent=document.querySelector(`.nav[data-page="${page}"]`).textContent.trim();
- if(page==="shipments")loadShipments(); if(page==="animals")loadAnimals(); if(page==="barns")loadBarns(); if(page==="stock")loadStock(); if(page==="weights")loadWeightAnimals();
+const today=()=>new Date().toISOString().slice(0,10);
+function toast(t){$("toast").textContent=t;$("toast").style.display="block";setTimeout(()=>$("toast").style.display="none",2800)}
+function message(id,text,err=false){const e=$(id);e.className="msg "+(err?"err":"ok");e.textContent=text}
+function num(x){const n=Number(x);return Number.isFinite(n)?n:0}
+function exportTable(id,name){const t=$(id);if(!t)return;const wb=XLSX.utils.table_to_book(t,{sheet:name.slice(0,31)});XLSX.writeFile(wb,name+"_"+today()+".xlsx")}
+function setDates(){["shDate","headDate","bwDate","wDate","fDate","bfDate","dDate","moDate","boatDate"].forEach(id=>{if($(id)&&!$(id).value)$(id).value=today()})}
+
+document.querySelectorAll(".item[data-page]").forEach(x=>x.onclick=()=>openPage(x.dataset.page));
+function openPage(page){
+ document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));
+ document.querySelectorAll(".item[data-page]").forEach(x=>x.classList.remove("active"));
+ $(page).classList.add("active");document.querySelector(`.item[data-page="${page}"]`)?.classList.add("active");
+ $("pageTitle").textContent=document.querySelector(`.item[data-page="${page}"]`)?.innerText.trim()||page;
+ setDates();
+ refreshPage(page);
 }
-document.querySelectorAll(".nav").forEach(b=>b.onclick=()=>nav(b.dataset.page));
+async function refreshPage(page){
+ if(!farmId)return;
+ if(page==="dashboard")loadDashboard();
+ if(page==="boats")loadBoats();
+ if(page==="items")loadItems();
+ if(page==="customers")loadCustomers();
+ if(page==="bulk")Promise.all([loadBoats(),loadBarns(),loadShipments()]);
+ if(page==="heads")Promise.all([loadHeads(),loadBarns(),loadShipments()]);
+ if(page==="barns")loadBarns();
+ if(page==="batchFeed")Promise.all([loadWarehouses(),loadStockOptions(),loadShipments(),loadBarns()]);
+ if(page==="feed")Promise.all([loadWarehouses(),loadStockOptions(),loadBarns()]);
+ if(page==="batchWeights")Promise.all([loadShipments(),loadBatchWeights()]);
+ if(page==="weights")Promise.all([loadWeightAnimals(),loadWeights()]);
+ if(page==="sales")loadWeightAnimals();
+ if(page==="deaths")Promise.all([loadWeightAnimals(),loadDeaths()]);
+ if(page==="analytics")loadAnalytics();
+ if(page==="fleet")loadVehicles();
+ if(page==="inventory")loadInventory();
+ if(page==="manufacturing")loadManufacturing();
+ if(page==="employees")loadUsers();
+ if(page==="settings")loadFarmSettings();
+ if(page==="batchReport")refreshBatchReport();
+ if(page==="fcrReport")refreshFcrReport();
+}
 
 async function login(){
- const email=$("loginEmail").value.trim(), password=$("loginPassword").value;
- if(!email||!password)return showMsg("loginMsg","أدخل البريد وكلمة المرور",true);
+ const email=$("email").value.trim(),password=$("password").value;
+ if(!email||!password)return message("loginMsg","أدخل البريد وكلمة المرور",true);
  const {data,error}=await db.auth.signInWithPassword({email,password});
- if(error)return showMsg("loginMsg",error.message,true);
- await enterApp(data.user);
+ if(error)return message("loginMsg",error.message,true);
+ await enter(user=data.user);
 }
-async function enterApp(user){
- currentUser=user;
- const {data:profile,error}=await db.from("user_profiles").select("id,full_name,username,role,active,farm_id").eq("id",user.id).single();
- if(error||!profile||!profile.farm_id){return showMsg("loginMsg","الحساب غير مربوط بمزرعة في user_profiles.",true)}
- currentProfile=profile; farmId=profile.farm_id;
- if(!profile.active)return showMsg("loginMsg","المستخدم موقوف.",true);
- $("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");
- $("who").textContent=(profile.full_name||profile.username||user.email)+" — "+profile.role;
- today("sDate");today("wDate");today("fDate");
- await Promise.all([loadDashboard(),loadBoatOptions(),loadBarnOptions(),loadShipments(),loadStock()]);
+async function enter(u){
+ user=u;
+ const {data,error}=await db.from("user_profiles").select("id,full_name,username,role,active,farm_id").eq("id",u.id).single();
+ if(error||!data)return message("loginMsg","الحساب غير موجود في user_profiles. اربطه بالمزرعة أولًا.",true);
+ if(!data.active)return message("loginMsg","المستخدم موقوف.",true);
+ profile=data;farmId=data.farm_id;
+ if(!farmId)return message("loginMsg","الحساب غير مربوط بمزرعة.",true);
+ const {data:f}=await db.from("farms").select("name,company_name,fcr_limit,mortality_limit_pct").eq("id",farmId).single();
+ $("currentUserName").textContent=data.full_name||data.username||u.email;
+ $("farmTitle").textContent=(f?.company_name||"")+" — "+(f?.name||"");
+ $("setCompany").value=f?.company_name||"";$("setFarm").value=f?.name||"";$("setFcr").value=f?.fcr_limit??7;$("setMort").value=f?.mortality_limit_pct??2;
+ $("login").classList.add("hidden");$("app").style.display="flex";setDates();await loadDashboard();
 }
 async function logout(){await db.auth.signOut();location.reload()}
-
 async function loadDashboard(){
- const {data,error}=await db.from("v_dashboard_summary").select("*").eq("farm_id",farmId).maybeSingle();
- if(error){console.warn(error);return}
- $("kTotal").textContent=data?.total_heads??0;$("kAlive").textContent=data?.alive_heads??0;$("kSold").textContent=data?.sold_heads??0;$("kDead").textContent=data?.dead_heads??0;
- const {count}=await db.from("barns").select("*",{count:"exact",head:true}).eq("farm_id",farmId);
- $("kBarns").textContent=count||0;
+ const {data}=await db.from("v_dashboard_summary").select("*").eq("farm_id",farmId).maybeSingle();
+ $("kTotal").textContent=data?.total_heads||0;$("kAlive").textContent=data?.alive_heads||0;$("kSold").textContent=data?.sold_heads||0;$("kDead").textContent=data?.dead_heads||0;
+ const {count}=await db.from("barns").select("*",{count:"exact",head:true}).eq("farm_id",farmId);$("kBarns").textContent=count||0;
+ const vals=[data?.alive_heads||0,data?.sold_heads||0,data?.dead_heads||0];
+ if(statusChart)statusChart.destroy();
+ statusChart=new Chart($("statusChart"),{type:"doughnut",data:{labels:["حي","مباع","نافق"],datasets:[{data:vals,backgroundColor:["#16a085","#f39c12","#c0392b"]}]},options:{responsive:true}});
+ const {data:st}=await db.from("stock").select("name,qty_kg").eq("farm_id",farmId).order("qty_kg",{ascending:false}).limit(8);
+ if(stockChart)stockChart.destroy();
+ stockChart=new Chart($("stockChart"),{type:"bar",data:{labels:(st||[]).map(x=>x.name),datasets:[{label:"كجم",data:(st||[]).map(x=>num(x.qty_kg)),backgroundColor:"#2980b9"}]},options:{responsive:true}});
 }
-
-async function loadBoatOptions(){
- const {data}=await db.from("boats").select("id,name").eq("farm_id",farmId).order("name");
- $("sBoat").innerHTML='<option value="">بدون مركب</option>'+(data||[]).map(x=>`<option value="${x.id}">${x.name}</option>`).join("");
+async function loadBoats(){
+ const {data,error}=await db.from("boats").select("id,name,arrival_date").eq("farm_id",farmId).order("arrival_date",{ascending:false});
+ $("boatsRows").innerHTML=error?`<tr><td colspan="2">${error.message}</td></tr>`:(data||[]).map(x=>`<tr><td>${x.name}</td><td>${x.arrival_date||"-"}</td></tr>`).join("")||'<tr><td colspan="2">لا توجد بيانات</td></tr>';
+ $("shBoat").innerHTML='<option value="">بدون مركب</option>'+(data||[]).map(x=>`<option value="${x.id}">${x.name}</option>`).join("");
+ $("headShipment").innerHTML='<option value="">بدون شحنة</option>';
 }
-async function loadBarnOptions(){
- const {data}=await db.from("barns").select("id,name,capacity_heads").eq("farm_id",farmId).eq("active",true).order("name");
- const opts=(data||[]).map(x=>`<option value="${x.id}">${x.name}</option>`).join("");
- $("sBarn").innerHTML='<option value="">اختر عنبر</option>'+opts;
- $("fBarn").innerHTML='<option value="">بدون تحديد</option>'+opts;
+async function addBoat(){
+ const name=$("boatName").value.trim(),date=$("boatDate").value||today();if(!name)return toast("أدخل اسم المركب");
+ const {error}=await db.from("boats").insert({farm_id:farmId,name,arrival_date:date});if(error)return toast(error.message);$("boatName").value="";await loadBoats();toast("تم حفظ المركب");
 }
-async function loadShipments(){
- const {data,error}=await db.from("shipments").select("code,animal_type,head_count,total_initial_weight_kg,arrival_date,status").eq("farm_id",farmId).order("arrival_date",{ascending:false});
- if(error){$("shipmentsTable").innerHTML=`<tr><td colspan="6">${error.message}</td></tr>`;return}
- $("shipmentsTable").innerHTML=(data||[]).map(x=>`<tr><td>${x.code}</td><td>${x.animal_type||"-"}</td><td>${x.head_count}</td><td>${x.total_initial_weight_kg}</td><td>${x.arrival_date}</td><td>${x.status}</td></tr>`).join("")||'<tr><td colspan="6">لا توجد شحنات</td></tr>';
+async function loadItems(){
+ const {data,error}=await db.from("feed_items").select("code,name,item_group,protein_pct,default_cost_per_kg").eq("farm_id",farmId).order("name");
+ $("itemsRows").innerHTML=error?`<tr><td colspan="5">${error.message}</td></tr>`:(data||[]).map(x=>`<tr><td>${x.code}</td><td>${x.name}</td><td>${x.item_group}</td><td>${x.protein_pct}%</td><td>${x.default_cost_per_kg}</td></tr>`).join("");
 }
-async function receiveShipment(){
- const code=$("sCode").value.trim(), boat=$("sBoat").value||null, type=$("sType").value.trim(), count=Number($("sCount").value), weight=Number($("sWeight").value), date=$("sDate").value, barn=$("sBarn").value||null;
- if(!code||!type||!count||!weight||!date||!barn)return showMsg("shipmentMsg","أكمل بيانات الشحنة بالكامل.",true);
- const {data,error}=await db.rpc("receive_shipment",{p_code:code,p_boat_id:boat,p_animal_type:type,p_head_count:count,p_total_weight_kg:weight,p_arrival_date:date,p_barn_id:barn});
- if(error)return showMsg("shipmentMsg",error.message,true);
- showMsg("shipmentMsg",`تم استلام الشحنة بنجاح. رقم العملية: ${data}`);$("sCode").value="";$("sWeight").value="";
- await Promise.all([loadShipments(),loadAnimals(),loadBarns(),loadDashboard()]);
+async function addFeedItem(){
+ const p={farm_id:farmId,code:$("itemCode").value.trim(),name:$("itemName").value.trim(),item_group:$("itemGroup").value,protein_pct:num($("itemProtein").value),default_cost_per_kg:num($("itemCost").value)};
+ if(!p.code||!p.name)return toast("أكمل بيانات الصنف");const {error}=await db.from("feed_items").insert(p);if(error)return toast(error.message);await loadItems();toast("تم حفظ الصنف");
 }
-async function loadAnimals(){
- const {data,error}=await db.from("animals").select("tag,animal_type,initial_weight_kg,status,shipments(code),barns(name)").eq("farm_id",farmId).order("created_at",{ascending:false}).limit(500);
- if(error){$("animalsTable").innerHTML=`<tr><td colspan="6">${error.message}</td></tr>`;return}
- $("animalsTable").innerHTML=(data||[]).map(x=>`<tr><td>${x.tag}</td><td>${x.shipments?.code||"-"}</td><td>${x.barns?.name||"-"}</td><td>${x.animal_type||"-"}</td><td>${x.initial_weight_kg}</td><td>${x.status}</td></tr>`).join("")||'<tr><td colspan="6">لا توجد حيوانات</td></tr>';
- await loadWeightAnimals();
+async function loadCustomers(){
+ const {data}=await db.from("customers").select("name,phone,notes").eq("farm_id",farmId).order("name");
+ $("customersRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.name}</td><td>${x.phone||"-"}</td><td>${x.notes||"-"}</td></tr>`).join("");
+}
+async function addCustomer(){
+ const p={farm_id:farmId,name:$("custName").value.trim(),phone:$("custPhone").value.trim(),notes:$("custNotes").value.trim()};if(!p.name)return toast("أدخل اسم العميل");
+ const {error}=await db.from("customers").insert(p);if(error)return toast(error.message);await loadCustomers();toast("تم حفظ العميل");
 }
 async function loadBarns(){
  const {data,error}=await db.from("v_barn_headcount").select("*").eq("farm_id",farmId).order("name");
- if(error){$("barnsTable").innerHTML=`<tr><td colspan="5">${error.message}</td></tr>`;return}
- $("barnsTable").innerHTML=(data||[]).map(x=>`<tr><td>${x.code}</td><td>${x.name}</td><td>${x.capacity_heads}</td><td>${x.current_heads}</td><td>${x.available_heads}</td></tr>`).join("");
+ $("barnsRows").innerHTML=error?`<tr><td colspan="5">${error.message}</td></tr>`:(data||[]).map(x=>`<tr><td>${x.code}</td><td>${x.name}</td><td>${x.capacity_heads}</td><td>${x.current_heads}</td><td>${x.available_heads}</td></tr>`).join("");
+ const opt=(data||[]).map(x=>`<option value="${x.id}">${x.name}</option>`).join("");
+ ["shBarn","headBarn","bfBarn","fBarn"].forEach(id=>{if($(id))$(id).innerHTML='<option value="">اختر عنبر</option>'+opt});
 }
-async function loadStock(){
- const {data,error}=await db.from("v_inventory_status").select("id,warehouse_id,name,unit,qty_kg,protein_pct,cost_per_kg,stock_status").eq("farm_id",farmId);
- if(error){$("stockTable").innerHTML=`<tr><td colspan="7">${error.message}</td></tr>`;return}
- const wh=await db.from("warehouses").select("id,name").eq("farm_id",farmId); const map=Object.fromEntries((wh.data||[]).map(x=>[x.id,x.name]));
- $("stockTable").innerHTML=(data||[]).map(x=>`<tr><td>${x.name}</td><td>${map[x.warehouse_id]||"-"}</td><td>${x.unit}</td><td>${x.qty_kg}</td><td>${x.protein_pct}%</td><td>${x.cost_per_kg}</td><td>${x.stock_status==="low"?"منخفض":"جيد"}</td></tr>`).join("")||'<tr><td colspan="7">لا يوجد مخزون</td></tr>';
- $("fWarehouse").innerHTML='<option value="">اختر المخزن</option>'+(wh.data||[]).map(x=>`<option value="${x.id}">${x.name}</option>`).join("");
- $("fStock").innerHTML='<option value="">اختر الصنف</option>'+(data||[]).map(x=>`<option value="${x.id}">${x.name} — ${x.qty_kg} كجم</option>`).join("");
+async function addBarn(){
+ const p={farm_id:farmId,code:$("barnCode").value.trim(),name:$("barnName").value.trim(),capacity_heads:parseInt($("barnCapacity").value),notes:$("barnNotes").value.trim()};
+ if(!p.code||!p.name||!p.capacity_heads)return toast("أكمل بيانات العنبر");const {error}=await db.from("barns").insert(p);if(error)return toast(error.message);await loadBarns();toast("تم إنشاء العنبر");
 }
-async function loadWeightAnimals(){
- const {data}=await db.from("animals").select("id,tag,barn_id").eq("farm_id",farmId).eq("status","alive").order("tag").limit(1000);
- $("wAnimal").innerHTML=(data||[]).map(x=>`<option value="${x.id}">${x.tag}</option>`).join("");
+async function loadShipments(){
+ const {data}=await db.from("shipments").select("id,code,animal_type,head_count,total_initial_weight_kg,arrival_date,status,boats(name)").eq("farm_id",farmId).order("arrival_date",{ascending:false});
+ $("shipmentsRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.code}</td><td>${x.boats?.name||"-"}</td><td>${x.head_count}</td><td>${x.total_initial_weight_kg}</td><td>${x.arrival_date}</td><td>${x.status}</td></tr>`).join("");
+ const opts='<option value="">اختر الشحنة</option>'+(data||[]).map(x=>`<option value="${x.id}">${x.code}</option>`).join("");
+ ["headShipment","bfShipment","bwShipment"].forEach(id=>{if($(id))$(id).innerHTML=opts});
 }
+async function receiveShipment(){
+ const p={p_code:$("shCode").value.trim(),p_boat_id:$("shBoat").value||null,p_animal_type:$("shType").value.trim(),p_head_count:parseInt($("shCount").value),p_total_weight_kg:num($("shWeight").value),p_arrival_date:$("shDate").value,p_barn_id:$("shBarn").value||null};
+ if(!p.p_code||!p.p_animal_type||!p.p_head_count||!p.p_total_weight_kg||!p.p_arrival_date||!p.p_barn_id)return message("shipmentMsg","أكمل بيانات الشحنة.",true);
+ const {data,error}=await db.rpc("receive_shipment",p);if(error)return message("shipmentMsg",error.message,true);message("shipmentMsg","تم استلام الشحنة وإنشاء الرؤوس بنجاح. العملية: "+data);await Promise.all([loadShipments(),loadHeads(),loadBarns(),loadDashboard()]);
+ $("shCode").value="";$("shWeight").value="";
+}
+async function loadHeads(){
+ const {data,error}=await db.from("animals").select("tag,animal_type,initial_weight_kg,status,shipments(code),barns(name)").eq("farm_id",farmId).order("created_at",{ascending:false}).limit(1000);
+ $("headsRows").innerHTML=error?`<tr><td colspan="5">${error.message}</td></tr>`:(data||[]).map(x=>`<tr><td>${x.tag}</td><td>${x.shipments?.code||"-"}</td><td>${x.barns?.name||"-"}</td><td>${x.initial_weight_kg}</td><td>${x.status}</td></tr>`).join("");
+ $("wAnimal").innerHTML=(data||[]).filter(x=>x.status==="alive").map(x=>`<option value="${x.tag}" data-id="${x.tag}">${x.tag}</option>`).join("");
+ $("dAnimal").innerHTML=(data||[]).filter(x=>x.status==="alive").map(x=>`<option value="${x.tag}" data-id="${x.tag}">${x.tag}</option>`).join("");
+}
+async function addSingleAnimal(){
+ toast("التكويد الفردي المباشر يحتاج UUID للحيوان؛ استخدم استلام شحنة في النسخة الحالية، وسنضيف التكويد الفردي في الخطوة التالية.");
+}
+async function loadWarehouses(){
+ const {data}=await db.from("warehouses").select("id,name").eq("farm_id",farmId).order("name");
+ ["bfWarehouse","fWarehouse","iWarehouse"].forEach(id=>{if($(id))$(id).innerHTML=(data||[]).map(x=>`<option value="${x.id}">${x.name}</option>`).join("")});
+}
+async function loadStockOptions(){const {data}=await db.from("v_inventory_status").select("id,warehouse_id,name,qty_kg,protein_pct,cost_per_kg").eq("farm_id",farmId);const o=(data||[]).map(x=>`<option value="${x.id}" data-wh="${x.warehouse_id}">${x.name} — ${x.qty_kg} كجم</option>`).join("");["bfStock","fStock"].forEach(id=>{if($(id))$(id).innerHTML='<option value="">اختر الصنف</option>'+o})}
+async function issueGroupFeed(){await issueStock("bfWarehouse","bfStock","bfQty","bfBarn","bfShipment","bfDate","bfMsg","group")}
+async function issueIndividualFeed(){await issueStock("fWarehouse","fStock","fQty","fBarn",null,"fDate","fMsg","barn")}
+async function issueStock(whId,stockId,qtyId,barnId,shipId,dateId,msgId,type){
+ const warehouse=$(whId).value,stock=$(stockId).value,qty=num($(qtyId).value),date=$(dateId).value||today();if(!warehouse||!stock||!qty)return message(msgId,"أكمل بيانات الصرف.",true);
+ const {data,error}=await db.rpc("issue_stock",{p_stock_id:stock,p_warehouse_id:warehouse,p_qty_kg:qty,p_reference_type:"feed_issue",p_movement_date:date,p_notes:$(barnId).value?("إلى: "+$(barnId).selectedOptions[0].text):null});
+ if(error)return message(msgId,error.message,true);message(msgId,"تم الصرف وتحديث الرصيد. رقم الحركة: "+data);await loadInventory();
+}
+async function loadWeightAnimals(){await loadHeads()}
 async function recordWeight(){
- const animal=$("wAnimal").value, weight=Number($("wWeight").value), date=$("wDate").value, notes=$("wNotes").value.trim();
- if(!animal||!weight||!date)return showMsg("weightMsg","أكمل البيانات.",true);
- const {data,error}=await db.rpc("record_animal_weight",{p_animal_id:animal,p_weight_kg:weight,p_weight_date:date,p_notes:notes||null});
- if(error)return showMsg("weightMsg",error.message,true);
- showMsg("weightMsg","تم تسجيل الوزن بنجاح.");$("wWeight").value="";$("wNotes").value="";
+ const tag=$("wAnimal").value,weight=num($("wWeight").value),date=$("wDate").value||today();if(!tag||!weight)return message("wMsg","أكمل البيانات.",true);
+ const {data:animal}=await db.from("animals").select("id").eq("farm_id",farmId).eq("tag",tag).single();if(!animal)return message("wMsg","الحيوان غير موجود.",true);
+ const {data,error}=await db.rpc("record_animal_weight",{p_animal_id:animal.id,p_weight_kg:weight,p_weight_date:date,p_notes:$("wNotes").value.trim()||null});if(error)return message("wMsg",error.message,true);message("wMsg","تم تسجيل الوزن.");await loadWeights();loadAnalytics();
 }
-async function issueStock(){
- const stock=$("fStock").value, warehouse=$("fWarehouse").value, qty=Number($("fQty").value), date=$("fDate").value, barn=$("fBarn").value||null, ref=$("fRef").value.trim()||"feed_issue";
- if(!stock||!warehouse||!qty||!date)return showMsg("feedMsg","أكمل بيانات الصرف.",true);
- const {data,error}=await db.rpc("issue_stock",{p_stock_id:stock,p_warehouse_id:warehouse,p_qty_kg:qty,p_reference_type:ref,p_movement_date:date,p_notes:barn?("إلى العنبر: "+barn):null});
- if(error)return showMsg("feedMsg",error.message,true);
- showMsg("feedMsg","تم الصرف وتحديث الرصيد.");$("fQty").value="";await loadStock();
+async function loadWeights(){const {data}=await db.from("animal_weights").select("animal_id,weight_kg,weight_date,animals(tag)").eq("farm_id",farmId).order("weight_date",{ascending:false}).limit(500);$("weightsRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.animals?.tag||x.animal_id}</td><td>${x.weight_kg}</td><td>${x.weight_date}</td></tr>`).join("")}
+async function loadBatchWeights(){const {data}=await db.from("batch_weights").select("shipment_id,total_weight_kg,head_count,average_weight_kg,weight_date,shipments(code)").eq("farm_id",farmId).order("weight_date",{ascending:false});$("bwRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.shipments?.code||"-"}</td><td>${x.total_weight_kg}</td><td>${x.head_count}</td><td>${x.average_weight_kg}</td><td>${x.weight_date}</td></tr>`).join("")}
+async function saveBatchWeight(){
+ const shipment=$("bwShipment").value,total=num($("bwWeight").value),count=parseInt($("bwCount").value),date=$("bwDate").value||today();if(!shipment||!total||!count)return toast("أكمل بيانات الوزن");
+ const {data:s}=await db.from("shipments").select("id").eq("id",shipment).eq("farm_id",farmId).single();if(!s)return toast("الشحنة غير موجودة");
+ const {error}=await db.from("batch_weights").insert({farm_id:farmId,shipment_id:shipment,total_weight_kg:total,head_count:count,average_weight_kg:+(total/count).toFixed(3),weight_date:date,created_by:user.id});if(error)return toast(error.message);await loadBatchWeights();toast("تم حفظ وزن المجموعة");
 }
-(async()=>{const {data}=await db.auth.getSession();if(data.session)enterApp(data.session.user)})();
+async function registerDeath(){const tag=$("dAnimal").value,date=$("dDate").value||today();const {data:a}=await db.from("animals").select("id").eq("farm_id",farmId).eq("tag",tag).single();if(!a)return message("dMsg","الحيوان غير موجود.",true);const {error}=await db.rpc("register_animal_death",{p_animal_id:a.id,p_death_date:date,p_reason:$("dReason").value.trim()||null,p_notes:$("dNotes").value.trim()||null});if(error)return message("dMsg",error.message,true);message("dMsg","تم تسجيل النفوق.");await Promise.all([loadDeaths(),loadHeads(),loadDashboard()])}
+async function loadDeaths(){const {data}=await db.from("animal_deaths").select("death_date,reason,animals(tag)").eq("farm_id",farmId).order("death_date",{ascending:false});$("deathsRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.animals?.tag||"-"}</td><td>${x.death_date}</td><td>${x.reason||"-"}</td></tr>`).join("")}
+async function loadInventory(){
+ const {data,error}=await db.from("v_inventory_status").select("*").eq("farm_id",farmId).order("name");
+ const {data:wh}=await db.from("warehouses").select("id,name").eq("farm_id",farmId);const m=Object.fromEntries((wh||[]).map(x=>[x.id,x.name]));
+ $("inventoryRows").innerHTML=error?`<tr><td colspan="6">${error.message}</td></tr>`:(data||[]).map(x=>`<tr><td>${x.name}</td><td>${m[x.warehouse_id]||"-"}</td><td>${x.qty_kg}</td><td>${x.protein_pct}%</td><td>${x.cost_per_kg}</td><td>${x.stock_status==="low"?'<span class="bad">منخفض</span>':'<span class="ok">جيد</span>'}</td></tr>`).join("");
+ $("bfStock").innerHTML='<option value="">اختر الصنف</option>'+(data||[]).map(x=>`<option value="${x.id}">${x.name} — ${x.qty_kg} كجم</option>`).join("");
+ $("fStock").innerHTML=$("bfStock").innerHTML;
+}
+async function addStock(){
+ const p={farm_id:farmId,warehouse_id:$("iWarehouse").value,name:$("iName").value.trim(),unit:$("iUnit").value.trim()||"kg",qty_kg:num($("iOpening").value),protein_pct:num($("iProtein").value),cost_per_kg:num($("iCost").value),min_qty_kg:num($("iMin").value)};
+ if(!p.warehouse_id||!p.name)return toast("أكمل بيانات المخزون");const {error}=await db.from("stock").insert(p);if(error)return toast(error.message);await loadInventory();toast("تمت إضافة المخزون");
+}
+async function loadVehicles(){const {data}=await db.from("farm_vehicles").select("vehicle_no,plate_no,driver_name,current_odometer,status,vehicle_type").eq("farm_id",farmId).order("vehicle_no");$("vehiclesRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.vehicle_no} (${x.vehicle_type||"-"})</td><td>${x.plate_no}</td><td>${x.driver_name||"-"}</td><td>${x.current_odometer}</td><td>${x.status}</td></tr>`).join("")}
+async function addVehicle(){const p={farm_id:farmId,vehicle_no:$("vNo").value.trim(),plate_no:$("vPlate").value.trim(),vehicle_type:$("vType").value.trim(),model:$("vModel").value.trim(),driver_name:$("vDriver").value.trim(),driver_phone:$("vPhone").value.trim(),current_odometer:num($("vOdo").value),initial_odometer:num($("vOdo").value),fuel_type:$("vFuel").value};if(!p.vehicle_no||!p.plate_no)return toast("أكمل بيانات السيارة");const {error}=await db.from("farm_vehicles").insert(p);if(error)return toast(error.message);await loadVehicles();toast("تم حفظ السيارة")}
+async function loadManufacturing(){const {data}=await db.from("manufacturing_orders").select("order_no,product_name,total_output_kg,production_date").eq("farm_id",farmId).order("production_date",{ascending:false});$("moRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.order_no}</td><td>${x.product_name}</td><td>${x.total_output_kg}</td><td>${x.production_date}</td></tr>`).join("")}
+async function createMO(){const p={farm_id:farmId,order_no:$("moNo").value.trim(),product_name:$("moProduct").value.trim(),production_date:$("moDate").value||today(),total_output_kg:num($("moQty").value),created_by:user.id};if(!p.order_no||!p.product_name)return toast("أكمل بيانات أمر التصنيع");const {error}=await db.from("manufacturing_orders").insert(p);if(error)return toast(error.message);await loadManufacturing();toast("تم إنشاء أمر التصنيع")}
+async function loadUsers(){const {data}=await db.from("user_profiles").select("username,full_name,role,active,farm_id").eq("farm_id",farmId).order("username");$("usersRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.username||"-"}</td><td>${x.full_name||"-"}</td><td>${x.role}</td><td>${x.active?"فعال":"موقوف"}</td><td>${farmId.slice(0,8)}...</td></tr>`).join("")}
+async function loadFarmSettings(){const {data}=await db.from("farms").select("name,company_name,fcr_limit,mortality_limit_pct").eq("id",farmId).single();if(data){$("setCompany").value=data.company_name;$("setFarm").value=data.name;$("setFcr").value=data.fcr_limit;$("setMort").value=data.mortality_limit_pct}}
+async function saveFarmSettings(){const {error}=await db.from("farms").update({company_name:$("setCompany").value.trim(),name:$("setFarm").value.trim(),fcr_limit:num($("setFcr").value),mortality_limit_pct:num($("setMort").value)}).eq("id",farmId);if(error)return toast(error.message);$("farmTitle").textContent=$("setCompany").value+" — "+$("setFarm").value;toast("تم حفظ الإعدادات")}
+async function performance(){
+ const {data:animals}=await db.from("v_animal_performance").select("*").eq("farm_id",farmId).limit(500);
+ return animals||[];
+}
+async function loadAnalytics(){
+ const rows=await performance();const valid=rows.filter(x=>x.adg_kg_day!==null);const adg=valid.length?valid.reduce((s,x)=>s+num(x.adg_kg_day),0)/valid.length:null;
+ $("aAdg").textContent=adg===null?"-":adg.toFixed(3);
+ $("aFcr").textContent="-";$("aFeed").textContent="سيتم ربطه من feed_issue_animals في المرحلة التالية";
+ $("analyticsRows").innerHTML=rows.map(x=>`<tr><td>${x.tag}</td><td>${x.first_weight_kg??"-"}</td><td>${x.latest_weight_kg??"-"}</td><td>${x.gain_kg??"-"}</td><td>${x.adg_kg_day??"-"}</td></tr>`).join("")||'<tr><td colspan="5">لا توجد بيانات</td></tr>';
+}
+async function refreshBatchReport(){
+ const {data}=await db.from("batch_weights").select("shipment_id,average_weight_kg,weight_date,shipments(code,head_count)").eq("farm_id",farmId).order("weight_date");
+ const by={};(data||[]).forEach(r=>{const k=r.shipment_id;(by[k]??=[]).push(r)});
+ $("batchReportRows").innerHTML=Object.entries(by).map(([id,arr])=>{const f=arr[0],l=arr[arr.length-1],days=Math.max(1,(new Date(l.weight_date)-new Date(f.weight_date))/86400000);const gain=num(l.average_weight_kg)-num(f.average_weight_kg);return `<tr><td>${f.shipments?.code||id}</td><td>${f.shipments?.head_count||"-"}</td><td>${f.average_weight_kg}</td><td>${l.average_weight_kg}</td><td>${gain.toFixed(2)}</td><td>${(gain/days).toFixed(3)}</td></tr>`}).join("")||'<tr><td colspan="6">لا توجد بيانات</td></tr>';
+}
+async function refreshFcrReport(){const rows=await performance();$("fcrRows").innerHTML=rows.map(x=>`<tr><td>${x.tag}</td><td>${x.shipment_id||"-"}</td><td>${x.first_weight_kg??"-"}</td><td>${x.latest_weight_kg??"-"}</td><td>${x.gain_kg??"-"}</td><td>${x.adg_kg_day??"-"}</td></tr>`).join("")||'<tr><td colspan="6">لا توجد بيانات</td></tr>'}
+
+(async()=>{const {data}=await db.auth.getSession();if(data.session)await enter(data.session.user)})();
 </script>
-</body>
-</html>
+</body></html>
