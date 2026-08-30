@@ -665,6 +665,23 @@
 
                 <!-- الإعدادات -->
                 <div id="settingsTab" class="view-panel">
+                    <h3 style="margin-top: 20px; color: var(--primary);"><i class="fa-solid fa-database"></i> إدارة النسخ الاحتياطي</h3>
+<p style="font-size: 13px; color: #666; margin-bottom: 15px;">يمكنك حفظ نسخة من كافة بيانات المزرعة على جهازك أو استعادتها في أي وقت.</p>
+
+<div class="form-grid" style="background: #fff; border: 1px solid #ddd; padding: 20px;">
+    <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+        <!-- زر التنزيل -->
+        <button type="button" class="btn btn-save" onclick="exportLocalBackup()">
+            <i class="fa-solid fa-download"></i> تنزيل نسخة احتياطية (Backup)
+        </button>
+
+        <!-- زر الرفع والاسترجاع -->
+        <label class="btn btn-search" style="cursor: pointer; margin: 0;">
+            <i class="fa-solid fa-upload"></i> استرجاع نسخة من ملف (Restore)
+            <input type="file" id="backupFileInput" accept=".json" onchange="importLocalBackup(event)" style="display: none;">
+        </label>
+    </div>
+</div>
                     <div class="toolbar"><button class="btn btn-save" onclick="saveSettings()"><i class="fa-solid fa-save"></i> حفظ الإعدادات</button></div>
                     <div class="form-grid">
                         <div class="field"><label>اسم المنشأة:</label><input id="set_company_name" value="مزرعة التسمين المتكاملة"></div>
