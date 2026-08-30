@@ -154,7 +154,7 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 </section>
 
 <section id="feed" class="view">
-<div class="card"><h2>صرف العلف للأفراد</h2><div class="form"><div class="formgrid"><div class="field"><label>المخزن</label><select id="fWarehouse"></select></div><div class="field"><label>الصنف</label><select id="fStock"></select></div><div class="field"><label>الكمية الإجمالية</label><input id="fQty" type="number"></div><div class="field"><label>العنبر</label><select id="fBarn"></select></div><div class="field"><label>التاريخ</label><input id="fDate" type="date"></div></div><p class="muted" style="margin:8px 0">الإصدار الآمن يخصم الرصيد من السيرفر. يمكننا إضافة توزيع فردي مفصل بعد اختبار حركة المخزون.</p><button class="btn btn-primary" onclick="issueIndividualFeed()">حفظ الصرف</button><div id="fMsg"></div></div></div>
+<div class="card"><h2>صرف العلف للأفراد</h2><div class="form"><div class="formgrid"><div class="field"><label>المخزن</label><select id="fWarehouse"></select></div><div class="field"><label>الصنف</label><select id="fStock"></select></div><div class="field"><label>الكمية الإجمالية</label><input id="fQty" type="number"></div><div class="field"><label>العنبر</label><select id="fBarn"></select></div><div class="field"><label>التاريخ</label><input id="fDate" type="date"></div></div><p class="muted" style="margin:8px 0">يتم خصم الصرف فعليًا من المخزون وتسجيل حركة صرف على السيرفر. التوزيع الفردي التفصيلي على كل رأس سنفعّله في الوظيفة التالية.</p><button class="btn btn-primary" onclick="issueIndividualFeed()">حفظ الصرف</button><div id="fMsg"></div></div></div>
 </section>
 
 <section id="batchWeights" class="view">
@@ -384,9 +384,17 @@ async function performance(){
  return animals||[];
 }
 async function loadAnalytics(){
- const rows=await performance();const valid=rows.filter(x=>x.adg_kg_day!==null);const adg=valid.length?valid.reduce((s,x)=>s+num(x.adg_kg_day),0)/valid.length:null;
+ const rows=await performance();
+ const valid=rows.filter(x=>x.adg_kg_day!==null);
+ const adg=valid.length?valid.reduce((s,x)=>s+num(x.adg_kg_day),0)/valid.length:null;
  $("aAdg").textContent=adg===null?"-":adg.toFixed(3);
- $("aFcr").textContent="-";$("aFeed").textContent="سيتم ربطه من feed_issue_animals في المرحلة التالية";
+ const {data:feedMoves,error:feedErr}=await db.from("stock_movements")
+   .select("qty_kg,movement_type,movement_date")
+   .eq("farm_id",farmId)
+   .eq("movement_type","issue");
+ const totalFeed=(feedMoves||[]).reduce((sum,r)=>sum+num(r.qty_kg),0);
+ $("aFeed").textContent=feedErr?"-":totalFeed.toLocaleString()+" كجم";
+ $("aFcr").textContent="-";
  $("analyticsRows").innerHTML=rows.map(x=>`<tr><td>${x.tag}</td><td>${x.first_weight_kg??"-"}</td><td>${x.latest_weight_kg??"-"}</td><td>${x.gain_kg??"-"}</td><td>${x.adg_kg_day??"-"}</td></tr>`).join("")||'<tr><td colspan="5">لا توجد بيانات</td></tr>';
 }
 async function refreshBatchReport(){
