@@ -180,15 +180,16 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 <section id="fleet" class="view"><div class="card"><h2>نظام متابعة الأسطول</h2><div class="form"><div class="formgrid"><div class="field"><label>رقم السيارة</label><input id="vNo"></div><div class="field"><label>اللوحة</label><input id="vPlate"></div><div class="field"><label>النوع</label><input id="vType"></div><div class="field"><label>الموديل</label><input id="vModel"></div><div class="field"><label>السائق</label><input id="vDriver"></div><div class="field"><label>هاتف السائق</label><input id="vPhone"></div><div class="field"><label>العداد</label><input id="vOdo" type="number"></div><div class="field"><label>الوقود</label><select id="vFuel"><option>سولار</option><option>بنزين</option><option>غاز</option><option>كهرباء</option></select></div></div><button class="btn btn-primary" onclick="addVehicle()">حفظ السيارة</button></div></div>
 <div class="card"><table class="table"><thead><tr><th>السيارة</th><th>اللوحة</th><th>السائق</th><th>العداد</th><th>الحالة</th></tr></thead><tbody id="vehiclesRows"></tbody></table></div></section>
 
-<section id="inventory" class="view"><div class="card"><h2>مخزون الأعلاف</h2><div class="form"><div class="formgrid"><div class="field"><label>المخزن</label><select id="iWarehouse"></select></div><div class="field"><label>اسم الصنف</label><input id="iName"></div><div class="field"><label>الوحدة</label><input id="iUnit" value="kg"></div><div class="field"><label>الرصيد الافتتاحي</label><input id="iOpening" type="number"></div><div class="field"><label>البروتين %</label><input id="iProtein" type="number"></div><div class="field"><label>التكلفة/كجم</label><input id="iCost" type="number" step="0.0001"></div><div class="field"><label>حد الطلب</label><input id="iMin" type="number"></div></div><button class="btn btn-primary" onclick="addStock()">إضافة المخزون</button></div></div>
-<div class="card"><table class="table"><thead><tr><th>الصنف</th><th>المخزن</th><th>الرصيد</th><th>البروتين</th><th>التكلفة</th><th>الحالة</th></tr></thead><tbody id="inventoryRows"></tbody></table></div></section>
+<section id="inventory" class="view"><div class="card"><h2>مخزون الأعلاف</h2><p class="muted">الأصناف هنا تأتي تلقائيًا من «تعريف الأعلاف والبروتين». لا تحتاج لإنشاء الصنف مرة ثانية؛ اختر الصنف الرئيسي وحدد رصيده في المخزن.</p><div class="form"><div class="formgrid"><div class="field"><label>المخزن</label><select id="iWarehouse"></select></div><div class="field"><label>الصنف من تعريف الأعلاف</label><select id="iFeedItem" onchange="showSelectedFeedItem()"></select></div><div class="field"><label>الوحدة</label><input id="iUnit" value="kg" readonly></div><div class="field"><label>الرصيد الافتتاحي / الحالي</label><input id="iOpening" type="number" min="0"></div><div class="field"><label>البروتين %</label><input id="iProtein" type="number" readonly></div><div class="field"><label>التكلفة/كجم</label><input id="iCost" type="number" step="0.0001"></div><div class="field"><label>حد الطلب</label><input id="iMin" type="number" min="0"></div></div><button class="btn btn-primary" onclick="addStock()"><i class="fa-solid fa-link"></i> ربط الصنف بالمخزون / تحديث الرصيد</button></div></div>
+<div class="card"><table class="table"><thead><tr><th>الصنف</th><th>الكود</th><th>المخزن</th><th>الرصيد</th><th>البروتين</th><th>التكلفة</th><th>الحالة</th></tr></thead><tbody id="inventoryRows"></tbody></table></div></section>
 
 <section id="manufacturing" class="view"><div class="card"><h2>تصنيع العلف</h2><p class="muted">نحتفظ بشاشة التصنيع، وبعد اختبار المخزون سنربط الاستهلاك والإنتاج بدالة ذرية واحدة لمنع أي تلاعب أو رصيد سالب.</p><div class="form"><div class="formgrid"><div class="field"><label>رقم أمر التصنيع</label><input id="moNo"></div><div class="field"><label>المنتج النهائي</label><input id="moProduct"></div><div class="field"><label>التاريخ</label><input id="moDate" type="date"></div><div class="field"><label>إجمالي الإنتاج كجم</label><input id="moQty" type="number"></div></div><button class="btn btn-primary" onclick="createMO()">إنشاء أمر تصنيع</button></div></div>
 <div class="card"><table class="table"><thead><tr><th>الأمر</th><th>المنتج</th><th>الإنتاج</th><th>التاريخ</th></tr></thead><tbody id="moRows"></tbody></table></div></section>
 
 <section id="employees" class="view"><div class="card"><h2>الموظفون والصلاحيات</h2><p class="muted">حسابات الدخول الفعلية تُدار من Supabase Authentication، والجدول هنا يحدد الدور والصلاحيات المرتبطة بالمزرعة.</p><div class="card" style="margin:0;background:#f8fafb"><table class="table"><thead><tr><th>المستخدم</th><th>الاسم</th><th>الدور</th><th>الحالة</th><th>المزرعة</th></tr></thead><tbody id="usersRows"></tbody></table></div></div></section>
 
-<section id="settings" class="view"><div class="card"><h2>الإعدادات</h2><div class="form"><div class="formgrid"><div class="field"><label>اسم الشركة</label><input id="setCompany"></div><div class="field"><label>اسم المزرعة</label><input id="setFarm"></div><div class="field"><label>حد FCR</label><input id="setFcr" type="number" step="0.1"></div><div class="field"><label>حد النفوق %</label><input id="setMort" type="number" step="0.1"></div></div><button class="btn btn-primary" onclick="saveFarmSettings()">حفظ الإعدادات</button></div></div></section>
+<section id="settings" class="view"><div class="card"><h2>الإعدادات</h2><div class="form"><div class="formgrid"><div class="field"><label>اسم الشركة</label><input id="setCompany"></div><div class="field"><label>اسم المزرعة</label><input id="setFarm"></div><div class="field"><label>حد FCR</label><input id="setFcr" type="number" step="0.1"></div><div class="field"><label>حد النفوق %</label><input id="setMort" type="number" step="0.1"></div></div><button class="btn btn-primary" onclick="saveFarmSettings()">حفظ الإعدادات</button></div></div>
+<div class="card"><h3>💾 النسخ الاحتياطي والاستعادة</h3><p class="muted">نسخة Excel للقراءة والتدقيق، ونسخة «قاعدة بيانات النظام» بصيغة JSON يمكن رفعها مرة أخرى واستعادة بيانات المزرعة.</p><div class="toolbar" style="border:0;padding:0;margin:0"><button class="btn btn-blue" onclick="exportFullExcelBackup()"><i class="fa-solid fa-file-excel"></i> تنزيل نسخة Excel لكل البيانات</button><button class="btn btn-primary" onclick="exportDatabaseBackup()"><i class="fa-solid fa-database"></i> تنزيل نسخة قاعدة البيانات</button><label class="btn btn-warn" style="cursor:pointer"><i class="fa-solid fa-upload"></i> استعادة نسخة قاعدة البيانات<input id="dbBackupFile" type="file" accept=".json,application/json" onchange="restoreDatabaseBackup(event)" style="display:none"></label></div><div class="msg ok" style="margin-top:12px">الاستعادة تعيد بيانات المزرعة التشغيلية فقط وتحافظ على حساب Supabase الحالي والمستخدم الحالي.</div></div></section>
 
 <section id="batchReport" class="view"><div class="card"><h2>تقرير أداء المجموعات</h2><div class="toolbar"><button class="btn btn-blue" onclick="refreshBatchReport()"><i class="fa-solid fa-rotate"></i> تحديث</button><button class="btn btn-light" onclick="exportTable('batchReportTable','تقرير_المجموعات')"><i class="fa-solid fa-file-excel"></i> تصدير</button></div><table class="table" id="batchReportTable"><thead><tr><th>الشحنة</th><th>العدد</th><th>أول متوسط</th><th>آخر متوسط</th><th>الزيادة</th><th>ADG</th></tr></thead><tbody id="batchReportRows"></tbody></table></div></section>
 
@@ -289,11 +290,15 @@ async function addBoat(){
 }
 async function loadItems(){
  const {data,error}=await db.from("feed_items").select("code,name,item_group,protein_pct,default_cost_per_kg").eq("farm_id",farmId).order("name");
- $("itemsRows").innerHTML=error?`<tr><td colspan="5">${error.message}</td></tr>`:(data||[]).map(x=>`<tr><td>${x.code}</td><td>${x.name}</td><td>${x.item_group}</td><td>${x.protein_pct}%</td><td>${x.default_cost_per_kg}</td></tr>`).join("");
+ $("itemsRows").innerHTML=error?`<tr><td colspan="5">${error.message}</td></tr>`:(data||[]).map(x=>`<tr><td>${x.code}</td><td>${x.name}</td><td>${x.item_group}</td><td>${x.protein_pct}%</td><td>${x.default_cost_per_kg}</td></tr>`).join("")||'<tr><td colspan="5">لا توجد أصناف</td></tr>';
 }
 async function addFeedItem(){
  const p={farm_id:farmId,code:$("itemCode").value.trim(),name:$("itemName").value.trim(),item_group:$("itemGroup").value,protein_pct:num($("itemProtein").value),default_cost_per_kg:num($("itemCost").value)};
- if(!p.code||!p.name)return toast("أكمل بيانات الصنف");const {error}=await db.from("feed_items").insert(p);if(error)return toast(error.message);await loadItems();toast("تم حفظ الصنف");
+ if(!p.code||!p.name)return toast("أكمل بيانات الصنف");
+ const {error}=await db.from("feed_items").insert(p);
+ if(error)return toast(error.message);
+ await Promise.all([loadItems(),loadInventory(),loadStockOptions()]);
+ toast("تم حفظ الصنف، وسيظهر تلقائيًا في مخزون الأعلاف بدون إعادة تعريفه");
 }
 async function loadCustomers(){
  const {data}=await db.from("customers").select("name,phone,notes").eq("farm_id",farmId).order("name");
@@ -361,16 +366,37 @@ async function saveBatchWeight(){
 }
 async function registerDeath(){const tag=$("dAnimal").value,date=$("dDate").value||today();const {data:a}=await db.from("animals").select("id").eq("farm_id",farmId).eq("tag",tag).single();if(!a)return message("dMsg","الحيوان غير موجود.",true);const {error}=await db.rpc("register_animal_death",{p_animal_id:a.id,p_death_date:date,p_reason:$("dReason").value.trim()||null,p_notes:$("dNotes").value.trim()||null});if(error)return message("dMsg",error.message,true);message("dMsg","تم تسجيل النفوق.");await Promise.all([loadDeaths(),loadHeads(),loadDashboard()])}
 async function loadDeaths(){const {data}=await db.from("animal_deaths").select("death_date,reason,animals(tag)").eq("farm_id",farmId).order("death_date",{ascending:false});$("deathsRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.animals?.tag||"-"}</td><td>${x.death_date}</td><td>${x.reason||"-"}</td></tr>`).join("")}
+async function showSelectedFeedItem(){
+ const id=$("iFeedItem").value;if(!id)return;
+ const {data}=await db.from("feed_items").select("name,protein_pct,default_cost_per_kg").eq("id",id).eq("farm_id",farmId).single();
+ if(!data)return;
+ $("iProtein").value=data.protein_pct??0;
+ if(!$("iCost").value)$("iCost").value=data.default_cost_per_kg??0;
+}
+async function populateInventoryFeedItems(){
+ const {data,error}=await db.from("feed_items").select("id,code,name,protein_pct,default_cost_per_kg,item_group").eq("farm_id",farmId).eq("active",true).order("name");
+ if(error)return;
+ $("iFeedItem").innerHTML='<option value="">اختر الصنف من التعريف</option>'+(data||[]).map(x=>`<option value="${x.id}" data-protein="${x.protein_pct}" data-cost="${x.default_cost_per_kg}">${x.name} — ${x.code} (${x.protein_pct}%)</option>`).join("");
+}
 async function loadInventory(){
  const {data,error}=await db.from("v_inventory_status").select("*").eq("farm_id",farmId).order("name");
  const {data:wh}=await db.from("warehouses").select("id,name").eq("farm_id",farmId);const m=Object.fromEntries((wh||[]).map(x=>[x.id,x.name]));
- $("inventoryRows").innerHTML=error?`<tr><td colspan="6">${error.message}</td></tr>`:(data||[]).map(x=>`<tr><td>${x.name}</td><td>${m[x.warehouse_id]||"-"}</td><td>${x.qty_kg}</td><td>${x.protein_pct}%</td><td>${x.cost_per_kg}</td><td>${x.stock_status==="low"?'<span class="bad">منخفض</span>':'<span class="ok">جيد</span>'}</td></tr>`).join("");
- $("bfStock").innerHTML='<option value="">اختر الصنف</option>'+(data||[]).map(x=>`<option value="${x.id}">${x.name} — ${x.qty_kg} كجم</option>`).join("");
+ $("inventoryRows").innerHTML=error?`<tr><td colspan="7">${error.message}</td></tr>`:(data||[]).map(x=>`<tr><td>${x.name}</td><td>${x.item_code||"-"}</td><td>${m[x.warehouse_id]||"-"}</td><td>${x.qty_kg}</td><td>${x.protein_pct}%</td><td>${x.cost_per_kg}</td><td>${x.stock_status==="low"?'<span class="bad">منخفض</span>':'<span class="ok">جيد</span>'}</td></tr>`).join("")||'<tr><td colspan="7">لا توجد أصناف معرفة بعد</td></tr>';
+ $("bfStock").innerHTML='<option value="">اختر الصنف</option>'+(data||[]).map(x=>`<option value="${x.id}" data-wh="${x.warehouse_id}">${x.name} — ${x.qty_kg} كجم</option>`).join("");
  $("fStock").innerHTML=$("bfStock").innerHTML;
+ await populateInventoryFeedItems();
 }
 async function addStock(){
- const p={farm_id:farmId,warehouse_id:$("iWarehouse").value,name:$("iName").value.trim(),unit:$("iUnit").value.trim()||"kg",qty_kg:num($("iOpening").value),protein_pct:num($("iProtein").value),cost_per_kg:num($("iCost").value),min_qty_kg:num($("iMin").value)};
- if(!p.warehouse_id||!p.name)return toast("أكمل بيانات المخزون");const {error}=await db.from("stock").insert(p);if(error)return toast(error.message);await loadInventory();toast("تمت إضافة المخزون");
+ const warehouse_id=$("iWarehouse").value, feed_item_id=$("iFeedItem").value;
+ const name=$("iFeedItem").selectedOptions[0]?.textContent.split(" — ")[0]||"";
+ const qty=num($("iOpening").value), protein=num($("iProtein").value), cost=num($("iCost").value), min=num($("iMin").value);
+ if(!warehouse_id||!feed_item_id)return toast("اختر المخزن والصنف من تعريف الأعلاف والبروتين");
+ const {data:existing}=await db.from("stock").select("id,qty_kg").eq("farm_id",farmId).eq("warehouse_id",warehouse_id).eq("feed_item_id",feed_item_id).maybeSingle();
+ let error;
+ if(existing){({error}=await db.from("stock").update({name,unit:"kg",qty_kg:qty,protein_pct:protein,cost_per_kg:cost,min_qty_kg:min}).eq("id",existing.id).eq("farm_id",farmId));}
+ else {({error}=await db.from("stock").insert({farm_id:farmId,warehouse_id,feed_item_id,name,unit:"kg",qty_kg:qty,protein_pct:protein,cost_per_kg:cost,min_qty_kg:min}));}
+ if(error)return toast(error.message);
+ await loadInventory();toast(existing?"تم تحديث رصيد الصنف المرتبط":"تم ربط الصنف بالمخزون وإنشاء رصيده");
 }
 async function loadVehicles(){const {data}=await db.from("farm_vehicles").select("vehicle_no,plate_no,driver_name,current_odometer,status,vehicle_type").eq("farm_id",farmId).order("vehicle_no");$("vehiclesRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.vehicle_no} (${x.vehicle_type||"-"})</td><td>${x.plate_no}</td><td>${x.driver_name||"-"}</td><td>${x.current_odometer}</td><td>${x.status}</td></tr>`).join("")}
 async function addVehicle(){const p={farm_id:farmId,vehicle_no:$("vNo").value.trim(),plate_no:$("vPlate").value.trim(),vehicle_type:$("vType").value.trim(),model:$("vModel").value.trim(),driver_name:$("vDriver").value.trim(),driver_phone:$("vPhone").value.trim(),current_odometer:num($("vOdo").value),initial_odometer:num($("vOdo").value),fuel_type:$("vFuel").value};if(!p.vehicle_no||!p.plate_no)return toast("أكمل بيانات السيارة");const {error}=await db.from("farm_vehicles").insert(p);if(error)return toast(error.message);await loadVehicles();toast("تم حفظ السيارة")}
@@ -379,6 +405,59 @@ async function createMO(){const p={farm_id:farmId,order_no:$("moNo").value.trim(
 async function loadUsers(){const {data}=await db.from("user_profiles").select("username,full_name,role,active,farm_id").eq("farm_id",farmId).order("username");$("usersRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.username||"-"}</td><td>${x.full_name||"-"}</td><td>${x.role}</td><td>${x.active?"فعال":"موقوف"}</td><td>${farmId.slice(0,8)}...</td></tr>`).join("")}
 async function loadFarmSettings(){const {data}=await db.from("farms").select("name,company_name,fcr_limit,mortality_limit_pct").eq("id",farmId).single();if(data){$("setCompany").value=data.company_name;$("setFarm").value=data.name;$("setFcr").value=data.fcr_limit;$("setMort").value=data.mortality_limit_pct}}
 async function saveFarmSettings(){const {error}=await db.from("farms").update({company_name:$("setCompany").value.trim(),name:$("setFarm").value.trim(),fcr_limit:num($("setFcr").value),mortality_limit_pct:num($("setMort").value)}).eq("id",farmId);if(error)return toast(error.message);$("farmTitle").textContent=$("setCompany").value+" — "+$("setFarm").value;toast("تم حفظ الإعدادات")}
+const BACKUP_TABLES=[
+ "barns","boats","shipments","animals","animal_weights","batch_weights","barn_movements",
+ "feed_items","warehouses","stock","stock_movements","feed_issues","feed_issue_lines","feed_issue_animals",
+ "customers","sales","sale_animals","animal_deaths","purchases","purchase_lines","expenses","employees","advances",
+ "farm_vehicles","vehicle_expenses","manufacturing_orders","manufacturing_lines"
+];
+
+async function getDatabaseBackup(){
+ const {data,error}=await db.rpc("export_farm_backup");
+ if(error)throw error;
+ if(!data||data.format!=="AGRO_GREEN_FARM_BACKUP")throw new Error("النسخة المرتجعة من السيرفر غير صالحة");
+ return data;
+}
+async function exportDatabaseBackup(){
+ try{
+  const backup=await getDatabaseBackup();
+  const blob=new Blob([JSON.stringify(backup,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`AgroGreen_Farm_DB_Backup_${today()}.json`;a.click();URL.revokeObjectURL(a.href);
+  toast("تم تنزيل نسخة قاعدة البيانات القابلة للاستعادة");
+ }catch(e){console.error(e);toast("فشل إنشاء نسخة قاعدة البيانات: "+e.message)}
+}
+async function exportFullExcelBackup(){
+ try{
+  const backup=await getDatabaseBackup();
+  const wb=XLSX.utils.book_new();
+  for(const table of BACKUP_TABLES){
+   const rows=backup.tables?.[table]||[];
+   const ws=XLSX.utils.json_to_sheet(rows.length?rows:[{info:"لا توجد بيانات"}]);
+   XLSX.utils.book_append_sheet(wb,ws,table.slice(0,31));
+  }
+  const farmRows=backup.farm?[backup.farm]:[{info:"-"}];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(farmRows),"farm");
+  XLSX.writeFile(wb,`AgroGreen_Farm_Full_Backup_${today()}.xlsx`);
+  toast("تم تنزيل نسخة Excel كاملة لكل بيانات المزرعة");
+ }catch(e){console.error(e);toast("فشل تصدير Excel: "+e.message)}
+}
+async function restoreDatabaseBackup(event){
+ const file=event.target.files?.[0];if(!file)return;
+ try{
+  const backup=JSON.parse(await file.text());
+  if(backup.format!=="AGRO_GREEN_FARM_BACKUP")throw new Error("ملف النسخة غير تابع لنظام Agro Green Farm");
+  if(backup.version!==1)throw new Error("إصدار ملف النسخة غير مدعوم");
+  if(backup.farm?.id && backup.farm.id!==farmId)throw new Error("النسخة تخص مزرعة أخرى ولا يمكن استعادتها هنا");
+  if(!confirm("تحذير: الاستعادة ستستبدل بيانات التشغيل الحالية للمزرعة بالنسخة الموجودة في الملف. حساب Supabase والمستخدم الحالي لن يتم حذفهما. هل تريد الاستمرار؟")){event.target.value="";return}
+  const {data,error}=await db.rpc("restore_farm_backup",{p_payload:backup});
+  if(error)throw error;
+  toast("تمت استعادة نسخة قاعدة البيانات بنجاح");
+  await loadDashboard();
+  await refreshPage(document.querySelector(".view.active")?.id||"dashboard");
+ }catch(e){console.error(e);toast("فشل الاستعادة: "+(e.message||e));}
+ finally{event.target.value=""}
+}
+
 async function performance(){
  const {data:animals}=await db.from("v_animal_performance").select("*").eq("farm_id",farmId).limit(500);
  return animals||[];
