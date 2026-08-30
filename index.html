@@ -9,9 +9,10 @@
     <style>
         :root { --primary: #2c3e50; --secondary: #16a085; --accent: #2980b9; --danger: #c0392b; --bg-light: #ecf0f1; --warning: #f39c12; }
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
-        body { background-color: var(--bg-light); height: 100vh; overflow: hidden; }
+        html, body { height: 100%; }
+        body { background-color: var(--bg-light); height: 100vh; height: 100dvh; overflow: hidden; }
 
-        .login-wrapper { display: flex; justify-content: center; align-items: center; height: 100vh; background: linear-gradient(135deg, var(--primary), #34495e); }
+        .login-wrapper { display: flex; justify-content: center; align-items: center; height: 100vh; height: 100dvh; background: linear-gradient(135deg, var(--primary), #34495e); }
         .login-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); width: 380px; text-align: center; }
         .login-card h2 { color: var(--primary); margin-bottom: 25px; font-size: 22px; }
         .login-card .input-group { margin-bottom: 20px; text-align: right; }
@@ -19,10 +20,12 @@
         .login-card input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; outline: none; }
         .login-card button { width: 100%; padding: 12px; background: var(--secondary); color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; transition: 0.3s; }
         
-        .app-container { display: none; height: 100vh; flex-direction: row; }
-        .sidebar { width: 280px; background: var(--primary); color: white; display: flex; flex-direction: column; justify-content: space-between; z-index: 10;}
-        .brand { padding: 20px; text-align: center; font-size: 18px; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.1); background: #1a252f; }
-        .menu-tree { list-style: none; padding: 10px 0; overflow-y: auto; flex: 1;}
+        .app-container { display: none; height: 100vh; height: 100dvh; flex-direction: row; }
+        .sidebar { width: 280px; min-width: 280px; background: var(--primary); color: white; display: flex; flex-direction: column; justify-content: space-between; z-index: 10; height: 100%; overflow: hidden;}
+        .brand { padding: 20px; text-align: center; font-size: 18px; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.1); background: #1a252f; flex-shrink: 0;}
+        .menu-tree { list-style: none; padding: 10px 0; overflow-y: auto; -webkit-overflow-scrolling: touch; flex: 1; min-height: 0; scrollbar-width: thin; }
+        .menu-tree::-webkit-scrollbar { width: 6px; }
+        .menu-tree::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.25); border-radius: 3px; }
         .menu-header { padding: 10px 20px; font-weight: bold; color: #bdc3c7; background: rgba(0,0,0,0.2); font-size: 12px; text-transform: uppercase; margin-top: 5px;}
         .menu-item { padding: 10px 25px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 14px; transition: 0.2s; }
         .menu-item:hover, .menu-item.active { background: var(--secondary); color: white; border-right: 4px solid white; }
@@ -34,13 +37,14 @@
         .view-panel { display: none; background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); animation: fadeIn 0.3s ease; }
         .view-panel.active { display: block; }
 
-        .toolbar { display: flex; gap: 10px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .toolbar { display: flex; gap: 10px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; flex-wrap: wrap; }
         .btn { padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; display: flex; align-items: center; gap: 6px; transition: 0.2s;}
         .btn:hover { opacity: 0.9; }
         .btn:active { transform: scale(0.95); }
         .btn-save { background: #27ae60; color: white; }
         .btn-search { background: #2980b9; color: white; }
         .btn-print { background: #34495e; color: white; }
+        .btn-excel { background: #1e7145; color: white; }
         .btn-add-row { background: var(--warning); color: white; font-size: 12px; padding: 5px 10px; }
         .btn-del-row { background: var(--danger); color: white; font-size: 12px; padding: 5px 10px; }
 
@@ -103,7 +107,7 @@
         .stock-low{color:#b3261e;font-weight:800}.stock-ok{color:#16825d;font-weight:800}
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        @media print { .sidebar, .toolbar, .top-header, .btn, .form-grid { display: none !important; } .workspace { padding: 0; } .view-panel { box-shadow: none; padding: 0; } }
+        @media print { .sidebar, .toolbar, .top-header, .form-grid { display: none !important; } .workspace { padding: 0; } .view-panel { box-shadow: none; padding: 0; } }
     </style>
 </head>
 <body>
@@ -112,9 +116,10 @@
         <div class="login-card">
             <i class="fa-solid fa-chart-line fa-3x" style="color: var(--secondary); margin-bottom: 15px;"></i>
             <h2>الإدارة الشاملة للمزرعة</h2>
-            <div class="input-group"><input type="text" id="userInput" value="walid" placeholder="اسم المستخدم"></div>
-            <div class="input-group"><input type="password" id="passInput" value="123" placeholder="كلمة المرور"></div>
+            <div class="input-group"><input type="text" id="userInput" placeholder="اسم المستخدم"></div>
+            <div class="input-group"><input type="password" id="passInput" placeholder="كلمة المرور"></div>
             <button onclick="handleLogin()">تسجيل الدخول</button>
+            <p style="margin-top:15px;font-size:12px;color:#888;">أول تشغيل؟ المستخدم الافتراضي: walid / كلمة المرور: 123</p>
         </div>
     </div>
 
@@ -168,7 +173,13 @@
         </div>
 
         <div class="content-area">
-            <div class="top-header"><h3 id="currentTabTitle">لوحة المؤشرات</h3><span>النسخة الاحترافية (ERP)</span></div>
+            <div class="top-header">
+                <h3 id="currentTabTitle">لوحة المؤشرات</h3>
+                <div style="display:flex; align-items:center; gap:15px;">
+                    <span>النسخة الاحترافية (ERP)</span>
+                    <i class="fa-solid fa-gear" title="الإعدادات والنسخ الاحتياطي" style="cursor:pointer; font-size:18px; color:var(--primary);" onclick="switchTab('settingsTab', document.querySelector('.menu-item[onclick*=settingsTab]'))"></i>
+                </div>
+            </div>
             <div class="workspace">
 
                 <!-- لوحة المؤشرات -->
@@ -226,40 +237,56 @@
 
                 <!-- المراكب -->
                 <div id="boatsTab" class="view-panel">
-                    <div class="toolbar"><button class="btn btn-save" onclick="saveData('boats')"><i class="fa-solid fa-check"></i> حفظ</button></div>
+                    <div class="toolbar">
+                        <button class="btn btn-save" onclick="saveData('boats')"><i class="fa-solid fa-check"></i> حفظ</button>
+                        <button class="btn btn-excel" onclick="exportTableToExcel('tbl_boats_full','المراكب')"><i class="fa-solid fa-file-excel"></i> تصدير إكسل</button>
+                        <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة</button>
+                    </div>
                     <div class="form-grid">
                         <div class="field"><label>اسم المركب/الشحنة:</label><input type="text" id="boat_name"></div>
                         <div class="field"><label>تاريخ الوصول:</label><input type="date" id="boat_date"></div>
                     </div>
-                    <div class="data-table-wrapper"><table><thead><tr><th>م</th><th>المركب</th><th>التاريخ</th></tr></thead><tbody id="tbl_boats"></tbody></table></div>
+                    <div class="data-table-wrapper"><table id="tbl_boats_full"><thead><tr><th>م</th><th>المركب</th><th>التاريخ</th></tr></thead><tbody id="tbl_boats"></tbody></table></div>
                 </div>
 
                 <!-- الأصناف ونسب البروتين -->
                 <div id="itemsTab" class="view-panel">
-                    <div class="toolbar"><button class="btn btn-save" onclick="saveData('items')"><i class="fa-solid fa-check"></i> حفظ الصنف</button></div>
+                    <div class="toolbar">
+                        <button class="btn btn-save" onclick="saveData('items')"><i class="fa-solid fa-check"></i> حفظ الصنف</button>
+                        <button class="btn btn-excel" onclick="exportTableToExcel('tbl_items_full','الأصناف')"><i class="fa-solid fa-file-excel"></i> تصدير إكسل</button>
+                        <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة</button>
+                    </div>
                     <div class="form-grid">
                         <div class="field"><label>اسم الصنف:</label><input type="text" id="item_name" placeholder="مثال: رِدة، ذرة"></div>
                         <div class="field"><label>المجموعة:</label><select id="item_group"><option>أعلاف</option><option>أدوية</option></select></div>
                         <div class="field"><label>نسبة البروتين (%):</label><input type="number" step="0.1" id="item_protein" placeholder="مثال: 15 أو 20"></div>
                         <div class="field"><label>تكلفة الكجم (اختياري):</label><input type="number" step="0.01" min="0" id="item_cost" placeholder="سعر الكجم"></div>
                     </div>
-                    <div class="data-table-wrapper"><table><thead><tr><th>م</th><th>الصنف</th><th>المجموعة</th><th>نسبة البروتين (%)</th><th>تكلفة الكجم</th></tr></thead><tbody id="tbl_items"></tbody></table></div>
+                    <div class="data-table-wrapper"><table id="tbl_items_full"><thead><tr><th>م</th><th>الصنف</th><th>المجموعة</th><th>نسبة البروتين (%)</th><th>تكلفة الكجم</th></tr></thead><tbody id="tbl_items"></tbody></table></div>
                 </div>
 
                 <!-- العملاء -->
                 <div id="customersTab" class="view-panel">
-                    <div class="toolbar"><button class="btn btn-save" onclick="saveData('customers')"><i class="fa-solid fa-check"></i> حفظ العميل</button></div>
+                    <div class="toolbar">
+                        <button class="btn btn-save" onclick="saveData('customers')"><i class="fa-solid fa-check"></i> حفظ العميل</button>
+                        <button class="btn btn-excel" onclick="exportTableToExcel('tbl_customers_full','العملاء')"><i class="fa-solid fa-file-excel"></i> تصدير إكسل</button>
+                        <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة</button>
+                    </div>
                     <div class="form-grid">
                         <div class="field"><label>اسم العميل:</label><input type="text" id="cust_name"></div>
                         <div class="field"><label>رقم التليفون:</label><input type="text" id="cust_phone"></div>
                         <div class="field"><label>العنوان / ملاحظات:</label><input type="text" id="cust_notes"></div>
                     </div>
-                    <div class="data-table-wrapper"><table><thead><tr><th>م</th><th>اسم العميل</th><th>التليفون</th><th>ملاحظات</th></tr></thead><tbody id="tbl_customers"></tbody></table></div>
+                    <div class="data-table-wrapper"><table id="tbl_customers_full"><thead><tr><th>م</th><th>اسم العميل</th><th>التليفون</th><th>ملاحظات</th></tr></thead><tbody id="tbl_customers"></tbody></table></div>
                 </div>
 
                 <!-- استلام شحنة دفعة واحدة -->
                 <div id="bulkHeadsTab" class="view-panel">
-                    <div class="toolbar"><button class="btn btn-save" onclick="saveBatchGroup()"><i class="fa-solid fa-gears"></i> حفظ وتسجيل المجموعة دفعة واحدة</button></div>
+                    <div class="toolbar">
+                        <button class="btn btn-save" onclick="saveBatchGroup()"><i class="fa-solid fa-gears"></i> حفظ وتسجيل المجموعة دفعة واحدة</button>
+                        <button class="btn btn-excel" onclick="exportTableToExcel('tbl_batches_full','المجموعات')"><i class="fa-solid fa-file-excel"></i> تصدير إكسل</button>
+                        <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة</button>
+                    </div>
                     <div class="form-grid">
                         <div class="field"><label>اسم المجموعة / كود التتبع:</label><input type="text" id="batch_code" placeholder="مثال: مجموعة-أوكراني-100عجل"></div>
                         <div class="field"><label>المركب التابع لها:</label><select id="batch_boat"></select></div>
@@ -271,7 +298,7 @@
                     </div>
                     <p style="color:var(--secondary); font-size:12px; margin-bottom:10px;"><i class="fa-solid fa-circle-info"></i> سيقوم النظام بإنشاء رأس مستقل لكل عجل تلقائياً، بكود فريد غير قابل للتكرار.</p>
                     <div class="data-table-wrapper">
-                        <table>
+                        <table id="tbl_batches_full">
                             <thead><tr><th>م</th><th>كود المجموعة</th><th>المركب</th><th>العدد</th><th>إجمالي الوزن</th><th>متوسط وزن العجل</th><th>التاريخ</th></tr></thead>
                             <tbody id="tbl_batches"></tbody>
                         </table>
@@ -280,25 +307,33 @@
 
                 <!-- التكويد الفردي -->
                 <div id="headsTab" class="view-panel">
-                    <div class="toolbar"><button class="btn btn-save" onclick="saveData('heads')"><i class="fa-solid fa-check"></i> حفظ رأس فردي</button></div>
+                    <div class="toolbar">
+                        <button class="btn btn-save" onclick="saveData('heads')"><i class="fa-solid fa-check"></i> حفظ رأس فردي</button>
+                        <button class="btn btn-excel" onclick="exportTableToExcel('tbl_heads_full','الرؤوس')"><i class="fa-solid fa-file-excel"></i> تصدير إكسل</button>
+                        <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة</button>
+                    </div>
                     <div class="form-grid">
                         <div class="field"><label>رقم الرأس (كود فريد):</label><input type="text" id="h_tag"></div>
                         <div class="field"><label>النوع:</label><input type="text" id="h_type" placeholder="مثال: هولشتاين"></div>
                         <div class="field"><label>المركب التابع لها:</label><select id="h_boat"></select></div>
                         <div class="field"><label>العنبر:</label><select id="h_barn"></select></div>
                     </div>
-                    <div class="data-table-wrapper"><table><thead><tr><th>م</th><th>رقم الرأس</th><th>النوع</th><th>المركب</th><th>العنبر</th><th>الحالة</th></tr></thead><tbody id="tbl_heads"></tbody></table></div>
+                    <div class="data-table-wrapper"><table id="tbl_heads_full"><thead><tr><th>م</th><th>رقم الرأس</th><th>النوع</th><th>المركب</th><th>العنبر</th><th>الحالة</th></tr></thead><tbody id="tbl_heads"></tbody></table></div>
                 </div>
 
                 <!-- العنابر -->
                 <div id="barnsTab" class="view-panel">
-                    <div class="toolbar"><button class="btn btn-save" onclick="saveBarn()"><i class="fa-solid fa-plus"></i> إضافة عنبر</button></div>
+                    <div class="toolbar">
+                        <button class="btn btn-save" onclick="saveBarn()"><i class="fa-solid fa-plus"></i> إضافة عنبر</button>
+                        <button class="btn btn-excel" onclick="exportTableToExcel('tbl_barns_full','العنابر')"><i class="fa-solid fa-file-excel"></i> تصدير إكسل</button>
+                        <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة</button>
+                    </div>
                     <div class="form-grid">
                         <div class="field"><label>اسم العنبر:</label><input type="text" id="barn_name" placeholder="عنبر 1"></div>
                         <div class="field"><label>السعة القصوى (رأس):</label><input type="number" id="barn_capacity" min="1"></div>
                         <div class="field"><label>ملاحظات:</label><input type="text" id="barn_notes"></div>
                     </div>
-                    <div class="data-table-wrapper"><table><thead><tr><th>م</th><th>العنبر</th><th>السعة</th><th>الرؤوس الحالية</th><th>المتاح</th><th>الحالة</th></tr></thead><tbody id="tbl_barns"></tbody></table></div>
+                    <div class="data-table-wrapper"><table id="tbl_barns_full"><thead><tr><th>م</th><th>العنبر</th><th>السعة</th><th>الرؤوس الحالية</th><th>المتاح</th><th>الحالة</th></tr></thead><tbody id="tbl_barns"></tbody></table></div>
                     <h3 style="margin-top:20px; color:var(--primary);">نقل رأس بين العنابر</h3>
                     <div class="form-grid" style="margin-top:10px;">
                         <div class="field"><label>كود الرأس:</label><select id="move_head_tag"></select></div>
@@ -312,9 +347,13 @@
 
                 <!-- صرف علف للمجموعات -->
                 <div id="batchFeedTab" class="view-panel">
-                    <div class="toolbar"><button class="btn btn-save" onclick="saveBatchFeed()"><i class="fa-solid fa-check"></i> حفظ إذن صرف علف المجموعة</button></div>
+                    <div class="toolbar">
+                        <button class="btn btn-save" onclick="saveBatchFeed()"><i class="fa-solid fa-check"></i> حفظ إذن صرف علف المجموعة</button>
+                        <button class="btn btn-excel" onclick="exportTableToExcel('tbl_batch_feed_log_full','صرف_علف_المجموعات')"><i class="fa-solid fa-file-excel"></i> تصدير إكسل</button>
+                        <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة</button>
+                    </div>
                     <div class="form-grid">
-                        <div class="field"><label>اختر المجموعة المستهدفة:</label><select id="bf_group_code"></select></div>
+                        <div class="field"><label>اختر المجموعة المستهدفة:</label><select id="bf_group_code" onchange="calculateFeedPreview()"></select></div>
                         <div class="field"><label>تاريخ الصرف:</label><input type="date" id="bf_date"></div>
                     </div>
                     
@@ -336,7 +375,7 @@
                         إجمالي الكمية: 0 كجم | متوسط نسبة البروتين للخلطة: 0% | نصيب العجل الواحد: 0 كجم
                     </div>
                     <div class="data-table-wrapper" style="margin-top: 20px;">
-                        <table>
+                        <table id="tbl_batch_feed_log_full">
                             <thead><tr><th>م</th><th>المجموعة</th><th>إجمالي الكمية (كجم)</th><th>متوسط نسبة البروتين (%)</th><th>التاريخ</th></tr></thead>
                             <tbody id="tbl_batch_feed_log"></tbody>
                         </table>
@@ -345,7 +384,11 @@
 
                 <!-- صرف العلف للأفراد -->
                 <div id="feedTab" class="view-panel">
-                    <div class="toolbar"><button class="btn btn-save" onclick="saveBulkData('feed')"><i class="fa-solid fa-check"></i> حفظ صرف العلف</button></div>
+                    <div class="toolbar">
+                        <button class="btn btn-save" onclick="saveBulkData('feed')"><i class="fa-solid fa-check"></i> حفظ صرف العلف</button>
+                        <button class="btn btn-excel" onclick="exportTableToExcel('tbl_feed_full','صرف_علف_الأفراد')"><i class="fa-solid fa-file-excel"></i> تصدير إكسل</button>
+                        <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة</button>
+                    </div>
                     <div class="form-grid">
                         <div class="field">
                             <label>تحديد الرؤوس المستهدفة (الأحياء):</label>
@@ -355,34 +398,46 @@
                         <div class="field"><label>إجمالي الكمية المنصرفة (كجم):</label><input type="number" id="f_total_qty" placeholder="مثال: 500"></div>
                         <div class="field"><label>تاريخ الصرف:</label><input type="date" id="f_date"></div>
                     </div>
-                    <div class="data-table-wrapper"><table><thead><tr><th>م</th><th>الرأس</th><th>المركب</th><th>الصنف</th><th>الكمية للرأس</th><th>التاريخ</th></tr></thead><tbody id="tbl_feed"></tbody></table></div>
+                    <div class="data-table-wrapper"><table id="tbl_feed_full"><thead><tr><th>م</th><th>الرأس</th><th>المركب</th><th>الصنف</th><th>الكمية للرأس</th><th>التاريخ</th></tr></thead><tbody id="tbl_feed"></tbody></table></div>
                 </div>
 
                 <!-- أوزان مجموعات -->
                 <div id="batchWeightsTab" class="view-panel">
-                    <div class="toolbar"><button class="btn btn-save" onclick="saveBatchWeight()"><i class="fa-solid fa-check"></i> حفظ الوزن الجديد للمجموعة</button></div>
+                    <div class="toolbar">
+                        <button class="btn btn-save" onclick="saveBatchWeight()"><i class="fa-solid fa-check"></i> حفظ الوزن الجديد للمجموعة</button>
+                        <button class="btn btn-excel" onclick="exportTableToExcel('tbl_batch_weights_full','أوزان_المجموعات')"><i class="fa-solid fa-file-excel"></i> تصدير إكسل</button>
+                        <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة</button>
+                    </div>
                     <div class="form-grid">
                         <div class="field"><label>اختر المجموعة:</label><select id="bw_group_code"></select></div>
                         <div class="field"><label>إجمالي وزن الشحنة الجديد (كجم):</label><input type="number" id="bw_total_weight" placeholder="مثال: 38000"></div>
                         <div class="field"><label>تاريخ الوزن:</label><input type="date" id="bw_date"></div>
                     </div>
-                    <div class="data-table-wrapper"><table><thead><tr><th>م</th><th>المجموعة</th><th>إجمالي الوزن الجديد</th><th>متوسط وزن العجل الجديد</th><th>التاريخ</th></tr></thead><tbody id="tbl_batch_weights"></tbody></table></div>
+                    <div class="data-table-wrapper"><table id="tbl_batch_weights_full"><thead><tr><th>م</th><th>المجموعة</th><th>إجمالي الوزن الجديد</th><th>متوسط وزن العجل الجديد</th><th>التاريخ</th></tr></thead><tbody id="tbl_batch_weights"></tbody></table></div>
                 </div>
 
                 <!-- الأوزان للأفراد -->
                 <div id="weightsTab" class="view-panel">
-                    <div class="toolbar"><button class="btn btn-save" onclick="saveData('weights')"><i class="fa-solid fa-check"></i> حفظ الوزن</button></div>
+                    <div class="toolbar">
+                        <button class="btn btn-save" onclick="saveData('weights')"><i class="fa-solid fa-check"></i> حفظ الوزن</button>
+                        <button class="btn btn-excel" onclick="exportTableToExcel('tbl_weights_full','أوزان_الأفراد')"><i class="fa-solid fa-file-excel"></i> تصدير إكسل</button>
+                        <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة</button>
+                    </div>
                     <div class="form-grid">
                         <div class="field"><label>الرأس (الأحياء فقط):</label><select id="w_tag"></select></div>
                         <div class="field"><label>الوزن المسجل (كجم):</label><input type="number" id="w_weight"></div>
                         <div class="field"><label>تاريخ الوزن:</label><input type="date" id="w_date"></div>
                     </div>
-                    <div class="data-table-wrapper"><table><thead><tr><th>م</th><th>رقم الرأس</th><th>المركب</th><th>الوزن</th><th>التاريخ</th></tr></thead><tbody id="tbl_weights"></tbody></table></div>
+                    <div class="data-table-wrapper"><table id="tbl_weights_full"><thead><tr><th>م</th><th>رقم الرأس</th><th>المركب</th><th>الوزن</th><th>التاريخ</th></tr></thead><tbody id="tbl_weights"></tbody></table></div>
                 </div>
 
                 <!-- مبيعات -->
                 <div id="salesTab" class="view-panel">
-                    <div class="toolbar"><button class="btn btn-save" onclick="saveBulkData('sales')"><i class="fa-solid fa-check"></i> حفظ الفاتورة</button></div>
+                    <div class="toolbar">
+                        <button class="btn btn-save" onclick="saveBulkData('sales')"><i class="fa-solid fa-check"></i> حفظ الفاتورة</button>
+                        <button class="btn btn-excel" onclick="exportTableToExcel('tbl_sales_full','المبيعات')"><i class="fa-solid fa-file-excel"></i> تصدير إكسل</button>
+                        <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة</button>
+                    </div>
                     <div class="form-grid">
                         <div class="field"><label>العميل المشتري:</label><select id="s_customer"></select></div>
                         <div class="field">
@@ -392,18 +447,22 @@
                         <div class="field"><label>سعر البيع الإجمالي:</label><input type="number" id="s_price"></div>
                         <div class="field"><label>تاريخ البيع:</label><input type="date" id="s_date"></div>
                     </div>
-                    <div class="data-table-wrapper"><table><thead><tr><th>م</th><th>العميل</th><th>الرؤوس المباعة</th><th>السعر الإجمالي</th><th>التاريخ</th></tr></thead><tbody id="tbl_sales"></tbody></table></div>
+                    <div class="data-table-wrapper"><table id="tbl_sales_full"><thead><tr><th>م</th><th>العميل</th><th>الرؤوس المباعة</th><th>السعر الإجمالي</th><th>التاريخ</th></tr></thead><tbody id="tbl_sales"></tbody></table></div>
                 </div>
 
                 <!-- نفوق -->
                 <div id="deathsTab" class="view-panel">
-                    <div class="toolbar"><button class="btn btn-save" onclick="saveData('deaths')"><i class="fa-solid fa-check"></i> حفظ الوفاة</button></div>
+                    <div class="toolbar">
+                        <button class="btn btn-save" onclick="saveData('deaths')"><i class="fa-solid fa-check"></i> حفظ الوفاة</button>
+                        <button class="btn btn-excel" onclick="exportTableToExcel('tbl_deaths_full','النفوق')"><i class="fa-solid fa-file-excel"></i> تصدير إكسل</button>
+                        <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة</button>
+                    </div>
                     <div class="form-grid">
                         <div class="field"><label>الرأس النافقة:</label><select id="d_tag"></select></div>
                         <div class="field"><label>السبب:</label><input type="text" id="d_reason"></div>
                         <div class="field"><label>التاريخ:</label><input type="date" id="d_date"></div>
                     </div>
-                    <div class="data-table-wrapper"><table><thead><tr><th>م</th><th>الرأس</th><th>المركب</th><th>السبب</th><th>التاريخ</th></tr></thead><tbody id="tbl_deaths"></tbody></table></div>
+                    <div class="data-table-wrapper"><table id="tbl_deaths_full"><thead><tr><th>م</th><th>الرأس</th><th>المركب</th><th>السبب</th><th>التاريخ</th></tr></thead><tbody id="tbl_deaths"></tbody></table></div>
                 </div>
 
                 <!-- نظام الأسطول -->
@@ -413,6 +472,7 @@
                         <button class="btn btn-search" onclick="clearVehicleForm()"><i class="fa-solid fa-plus"></i> سيارة جديدة</button>
                         <button class="btn btn-search" onclick="showFleetSection('vehicles')"><i class="fa-solid fa-list"></i> السيارات</button>
                         <button class="btn btn-warning" onclick="showFleetSection('expenses')"><i class="fa-solid fa-money-bill-wave"></i> المصروفات</button>
+                        <button class="btn btn-excel" onclick="exportFleetSectionExcel()"><i class="fa-solid fa-file-excel"></i> تصدير إكسل</button>
                         <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة</button>
                     </div>
 
@@ -443,7 +503,7 @@
                         </div>
 
                         <div class="data-table-wrapper">
-                            <table>
+                            <table id="tbl_vehicles_full">
                                 <thead><tr><th>م</th><th>السيارة</th><th>اللوحة</th><th>السائق</th><th>العداد</th><th>الوقود</th><th>الحالة</th><th>إجراءات</th></tr></thead>
                                 <tbody id="tbl_vehicles"></tbody>
                             </table>
@@ -471,7 +531,7 @@
                             <button class="btn btn-save" onclick="saveFleetExpense()"><i class="fa-solid fa-check"></i> تسجيل المصروف</button>
                         </div>
                         <div class="data-table-wrapper">
-                            <table>
+                            <table id="tbl_vehicle_expenses_full">
                                 <thead><tr><th>م</th><th>السيارة</th><th>النوع</th><th>المبلغ</th><th>الكمية</th><th>العداد</th><th>التاريخ</th><th>الجهة</th><th>ملاحظات</th></tr></thead>
                                 <tbody id="tbl_vehicle_expenses"></tbody>
                             </table>
@@ -488,6 +548,7 @@
                 <div id="analyticsTab" class="view-panel">
                     <div class="toolbar">
                         <button class="btn btn-search" onclick="refreshAnalytics()"><i class="fa-solid fa-rotate"></i> تحديث التحليل</button>
+                        <button class="btn btn-excel" onclick="exportTableToExcel('tbl_analytics_batches_full','تحليل_المجموعات')"><i class="fa-solid fa-file-excel"></i> تصدير إكسل</button>
                         <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة</button>
                     </div>
                     <div class="analytics-filters">
@@ -513,7 +574,7 @@
                         <div class="chart-box"><h4 style="margin-bottom:12px;color:#333;">ADG حسب المجموعة</h4><canvas id="analyticsAdgChart" height="210"></canvas></div>
                     </div>
                     <div class="data-table-wrapper" style="margin-top:18px;">
-                        <table>
+                        <table id="tbl_analytics_batches_full">
                             <thead><tr><th>المجموعة</th><th>العدد</th><th>الوزن الابتدائي/رأس</th><th>الوزن الأخير/رأس</th><th>الزيادة/رأس</th><th>الأيام</th><th>ADG</th><th>العلف</th><th>FCR</th><th>التقييم</th></tr></thead>
                             <tbody id="tbl_analytics_batches"></tbody>
                         </table>
@@ -523,17 +584,18 @@
                 <!-- تقرير المجموعات -->
                 <div id="reportBatchTab" class="view-panel">
                     <div class="toolbar">
+                        <button class="btn btn-excel" onclick="exportTableToExcel('tbl_batch_report_full','تقرير_أداء_المجموعات')"><i class="fa-solid fa-file-excel"></i> تصدير إكسل</button>
                         <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة التقرير</button>
                     </div>
                     <div class="form-grid">
-                        <div class="field"><label>بحث بكود المجموعة:</label><select id="rep_batch_select"><option value="all">عرض كل المجموعات</option></select></div>
+                        <div class="field"><label>بحث بكود المجموعة:</label><select id="rep_batch_select" onchange="generateBatchReport()"><option value="all">عرض كل المجموعات</option></select></div>
                         <div class="field" style="justify-content: flex-end; flex-direction: row; align-items: flex-end;">
                             <button class="btn btn-search" onclick="generateBatchReport()"><i class="fa-solid fa-magnifying-glass"></i> عرض التقرير</button>
                         </div>
                     </div>
                     
                     <div class="data-table-wrapper" style="margin-top: 15px;">
-                        <table>
+                        <table id="tbl_batch_report_full">
                             <thead>
                                 <tr>
                                     <th>كود المجموعة</th>
@@ -558,6 +620,7 @@
                     <div class="toolbar">
                         <button class="btn btn-save" onclick="saveInventoryItem()"><i class="fa-solid fa-plus"></i> إضافة صنف مخزون</button>
                         <button class="btn btn-search" onclick="refreshInventory()"><i class="fa-solid fa-rotate"></i> تحديث</button>
+                        <button class="btn btn-excel" onclick="exportTableToExcel('tbl_inventory_full','مخزون_الأعلاف')"><i class="fa-solid fa-file-excel"></i> تصدير إكسل</button>
                         <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة</button>
                     </div>
                     <div class="form-grid">
@@ -586,7 +649,7 @@
                     </div>
 
                     <div class="data-table-wrapper">
-                        <table>
+                        <table id="tbl_inventory_full">
                             <thead><tr><th>م</th><th>الصنف</th><th>النوع</th><th>الوحدة</th><th>الرصيد</th><th>البروتين %</th><th>التكلفة</th><th>حد الطلب</th><th>الحالة</th><th>إجراءات</th></tr></thead>
                             <tbody id="tbl_inventory"></tbody>
                         </table>
@@ -606,6 +669,7 @@
                     <div class="toolbar">
                         <button class="btn btn-save" onclick="saveManufacturingOrder()"><i class="fa-solid fa-industry"></i> تنفيذ التصنيع</button>
                         <button class="btn btn-search" onclick="addManufacturingRow()"><i class="fa-solid fa-plus"></i> إضافة خامة</button>
+                        <button class="btn btn-excel" onclick="exportTableToExcel('tbl_manufacturing_full','أوامر_التصنيع')"><i class="fa-solid fa-file-excel"></i> تصدير إكسل</button>
                         <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة</button>
                     </div>
 
@@ -631,7 +695,7 @@
                     </div>
 
                     <div class="data-table-wrapper">
-                        <table>
+                        <table id="tbl_manufacturing_full">
                             <thead><tr><th>الأمر</th><th>المنتج</th><th>الإنتاج كجم</th><th>البروتين %</th><th>التكلفة</th><th>التاريخ</th><th>المستخدم</th></tr></thead>
                             <tbody id="tbl_manufacturing"></tbody>
                         </table>
@@ -643,6 +707,8 @@
                     <div class="toolbar">
                         <button class="btn btn-save" onclick="saveEmployee()"><i class="fa-solid fa-user-plus"></i> حفظ الموظف</button>
                         <button class="btn btn-search" onclick="clearEmployeeForm()"><i class="fa-solid fa-plus"></i> موظف جديد</button>
+                        <button class="btn btn-excel" onclick="exportTableToExcel('tbl_employees_full','الموظفون')"><i class="fa-solid fa-file-excel"></i> تصدير إكسل</button>
+                        <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة</button>
                     </div>
 
                     <div class="form-grid">
@@ -656,7 +722,7 @@
                     </div>
 
                     <div class="data-table-wrapper">
-                        <table>
+                        <table id="tbl_employees_full">
                             <thead><tr><th>م</th><th>الاسم</th><th>المستخدم</th><th>الهاتف</th><th>الدور</th><th>الحالة</th><th>آخر دخول</th><th>إجراءات</th></tr></thead>
                             <tbody id="tbl_employees"></tbody>
                         </table>
@@ -666,22 +732,27 @@
                 <!-- الإعدادات -->
                 <div id="settingsTab" class="view-panel">
                     <h3 style="margin-top: 20px; color: var(--primary);"><i class="fa-solid fa-database"></i> إدارة النسخ الاحتياطي</h3>
-<p style="font-size: 13px; color: #666; margin-bottom: 15px;">يمكنك حفظ نسخة من كافة بيانات المزرعة على جهازك أو استعادتها في أي وقت.</p>
+                    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">يمكنك حفظ نسخة من كافة بيانات المزرعة على جهازك أو استعادتها في أي وقت.</p>
 
-<div class="form-grid" style="background: #fff; border: 1px solid #ddd; padding: 20px;">
-    <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
-        <!-- زر التنزيل -->
-        <button type="button" class="btn btn-save" onclick="exportLocalBackup()">
-            <i class="fa-solid fa-download"></i> تنزيل نسخة احتياطية (Backup)
-        </button>
+                    <div class="form-grid" style="background: #fff; border: 1px solid #ddd; padding: 20px;">
+                        <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                            <!-- زر التنزيل -->
+                            <button type="button" class="btn btn-save" onclick="exportLocalBackup()">
+                                <i class="fa-solid fa-download"></i> تنزيل نسخة احتياطية (Backup)
+                            </button>
 
-        <!-- زر الرفع والاسترجاع -->
-        <label class="btn btn-search" style="cursor: pointer; margin: 0;">
-            <i class="fa-solid fa-upload"></i> استرجاع نسخة من ملف (Restore)
-            <input type="file" id="backupFileInput" accept=".json" onchange="importLocalBackup(event)" style="display: none;">
-        </label>
-    </div>
-</div>
+                            <!-- زر الرفع والاسترجاع -->
+                            <label class="btn btn-search" style="cursor: pointer; margin: 0;">
+                                <i class="fa-solid fa-upload"></i> استرجاع نسخة من ملف (Restore)
+                                <input type="file" id="backupFileInput" accept=".json" onchange="importLocalBackup(event)" style="display: none;">
+                            </label>
+
+                            <!-- زر تصدير كل البيانات إكسل -->
+                            <button type="button" class="btn btn-excel" onclick="exportAllDataExcel()">
+                                <i class="fa-solid fa-file-excel"></i> تصدير كل البيانات (إكسل)
+                            </button>
+                        </div>
+                    </div>
                     <div class="toolbar"><button class="btn btn-save" onclick="saveSettings()"><i class="fa-solid fa-save"></i> حفظ الإعدادات</button></div>
                     <div class="form-grid">
                         <div class="field"><label>اسم المنشأة:</label><input id="set_company_name" value="مزرعة التسمين المتكاملة"></div>
@@ -695,6 +766,7 @@
                 <!-- التقرير الشامل للأفراد -->
                 <div id="reportFCRTab" class="view-panel">
                     <div class="toolbar">
+                        <button class="btn btn-excel" onclick="exportTableToExcel('tbl_fcr_report_full','التقرير_الشامل_للأفراد')"><i class="fa-solid fa-file-excel"></i> تصدير إكسل</button>
                         <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة التقرير</button>
                     </div>
                     <div class="form-grid">
@@ -706,7 +778,7 @@
                     </div>
                     
                     <div class="data-table-wrapper" style="margin-top: 15px;">
-                        <table>
+                        <table id="tbl_fcr_report_full">
                             <thead>
                                 <tr>
                                     <th>رقم الرأس</th>
@@ -726,33 +798,8 @@
             </div>
         </div>
     </div>
-<!-- صفحة الإعدادات والنسخ الاحتياطي -->
-<div id="settingsTab" class="view-panel" style="display: none;">
-    <h2><i class="fa-solid fa-gear"></i> إعدادات النظام والنسخ الاحتياطي</h2>
-    <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
 
-    <div style="background: #fff; border: 1px solid #ddd; padding: 25px; border-radius: 8px; margin-top: 15px;">
-        <h3 style="color: var(--primary); margin-bottom: 10px;">
-            <i class="fa-solid fa-database"></i> إدارة النسخ الاحتياطي (Backup & Restore)
-        </h3>
-        <p style="font-size: 14px; color: #666; margin-bottom: 20px;">
-            يمكنك حفظ نسخة من جميع بيانات المزرعة على جهازك، أو استعادتها في أي وقت من ملف سابق.
-        </p>
-
-        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-            <!-- زر تنزيل النسخة -->
-            <button type="button" class="btn btn-save" onclick="exportLocalBackup()">
-                <i class="fa-solid fa-download"></i> تنزيل نسخة احتياطية (Backup)
-            </button>
-
-            <!-- زر رفع واسترجاع النسخة -->
-            <label class="btn btn-search" style="cursor: pointer; margin: 0; display: inline-flex; align-items: center; gap: 5px;">
-                <i class="fa-solid fa-upload"></i> استرجاع نسخة من ملف (Restore)
-                <input type="file" id="backupFileInput" accept=".json" onchange="importLocalBackup(event)" style="display: none;">
-            </label>
-        </div>
-    </div>
-</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
         let statusChartInst = null;
         let feedChartInst = null;
@@ -764,6 +811,110 @@
 
         const getDB = (key) => JSON.parse(localStorage.getItem(key) || '[]');
         const setDB = (key, data) => localStorage.setItem(key, JSON.stringify(data));
+
+        /* ===================== تصدير إلى إكسل ===================== */
+        function exportTableToExcel(tableId, sheetName) {
+            const table = document.getElementById(tableId);
+            if (!table) { alert('لا يوجد جدول لتصديره.'); return; }
+            try {
+                const wb = XLSX.utils.table_to_book(table, { sheet: (sheetName || 'Sheet1').substring(0,31) });
+                const dateStr = new Date().toISOString().slice(0,10);
+                XLSX.writeFile(wb, `${sheetName || 'تصدير'}_${dateStr}.xlsx`);
+            } catch (err) {
+                console.error(err);
+                alert('حدث خطأ أثناء تصدير ملف الإكسل.');
+            }
+        }
+
+        function exportFleetSectionExcel() {
+            const visible = document.getElementById('fleetExpensesSection').style.display !== 'none' ? 'tbl_vehicle_expenses_full' : 'tbl_vehicles_full';
+            const name = visible === 'tbl_vehicle_expenses_full' ? 'مصروفات_الأسطول' : 'السيارات';
+            exportTableToExcel(visible, name);
+        }
+
+        function exportAllDataExcel() {
+            try {
+                const sheets = [
+                    ['المراكب','tbl_boats_full'], ['الأصناف','tbl_items_full'], ['العملاء','tbl_customers_full'],
+                    ['المجموعات','tbl_batches_full'], ['الرؤوس','tbl_heads_full'], ['العنابر','tbl_barns_full'],
+                    ['صرف علف الأفراد','tbl_feed_full'], ['صرف علف المجموعات','tbl_batch_feed_log_full'],
+                    ['أوزان الأفراد','tbl_weights_full'], ['أوزان المجموعات','tbl_batch_weights_full'],
+                    ['المبيعات','tbl_sales_full'], ['النفوق','tbl_deaths_full'], ['السيارات','tbl_vehicles_full'],
+                    ['مصروفات الأسطول','tbl_vehicle_expenses_full'], ['المخزون','tbl_inventory_full'],
+                    ['التصنيع','tbl_manufacturing_full'], ['الموظفون','tbl_employees_full']
+                ];
+                const wb = XLSX.utils.book_new();
+                sheets.forEach(([name, id]) => {
+                    const el = document.getElementById(id);
+                    if (el) { const ws = XLSX.utils.table_to_sheet(el); XLSX.utils.book_append_sheet(wb, ws, name.substring(0,31)); }
+                });
+                const dateStr = new Date().toISOString().slice(0,10);
+                XLSX.writeFile(wb, `Farm_System_Full_Export_${dateStr}.xlsx`);
+            } catch (err) {
+                console.error(err);
+                alert('حدث خطأ أثناء تصدير كل البيانات.');
+            }
+        }
+
+        /* ===================== النسخ الاحتياطي ===================== */
+        function exportLocalBackup() {
+            try {
+                const keys = [
+                    'db_users', 'db_boats', 'db_items', 'db_customers',
+                    'db_batches', 'db_heads', 'db_barns', 'db_barn_moves',
+                    'db_batch_feed', 'db_feed', 'db_batch_weights', 'db_weights',
+                    'db_sales', 'db_deaths', 'db_vehicles', 'db_vehicle_expenses',
+                    'db_inventory', 'db_manufacturing', 'sys_company_name'
+                ];
+
+                let backupData = {};
+                keys.forEach(key => {
+                    backupData[key] = JSON.parse(localStorage.getItem(key) || '[]');
+                });
+
+                const jsonStr = JSON.stringify(backupData, null, 2);
+                const blob = new Blob([jsonStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = url;
+                const dateStr = new Date().toISOString().slice(0, 10);
+                a.download = `Farm_System_Backup_${dateStr}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                alert('تم تنزيل النسخة الاحتياطية بنجاح على جهازك!');
+            } catch (err) {
+                console.error(err);
+                alert('حدث خطأ أثناء استخراج البيانات');
+            }
+        }
+
+        function importLocalBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!confirm('تنبيه: استرجاع النسخة الاحتياطية ستقوم باستبدال البيانات الحالية بالبيانات الموجودة في الملف. هل تريد الاستمرار؟')) {
+                event.target.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const backupData = JSON.parse(e.target.result);
+                    Object.keys(backupData).forEach(key => {
+                        localStorage.setItem(key, JSON.stringify(backupData[key]));
+                    });
+                    alert('تم استرجاع البيانات بنجاح! سيتم إعادة تحميل الصفحة الآن.');
+                    location.reload();
+                } catch (err) {
+                    console.error(err);
+                    alert('الملف غير صالح أو حدث خطأ أثناء الاسترجاع');
+                }
+            };
+            reader.readAsText(file);
+        }
 
         function ensureUsersDB(){
             let users=getDB('db_users');
@@ -923,6 +1074,10 @@
             setDB('db_heads',heads.concat(created));
             batches.push({code,boat,type,count,totalWeight,avgWeight,date,barn,headCodes:created.map(x=>x.tag)}); setDB('db_batches',batches);
             const bw=getDB('db_batch_weights'); bw.push({code,totalWeight,avgWeight,date}); setDB('db_batch_weights',bw);
+            // تسجيل الوزن الابتدائي لكل رأس فردي حتى يعمل تقرير الأفراد بشكل صحيح
+            const weightsDB=getDB('db_weights');
+            created.forEach(h=>weightsDB.push({tag:h.tag, weight:avgWeight, date}));
+            setDB('db_weights', weightsDB);
             alert(`تم استلام ${count} رأس بنجاح!`); loadAllData();
         }
 
@@ -1026,11 +1181,19 @@
             let batch = batches.find(b => b.code === code);
             if(!batch) return alert('المجموعة غير موجودة');
 
-            const avgWeight = (totalWeight / batch.count).toFixed(2);
+            const avgWeight = +(totalWeight / batch.count).toFixed(2);
 
             let bwDB = getDB('db_batch_weights');
             bwDB.push({ code, totalWeight, avgWeight, date });
             setDB('db_batch_weights', bwDB);
+
+            // تحديث وزن كل رأس فردي بالمجموعة حتى تتوافق تقارير الأفراد مع تقارير المجموعات
+            const headTags=batch.headCodes || getDB('db_heads').filter(h=>h.batchCode===code).map(h=>h.tag);
+            if(headTags.length){
+                const weightsDB=getDB('db_weights');
+                headTags.forEach(tag=>weightsDB.push({tag, weight:avgWeight, date}));
+                setDB('db_weights', weightsDB);
+            }
 
             alert(`تم تسجيل الوزن الجديد للمجموعة بنجاح بمتوسط ${avgWeight} كجم للعجل!`);
             loadAllData();
@@ -1038,16 +1201,26 @@
 
         function saveData(type) {
             let db = getDB(`db_${type}`);
-            if (type === 'boats') { db.push({ name: document.getElementById('boat_name').value, date: document.getElementById('boat_date').value }); } 
-            else if (type === 'items') { 
-                db.push({ 
-                    name: document.getElementById('item_name').value, 
+            if (type === 'boats') {
+                const name=document.getElementById('boat_name').value.trim(), date=document.getElementById('boat_date').value;
+                if(!name || !date) return alert('أكمل اسم المركب والتاريخ.');
+                db.push({ name, date });
+            }
+            else if (type === 'items') {
+                const name=document.getElementById('item_name').value.trim();
+                if(!name) return alert('أدخل اسم الصنف.');
+                db.push({
+                    name,
                     group: document.getElementById('item_group').value,
                     protein: parseFloat(document.getElementById('item_protein').value) || 0,
                     costPerKg: parseFloat(document.getElementById('item_cost').value) || 0
-                }); 
+                });
             }
-            else if (type === 'customers') { db.push({ name: document.getElementById('cust_name').value, phone: document.getElementById('cust_phone').value, notes: document.getElementById('cust_notes').value }); }
+            else if (type === 'customers') {
+                const name=document.getElementById('cust_name').value.trim();
+                if(!name) return alert('أدخل اسم العميل.');
+                db.push({ name, phone: document.getElementById('cust_phone').value.trim(), notes: document.getElementById('cust_notes').value.trim() });
+            }
             else if (type === 'heads') {
                 let tag=document.getElementById('h_tag').value.trim();
                 const typeVal=document.getElementById('h_type').value.trim(), boatVal=document.getElementById('h_boat').value, barnVal=document.getElementById('h_barn').value;
@@ -1133,7 +1306,7 @@
             let db=getDB('db_vehicles');
             if(fleetEditingId){
                 const idx=db.findIndex(v=>v.id===fleetEditingId);
-                db[idx]=vehicle;
+                if(idx>-1) db[idx]=vehicle; else db.push(vehicle);
             }else{ db.push(vehicle); }
             setDB('db_vehicles',db); clearVehicleForm(); loadAllData(); alert('تم الحفظ بنجاح');
         }
@@ -1141,6 +1314,8 @@
         function clearVehicleForm() {
             fleetEditingId=null;
             ['v_number','v_plate','v_type','v_model','v_driver','v_driver_phone','v_initial_odometer','v_odometer','v_tank','v_license_date','v_license_expiry','v_notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+            const ft=document.getElementById('v_fuel_type'); if(ft) ft.selectedIndex=0;
+            const st=document.getElementById('v_status'); if(st) st.value='active';
         }
 
         function saveFleetExpense() {
@@ -1160,6 +1335,11 @@
             setDB('db_vehicle_expenses', db);
             alert('تم تسجيل المصروف بنجاح.');
             loadAllData();
+        }
+
+        function vehicleLabel(vehicleId){
+            const v=getDB('db_vehicles').find(x=>x.id===vehicleId);
+            return v ? `سيارة ${v.number} - ${v.plate}` : 'غير محدد';
         }
 
         function renderFleet() {
@@ -1186,13 +1366,90 @@
 
             const select = document.getElementById('e_vehicle');
             select.innerHTML = '<option value="">اختر السيارة</option>' + vehicles.map(v => `<option value="${v.id}">سيارة ${v.number} - ${v.plate}</option>`).join('');
+
+            document.getElementById('tbl_vehicle_expenses').innerHTML = expenses.map((e,i) => `
+                <tr>
+                    <td>${i+1}</td>
+                    <td>${vehicleLabel(e.vehicleId)}</td>
+                    <td>${e.type}</td>
+                    <td>${e.amount}</td>
+                    <td>${e.qty||'-'}</td>
+                    <td>${e.odometer||'-'}</td>
+                    <td>${e.date}</td>
+                    <td>${e.vendor||'-'}</td>
+                    <td>${e.notes||'-'}</td>
+                </tr>
+            `).join('') || `<tr><td colspan="9" style="text-align:center;">لا توجد مصروفات</td></tr>`;
         }
 
         function editVehicle(id){
             const v=getDB('db_vehicles').find(x=>x.id===id); if(!v)return;
             fleetEditingId=id;
-            document.getElementById('v_number').value=v.number; document.getElementById('v_plate').value=v.plate;
-            document.getElementById('v_driver').value=v.driver;
+            document.getElementById('v_number').value=v.number||'';
+            document.getElementById('v_plate').value=v.plate||'';
+            document.getElementById('v_type').value=v.type||'';
+            document.getElementById('v_model').value=v.model||'';
+            document.getElementById('v_driver').value=v.driver||'';
+            document.getElementById('v_driver_phone').value=v.driverPhone||'';
+            document.getElementById('v_initial_odometer').value=v.initialOdometer||'';
+            document.getElementById('v_odometer').value=v.odometer||'';
+            document.getElementById('v_fuel_type').value=v.fuelType||'سولار';
+            document.getElementById('v_tank').value=v.tank||'';
+            document.getElementById('v_license_date').value=v.licenseDate||'';
+            document.getElementById('v_license_expiry').value=v.licenseExpiry||'';
+            document.getElementById('v_status').value=v.status||'active';
+            document.getElementById('v_notes').value=v.notes||'';
+            showFleetSection('vehicles');
+            window.scrollTo(0,0);
+        }
+
+        /* ===================== حسابات الأداء (FCR / ADG) ===================== */
+        function headTotalFeed(tag){
+            return getDB('db_feed').filter(f=>f.tag===tag).reduce((s,f)=>s+safeNum(f.qty),0);
+        }
+
+        function headWeightHistory(tag){
+            return getDB('db_weights').filter(w=>w.tag===tag).sort((a,b)=>new Date(a.date)-new Date(b.date));
+        }
+
+        function computeHeadPerformance(tag){
+            const boat = getHeadBoat(tag);
+            const feedTotal = headTotalFeed(tag);
+            const wh = headWeightHistory(tag);
+            const firstW = wh.length ? safeNum(wh[0].weight) : null;
+            const lastW = wh.length ? safeNum(wh[wh.length-1].weight) : null;
+            const gain = (firstW!==null && lastW!==null) ? +(lastW-firstW).toFixed(2) : null;
+            const fcr = (gain && gain>0) ? +(feedTotal/gain).toFixed(2) : null;
+            return { tag, boat, feedTotal:+feedTotal.toFixed(2), firstW, lastW, gain, fcr };
+        }
+
+        function batchTotalFeed(code){
+            return getDB('db_batch_feed').filter(f=>f.groupCode===code).reduce((s,f)=>s+safeNum(f.totalQty),0);
+        }
+
+        function batchWeightHistory(code){
+            return getDB('db_batch_weights').filter(w=>w.code===code).sort((a,b)=>new Date(a.date)-new Date(b.date));
+        }
+
+        function computeBatchPerformance(batch){
+            const feedTotal = batchTotalFeed(batch.code);
+            const bfRows = getDB('db_batch_feed').filter(f=>f.groupCode===batch.code);
+            let avgProtein = '-';
+            if(bfRows.length){
+                let sumQty=0, sumWeighted=0;
+                bfRows.forEach(r=>{ sumQty+=safeNum(r.totalQty); sumWeighted+=safeNum(r.totalQty)*safeNum(r.avgProtein); });
+                avgProtein = sumQty>0 ? (sumWeighted/sumQty).toFixed(2) : '-';
+            }
+            const wh = batchWeightHistory(batch.code);
+            const firstEntry = wh.length ? wh[0] : {avgWeight:batch.avgWeight, date:batch.date};
+            const lastEntry = wh.length ? wh[wh.length-1] : {avgWeight:batch.avgWeight, date:batch.date};
+            const firstW = safeNum(firstEntry.avgWeight);
+            const lastW = safeNum(lastEntry.avgWeight);
+            const gain = +(lastW-firstW).toFixed(2);
+            const days = Math.max(1, Math.round((new Date(lastEntry.date) - new Date(firstEntry.date))/86400000));
+            const adg = gain>0 ? +(gain/days).toFixed(3) : 0;
+            const fcr = gain>0 ? +(feedTotal/(gain*batch.count)).toFixed(2) : null;
+            return { code:batch.code, boat:batch.boat, count:batch.count, feedTotal:+feedTotal.toFixed(2), avgProtein, firstW, lastW, gain, days, adg, fcr };
         }
 
         /* التحليلات والتحميل العام */
@@ -1210,6 +1467,15 @@
             document.getElementById('bf_group_code').innerHTML = batchOptions;
             document.getElementById('bw_group_code').innerHTML = batchOptions;
 
+            const repBatchSel=document.getElementById('rep_batch_select');
+            if(repBatchSel){ const old=repBatchSel.value; repBatchSel.innerHTML='<option value="all">عرض كل المجموعات</option>'+batchOptions; repBatchSel.value = batches.some(b=>b.code===old)?old:'all'; }
+
+            const anBatchSel=document.getElementById('an_batch');
+            if(anBatchSel){ const old=anBatchSel.value; anBatchSel.innerHTML='<option value="all">كل المجموعات</option>'+batchOptions; anBatchSel.value = batches.some(b=>b.code===old)?old:'all'; }
+
+            const repBoatSel=document.getElementById('rep_search_boat');
+            if(repBoatSel){ const old=repBoatSel.value; repBoatSel.innerHTML='<option value="all">عرض كل المراكب</option>'+boatOptions; repBoatSel.value = boats.some(b=>b.name===old)?old:'all'; }
+
             const customers = getDB('db_customers'); document.getElementById('s_customer').innerHTML = customers.map(c => `<option>${c.name}</option>`).join('');
             const items = getDB('db_items').filter(i => i.group === 'أعلاف'); document.getElementById('f_item').innerHTML = items.map(i => `<option>${i.name}</option>`).join('');
             
@@ -1222,13 +1488,21 @@
             document.getElementById('tbl_items').innerHTML = getDB('db_items').map((r, i) => `<tr><td>${i+1}</td><td>${r.name}</td><td>${r.group}</td><td>${r.protein || 0}%</td><td>${r.costPerKg ? r.costPerKg+' جنيه' : '-'}</td></tr>`).join('');
             document.getElementById('tbl_customers').innerHTML = customers.map((r, i) => `<tr><td>${i+1}</td><td>${r.name}</td><td>${r.phone}</td><td>${r.notes}</td></tr>`).join('');
             document.getElementById('tbl_batches').innerHTML = batches.map((r, i) => `<tr><td>${i+1}</td><td><strong>${r.code}</strong></td><td>${r.boat}</td><td>${r.count}</td><td>${r.totalWeight} كجم</td><td>${r.avgWeight} كجم</td><td>${r.date}</td></tr>`).join('');
-            document.getElementById('tbl_heads').innerHTML = getDB('db_heads').map((r, i) => `<tr><td>${i+1}</td><td><strong>${r.tag}</strong></td><td>${r.type}</td><td>${r.boat}</td><td>${r.barn||'غير محدد'}</td><td>حي</td></tr>`).join('');
-            
+            document.getElementById('tbl_heads').innerHTML = getDB('db_heads').map((r, i) => `<tr><td>${i+1}</td><td><strong>${r.tag}</strong></td><td>${r.type}</td><td>${r.boat}</td><td>${r.barn||'غير محدد'}</td><td>${getHeadCurrentStatus(r.tag)==='alive'?'حي':(getHeadCurrentStatus(r.tag)==='dead'?'نافق':'مباع')}</td></tr>`).join('');
+
+            document.getElementById('tbl_feed').innerHTML = getDB('db_feed').map((r,i)=>`<tr><td>${i+1}</td><td>${r.tag}</td><td>${getHeadBoat(r.tag)}</td><td>${r.item}</td><td>${r.qty}</td><td>${r.date}</td></tr>`).join('');
+            document.getElementById('tbl_batch_feed_log').innerHTML = getDB('db_batch_feed').map((r,i)=>`<tr><td>${i+1}</td><td>${r.groupCode}</td><td>${r.totalQty}</td><td>${r.avgProtein}</td><td>${r.date}</td></tr>`).join('');
+            document.getElementById('tbl_weights').innerHTML = getDB('db_weights').map((r,i)=>`<tr><td>${i+1}</td><td>${r.tag}</td><td>${getHeadBoat(r.tag)}</td><td>${r.weight}</td><td>${r.date}</td></tr>`).join('');
+            document.getElementById('tbl_batch_weights').innerHTML = getDB('db_batch_weights').map((r,i)=>`<tr><td>${i+1}</td><td>${r.code}</td><td>${r.totalWeight}</td><td>${r.avgWeight}</td><td>${r.date}</td></tr>`).join('');
+            document.getElementById('tbl_sales').innerHTML = getDB('db_sales').map((r,i)=>`<tr><td>${i+1}</td><td>${r.customer}</td><td>${(r.tags||[]).join('، ')}</td><td>${r.price}</td><td>${r.date}</td></tr>`).join('');
+            document.getElementById('tbl_deaths').innerHTML = getDB('db_deaths').map((r,i)=>`<tr><td>${i+1}</td><td>${r.tag}</td><td>${getHeadBoat(r.tag)}</td><td>${r.reason||'-'}</td><td>${r.date}</td></tr>`).join('');
+
             renderBarns();
             updateDashboard();
             generateReport();
             generateBatchReport();
             renderFleet();
+            renderEmployees();
         }
 
         function safeNum(v){ const n=parseFloat(v); return Number.isFinite(n) ? n : 0; }
@@ -1245,49 +1519,166 @@
             document.getElementById('kpi_active').innerText=active.toLocaleString();
             document.getElementById('kpi_sold').innerText=sold.toLocaleString();
             document.getElementById('kpi_dead').innerText=dead.toLocaleString();
+            const mortality = heads.length>0 ? ((dead/heads.length)*100).toFixed(2) : '0';
+            document.getElementById('kpi_mortality').innerText = mortality+'%';
+
+            // FCR/ADG للأفراد ذوي البيانات المكتملة
+            const perfs = heads.map(h=>computeHeadPerformance(h.tag)).filter(p=>p.fcr!==null);
+            if(perfs.length){
+                const avgFcr = (perfs.reduce((s,p)=>s+p.fcr,0)/perfs.length).toFixed(2);
+                document.getElementById('kpi_fcr').innerText = avgFcr;
+            } else { document.getElementById('kpi_fcr').innerText = '-'; }
+
+            const adgList = heads.map(h=>{
+                const wh = headWeightHistory(h.tag);
+                if(wh.length<2) return null;
+                const gain = safeNum(wh[wh.length-1].weight) - safeNum(wh[0].weight);
+                const days = Math.max(1, Math.round((new Date(wh[wh.length-1].date)-new Date(wh[0].date))/86400000));
+                return gain>0 ? gain/days : null;
+            }).filter(v=>v!==null);
+            document.getElementById('kpi_adg').innerText = adgList.length ? (adgList.reduce((a,b)=>a+b,0)/adgList.length).toFixed(3) : '-';
 
             if(statusChartInst) statusChartInst.destroy();
             statusChartInst=new Chart(document.getElementById('statusChart').getContext('2d'),{type:'doughnut',data:{labels:['متاح (حي)','مباع','نافق'],datasets:[{data:[active,sold,dead],backgroundColor:['#16a085','#f39c12','#c0392b']}]},options:{responsive:true}});
+
+            // استهلاك الأعلاف حسب الصنف (أفراد + مجموعات)
+            const feedBySplit = {};
+            getDB('db_feed').forEach(f=>{ feedBySplit[f.item]=(feedBySplit[f.item]||0)+safeNum(f.qty); });
+            getDB('db_batch_feed').forEach(bf=>{ (bf.itemsDetails||[]).forEach(it=>{ feedBySplit[it.itemName]=(feedBySplit[it.itemName]||0)+safeNum(it.qty); }); });
+            const feedLabels=Object.keys(feedBySplit), feedVals=Object.values(feedBySplit);
+            if(feedChartInst) feedChartInst.destroy();
+            feedChartInst=new Chart(document.getElementById('feedChart').getContext('2d'),{type:'bar',data:{labels:feedLabels,datasets:[{label:'كجم',data:feedVals,backgroundColor:'#2980b9'}]},options:{responsive:true}});
+
+            // أداء المجموعات FCR/ADG
+            const batches=getDB('db_batches');
+            const batchPerf=batches.map(b=>computeBatchPerformance(b));
+            if(batchFcrChartInst) batchFcrChartInst.destroy();
+            batchFcrChartInst=new Chart(document.getElementById('batchFcrChart').getContext('2d'),{type:'bar',data:{labels:batchPerf.map(b=>b.code),datasets:[{label:'FCR',data:batchPerf.map(b=>b.fcr||0),backgroundColor:'#8e44ad'}]},options:{responsive:true}});
+            if(batchAdgChartInst) batchAdgChartInst.destroy();
+            batchAdgChartInst=new Chart(document.getElementById('batchAdgChart').getContext('2d'),{type:'bar',data:{labels:batchPerf.map(b=>b.code),datasets:[{label:'ADG',data:batchPerf.map(b=>b.adg||0),backgroundColor:'#16a085'}]},options:{responsive:true}});
         }
 
         function refreshAnalytics(){
-            const heads=getDB('db_heads');
-            document.getElementById('an_heads').innerText=heads.length;
-            document.getElementById('an_dead').innerText=getDB('db_deaths').length;
+            const from = document.getElementById('an_from').value;
+            const to = document.getElementById('an_to').value;
+            const selBatch = document.getElementById('an_batch').value;
+            const fcrLimit = safeNum(document.getElementById('an_fcr_limit').value) || 7;
+            const mortalityLimit = safeNum(document.getElementById('an_mortality_limit').value) || 2;
+
+            const inRange=(d)=> (!from || d>=from) && (!to || d<=to);
+
+            let batches = getDB('db_batches');
+            if(selBatch && selBatch!=='all') batches = batches.filter(b=>b.code===selBatch);
+
+            const heads = getDB('db_heads');
+            const headsInScope = selBatch && selBatch!=='all' ? heads.filter(h=>h.batchCode===selBatch) : heads;
+            document.getElementById('an_heads').innerText = headsInScope.length;
+
+            const deathsInRange = getDB('db_deaths').filter(d=>inRange(d.date) && (selBatch==='all'|| !selBatch || heads.some(h=>h.tag===d.tag && h.batchCode===selBatch)));
+            document.getElementById('an_dead').innerText = deathsInRange.length;
+            const mortalityRate = headsInScope.length>0 ? ((deathsInRange.length/headsInScope.length)*100).toFixed(2) : '0';
+            document.getElementById('an_mortality_text').innerText = `معدل النفوق: ${mortalityRate}%`;
+
+            let feedTotal=0, feedCost=0;
+            getDB('db_batch_feed').filter(f=>inRange(f.date) && (selBatch==='all'||!selBatch||f.groupCode===selBatch)).forEach(f=>{
+                feedTotal+=safeNum(f.totalQty);
+                (f.itemsDetails||[]).forEach(it=>{
+                    const itemDef=getDB('db_items').find(i=>i.name===it.itemName);
+                    feedCost += safeNum(it.qty) * (itemDef? safeNum(itemDef.costPerKg):0);
+                });
+            });
+            getDB('db_feed').filter(f=>inRange(f.date) && (selBatch==='all'||!selBatch|| heads.some(h=>h.tag===f.tag && h.batchCode===selBatch))).forEach(f=>{
+                feedTotal+=safeNum(f.qty);
+                const itemDef=getDB('db_items').find(i=>i.name===f.item);
+                feedCost += safeNum(f.qty) * (itemDef? safeNum(itemDef.costPerKg):0);
+            });
+            document.getElementById('an_feed').innerText = feedTotal.toLocaleString();
+            document.getElementById('an_feed_cost').innerText = feedCost.toFixed(2).toLocaleString();
+
+            let soldInRange=0;
+            getDB('db_sales').filter(s=>inRange(s.date)).forEach(s=>{
+                const tags=(s.tags||[]).filter(t=> selBatch==='all'||!selBatch|| heads.some(h=>h.tag===t && h.batchCode===selBatch));
+                soldInRange+=tags.length;
+            });
+            document.getElementById('an_sales').innerText = soldInRange;
+
+            const batchPerf = batches.map(b=>computeBatchPerformance(b));
+            const fcrVals = batchPerf.filter(b=>b.fcr!==null).map(b=>b.fcr);
+            const adgVals = batchPerf.filter(b=>b.adg).map(b=>b.adg);
+            document.getElementById('an_fcr').innerText = fcrVals.length ? (fcrVals.reduce((a,b)=>a+b,0)/fcrVals.length).toFixed(2) : '-';
+            document.getElementById('an_adg').innerText = adgVals.length ? (adgVals.reduce((a,b)=>a+b,0)/adgVals.length).toFixed(3) : '-';
+
+            // تنبيهات
+            const alertsBox=document.getElementById('analyticsAlerts');
+            let alerts=[];
+            batchPerf.forEach(b=>{ if(b.fcr!==null && b.fcr>fcrLimit) alerts.push(`المجموعة ${b.code}: FCR مرتفع (${b.fcr}) أعلى من الحد ${fcrLimit}`); });
+            if(parseFloat(mortalityRate)>mortalityLimit) alerts.push(`معدل النفوق الحالي (${mortalityRate}%) تجاوز الحد المسموح (${mortalityLimit}%)`);
+            if(alerts.length){ alertsBox.className='alert-box danger'; alertsBox.innerHTML=alerts.map(a=>`<div>⚠ ${a}</div>`).join(''); }
+            else { alertsBox.className='alert-box ok'; alertsBox.innerText='لا توجد تنبيهات — الأداء ضمن الحدود الطبيعية.'; }
+
+            // جدول التحليل
+            document.getElementById('tbl_analytics_batches').innerHTML = batchPerf.map(b=>{
+                let rankClass='rank-good', rankText='جيد';
+                if(b.fcr===null){ rankClass='rank-warn'; rankText='بيانات غير مكتملة'; }
+                else if(b.fcr>fcrLimit){ rankClass='rank-bad'; rankText='ضعيف'; }
+                else if(b.fcr>fcrLimit*0.85){ rankClass='rank-warn'; rankText='متوسط'; }
+                return `<tr><td><strong>${b.code}</strong></td><td>${b.count}</td><td>${b.firstW}</td><td>${b.lastW}</td><td>${b.gain}</td><td>${b.days}</td><td>${b.adg}</td><td>${b.feedTotal}</td><td>${b.fcr!==null?b.fcr:'-'}</td><td class="${rankClass}">${rankText}</td></tr>`;
+            }).join('') || `<tr><td colspan="10" style="text-align:center;">لا توجد بيانات مجموعات بعد</td></tr>`;
+
+            if(analyticsFcrChartInst) analyticsFcrChartInst.destroy();
+            analyticsFcrChartInst=new Chart(document.getElementById('analyticsFcrChart').getContext('2d'),{type:'bar',data:{labels:batchPerf.map(b=>b.code),datasets:[{label:'FCR',data:batchPerf.map(b=>b.fcr||0),backgroundColor:'#2980b9'}]},options:{responsive:true}});
+            if(analyticsAdgChartInst) analyticsAdgChartInst.destroy();
+            analyticsAdgChartInst=new Chart(document.getElementById('analyticsAdgChart').getContext('2d'),{type:'bar',data:{labels:batchPerf.map(b=>b.code),datasets:[{label:'ADG',data:batchPerf.map(b=>b.adg||0),backgroundColor:'#f39c12'}]},options:{responsive:true}});
         }
 
         function generateBatchReport() {
+            const selEl = document.getElementById('rep_batch_select');
+            const sel = selEl ? selEl.value : 'all';
             let batches = getDB('db_batches');
-            let html = batches.map(batch => `
+            if(sel && sel!=='all') batches = batches.filter(b=>b.code===sel);
+
+            let html = batches.map(batch => {
+                const p = computeBatchPerformance(batch);
+                return `
                 <tr>
-                    <td><strong>${batch.code}</strong></td>
-                    <td>${batch.boat}</td>
-                    <td>${batch.count}</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>${batch.avgWeight}</td>
-                    <td>${batch.avgWeight}</td>
-                    <td>0</td>
-                    <td>-</td>
-                    <td>-</td>
+                    <td><strong>${p.code}</strong></td>
+                    <td>${p.boat}</td>
+                    <td>${p.count}</td>
+                    <td>${p.feedTotal}</td>
+                    <td>${p.avgProtein}</td>
+                    <td>${p.firstW}</td>
+                    <td>${p.lastW}</td>
+                    <td>${p.gain}</td>
+                    <td>${p.fcr!==null?p.fcr:'-'}</td>
+                    <td>${p.adg}</td>
                 </tr>
-            `).join('');
+            `;}).join('');
             document.getElementById('tbl_batch_report').innerHTML = html || `<tr><td colspan="10" style="text-align:center;">لا توجد بيانات</td></tr>`;
         }
 
         function generateReport() {
+            const tagEl=document.getElementById('rep_search_tag');
+            const boatEl=document.getElementById('rep_search_boat');
+            const tagFilter = tagEl ? tagEl.value.trim() : '';
+            const boatFilter = boatEl ? boatEl.value : 'all';
+
             let allHeads = getDB('db_heads');
-            let reportHTML = allHeads.map(head => `
+            if(tagFilter) allHeads = allHeads.filter(h=>h.tag.toLowerCase().includes(tagFilter.toLowerCase()));
+            if(boatFilter && boatFilter!=='all') allHeads = allHeads.filter(h=>h.boat===boatFilter);
+
+            let reportHTML = allHeads.map(head => {
+                const p = computeHeadPerformance(head.tag);
+                return `
                 <tr>
-                    <td><strong>${head.tag}</strong></td>
-                    <td>${head.boat}</td>
-                    <td>0</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
+                    <td><strong>${p.tag}</strong></td>
+                    <td>${p.boat}</td>
+                    <td>${p.feedTotal}</td>
+                    <td>${p.firstW!==null?p.firstW:'-'}</td>
+                    <td>${p.lastW!==null?p.lastW:'-'}</td>
+                    <td>${p.gain!==null?p.gain:'-'}</td>
+                    <td>${p.fcr!==null?p.fcr:'-'}</td>
                 </tr>
-            `).join('');
+            `;}).join('');
             document.getElementById('tbl_fcr_report').innerHTML = reportHTML || `<tr><td colspan="7" style="text-align:center;">لا توجد بيانات</td></tr>`;
         }
 
@@ -1344,7 +1735,6 @@
         }
 
         function initManufacturingTab() {
-            let inv = getDB('db_inventory');
             document.getElementById('tbl_manufacturing_rows').innerHTML = '';
             addManufacturingRow();
             renderManufacturingOrders();
@@ -1405,12 +1795,16 @@
             let rows = document.querySelectorAll('#tbl_manufacturing_rows tr');
             let totalQty = 0, totalProtKg = 0, totalCost = 0;
             let invDB = getDB('db_inventory');
+            let anyRow=false;
 
             rows.forEach(tr => {
                 let select = tr.querySelector('.mf-inv-select');
+                if(!select || !select.value) return;
                 let opt = select.options[select.selectedIndex];
                 let invId = select.value;
                 let qty = parseFloat(tr.querySelector('.mf-inv-qty').value) || 0;
+                if(qty<=0) return;
+                anyRow=true;
                 let protPct = parseFloat(opt.getAttribute('data-protein')) || 0;
                 let unitCost = parseFloat(opt.getAttribute('data-cost')) || 0;
 
@@ -1422,17 +1816,20 @@
                 if(item) { item.qty = Math.max(0, safeNum(item.qty) - qty); }
             });
 
+            if(!anyRow || totalQty<=0) return alert('أدخل كمية خامة واحدة على الأقل.');
+
             let finalProt = totalQty > 0 ? ((totalProtKg / totalQty) * 100).toFixed(2) : 0;
             
-            invDB.push({ id: 'INV-' + Date.now(), name, type: 'concentrate', unit: 'كجم', qty: totalQty, protein: finalProt, cost: (totalCost/totalQty)||0, minLimit: 0 });
+            invDB.push({ id: 'INV-' + Date.now(), name, type: 'concentrate', unit: 'كجم', qty: totalQty, protein: finalProt, cost: +((totalCost/totalQty)||0).toFixed(2), minLimit: 0 });
             setDB('db_inventory', invDB);
 
             let mfDB = getDB('db_manufacturing');
-            mfDB.push({ orderNo, name, totalQty, finalProt, totalCost, date, user: 'walid' });
+            mfDB.push({ orderNo, name, totalQty, finalProt, totalCost, date, user:(getCurrentUser()&&getCurrentUser().username)||'walid' });
             setDB('db_manufacturing', mfDB);
 
             alert('تم تنفيذ عملية التصنيع وإضافة المنتج للمخزون وخصم الخامات بنجاح!');
             initManufacturingTab();
+            refreshInventory();
         }
 
         function renderManufacturingOrders() {
@@ -1443,7 +1840,7 @@
                     <td>${o.name}</td>
                     <td>${o.totalQty} كجم</td>
                     <td>${o.finalProt}%</td>
-                    <td>${o.totalCost.toFixed(2)}</td>
+                    <td>${(+o.totalCost).toFixed(2)}</td>
                     <td>${o.date}</td>
                     <td>${o.user}</td>
                 </tr>
@@ -1459,7 +1856,8 @@
             if(!name || !username || !pass) return alert('أكمل بيانات الموظف الأساسية');
 
             let users = getDB('db_users');
-            users.push({ id: crypto.randomUUID(), name, username, password: pass, role, active: true, lastLogin: '' });
+            if(users.some(u=>u.username===username)) return alert('اسم المستخدم موجود بالفعل.');
+            users.push({ id: crypto.randomUUID(), name, username, phone: document.getElementById('emp_phone').value.trim(), password: pass, role, active: document.getElementById('emp_active').value==='true', lastLogin: '' });
             setDB('db_users', users);
             alert('تم حفظ الموظف بنجاح');
             clearEmployeeForm();
@@ -1469,12 +1867,15 @@
         function clearEmployeeForm() {
             document.getElementById('emp_name').value = '';
             document.getElementById('emp_username').value = '';
+            document.getElementById('emp_phone').value = '';
             document.getElementById('emp_password').value = '';
         }
 
         function renderEmployees() {
             let users = getDB('db_users');
-            document.getElementById('tbl_employees').innerHTML = users.map((u, i) => `
+            const tbl = document.getElementById('tbl_employees');
+            if(!tbl) return;
+            tbl.innerHTML = users.map((u, i) => `
                 <tr>
                     <td>${i+1}</td>
                     <td>${u.name}</td>
@@ -1491,6 +1892,9 @@
         function saveSettings() {
             let comp = document.getElementById('set_company_name').value;
             localStorage.setItem('sys_company_name', comp);
+            localStorage.setItem('sys_currency', document.getElementById('set_currency').value);
+            localStorage.setItem('sys_fcr_limit', document.getElementById('set_fcr_limit').value);
+            localStorage.setItem('sys_mortality_limit', document.getElementById('set_mortality_limit').value);
             alert('تم حفظ الإعدادات بنجاح!');
         }
 
@@ -1498,69 +1902,7 @@
         window.onload = function() {
             ensureUsersDB();
             renderEmployees();
-            // 1. تصدير كافة بيانات النظام في ملف JSON
-function exportLocalBackup() {
-    try {
-        const keys = [
-            'db_users', 'db_boats', 'db_items', 'db_customers', 
-            'db_batches', 'db_heads', 'db_barns', 'db_barn_moves', 
-            'db_batch_feed', 'db_feed', 'db_batch_weights', 'db_weights', 
-            'db_sales', 'db_deaths', 'db_vehicles', 'db_vehicle_expenses', 
-            'db_inventory', 'db_manufacturing', 'sys_company_name'
-        ];
-
-        let backupData = {};
-        keys.forEach(key => {
-            backupData[key] = JSON.parse(localStorage.getItem(key) || '[]');
-        });
-
-        const jsonStr = JSON.stringify(backupData, null, 2);
-        const blob = new Blob([jsonStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.href = url;
-        const dateStr = new Date().toISOString().slice(0, 10);
-        a.download = `Farm_System_Backup_${dateStr}.json`;
-        a.click();
-        
-        alert('تم تنزيل النسخة الاحتياطية بنجاح على جهازك!');
-    } catch (err) {
-        console.error(err);
-        alert('حدث خطأ أثناء استخراج البيانات');
-    }
-}
-
-// 2. استرجاع البيانات من ملف JSON وحفظها في localStorage
-function importLocalBackup(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    if (!confirm('تنبيه: استرجاع النسخة الاحتياطية ستقوم باستبدال البيانات الحالية بالبيانات الموجودة في الملف. هل تريد الاستمرار؟')) {
-        event.target.value = '';
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const backupData = JSON.parse(e.target.result);
-            
-            // رفع وتخزين كل البيانات في الـ LocalStorage
-            Object.keys(backupData).forEach(key => {
-                localStorage.setItem(key, JSON.stringify(backupData[key]));
-            });
-
-            alert('تم استرجاع البيانات بنجاح! سيتم إعادة تحميل الصفحة الآن.');
-            location.reload();
-        } catch (err) {
-            console.error(err);
-            alert('الملف غير صالح أو حدث خطأ أثناء الاسترجاع');
-        }
-    };
-    reader.readAsText(file);
-}
-      };
+        };
     </script>
 </body>
 </html>
