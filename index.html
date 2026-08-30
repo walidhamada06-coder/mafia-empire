@@ -29,13 +29,18 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 .toast{position:fixed;left:18px;bottom:18px;background:#263746;color:#fff;padding:12px 16px;border-radius:8px;display:none;z-index:99}
 @media(max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr)}.formgrid{grid-template-columns:repeat(2,1fr)}.cards{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:700px){.app{display:block}.sidebar{width:100%;min-width:0;height:auto}.menu{display:grid;grid-template-columns:repeat(2,1fr);max-height:310px}.head{grid-column:1/-1}.item{font-size:12px}.work{padding:10px}.kpis,.formgrid,.cards,.split{grid-template-columns:1fr}.topbar{height:auto;padding:10px}}
+
+.settings-logo-preview{display:flex;align-items:center;gap:14px;padding:10px;background:#f8fafb;border:1px solid #e3e7e9;border-radius:8px}
+.settings-logo-preview img{width:64px;height:64px;object-fit:contain;border-radius:10px;background:#fff;border:1px solid #ddd}
+.color-input{height:42px;padding:4px!important}
+.theme-chip{display:flex;align-items:center;gap:8px}
 </style>
 </head>
 <body>
 
 <section id="login" class="login">
   <div class="login-card">
-    <div style="text-align:center;font-size:34px;color:#16a085;margin-bottom:10px"><i class="fa-solid fa-tractor"></i></div>
+    <img id="loginLogo" src="" alt="Logo" style="display:none;width:76px;height:76px;object-fit:contain;margin:0 auto 10px;background:#fff;border-radius:12px"><div id="loginLogoFallback" style="text-align:center;font-size:34px;color:#16a085;margin-bottom:10px"><i class="fa-solid fa-tractor"></i></div>
     <h1>الإدارة الشاملة للمزرعة</h1>
     <div class="brand2">شركة اجرو جرين للاستيراد والتصدير — مزرعة شمال التحرير</div>
     <div class="input"><label>البريد الإلكتروني</label><input id="email" type="email" placeholder="البريد المسجل في Supabase"></div>
@@ -47,7 +52,7 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 
 <section id="app" class="app">
 <aside class="sidebar">
-  <div class="brand"><strong><i class="fa-solid fa-tractor"></i> سيستم المزرعة (Online)</strong><span>AGRO GREEN FARM ERP</span></div>
+  <div class="brand"><img id="sidebarLogo" src="" alt="Logo" style="display:none;width:58px;height:58px;object-fit:contain;margin:0 auto 7px;background:#fff;border-radius:10px"><strong><i class="fa-solid fa-tractor" id="sidebarIcon"></i> سيستم المزرعة (Online)</strong><span>AGRO GREEN FARM ERP</span></div>
   <div class="menu">
     <div class="item active" data-page="dashboard"><i class="fa-solid fa-chart-pie"></i> لوحة المؤشرات</div>
 
@@ -288,8 +293,67 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 
 <section id="employees" class="view"><div class="card"><h2>الموظفون والصلاحيات</h2><p class="muted">حسابات الدخول الفعلية تُدار من Supabase Authentication، والجدول هنا يحدد الدور والصلاحيات المرتبطة بالمزرعة.</p><div class="card" style="margin:0;background:#f8fafb"><table class="table"><thead><tr><th>المستخدم</th><th>الاسم</th><th>الدور</th><th>الحالة</th><th>المزرعة</th></tr></thead><tbody id="usersRows"></tbody></table></div></div></section>
 
-<section id="settings" class="view"><div class="card"><h2>الإعدادات</h2><div class="form"><div class="formgrid"><div class="field"><label>اسم الشركة</label><input id="setCompany"></div><div class="field"><label>اسم المزرعة</label><input id="setFarm"></div><div class="field"><label>حد FCR</label><input id="setFcr" type="number" step="0.1"></div><div class="field"><label>حد النفوق %</label><input id="setMort" type="number" step="0.1"></div></div><button class="btn btn-primary" onclick="saveFarmSettings()">حفظ الإعدادات</button></div></div>
-<div class="card"><h3>💾 النسخ الاحتياطي والاستعادة</h3><p class="muted">نسخة Excel للقراءة والتدقيق، ونسخة «قاعدة بيانات النظام» بصيغة JSON يمكن رفعها مرة أخرى واستعادة بيانات المزرعة.</p><div class="toolbar" style="border:0;padding:0;margin:0"><button class="btn btn-blue" onclick="exportFullExcelBackup()"><i class="fa-solid fa-file-excel"></i> تنزيل نسخة Excel لكل البيانات</button><button class="btn btn-primary" onclick="exportDatabaseBackup()"><i class="fa-solid fa-database"></i> تنزيل نسخة قاعدة البيانات</button><label class="btn btn-warn" style="cursor:pointer"><i class="fa-solid fa-upload"></i> استعادة نسخة قاعدة البيانات<input id="dbBackupFile" type="file" accept=".json,application/json" onchange="restoreDatabaseBackup(event)" style="display:none"></label></div><div class="msg ok" style="margin-top:12px">الاستعادة تعيد بيانات المزرعة التشغيلية فقط وتحافظ على حساب Supabase الحالي والمستخدم الحالي.</div></div></section>
+<section id="settings" class="view">
+<div class="card">
+  <h2>⚙️ إعدادات المنشأة والمظهر</h2>
+  <p class="muted">الإعدادات التالية تُحفظ على المزرعة في Supabase وتظهر لجميع المستخدمين المصرح لهم.</p>
+
+  <div class="form">
+    <div class="formgrid">
+      <div class="field"><label>اسم الشركة</label><input id="setCompany"></div>
+      <div class="field"><label>اسم المزرعة</label><input id="setFarm"></div>
+      <div class="field"><label>حد FCR</label><input id="setFcr" type="number" step="0.1"></div>
+      <div class="field"><label>حد النفوق %</label><input id="setMort" type="number" step="0.1"></div>
+    </div>
+
+    <div style="margin-top:15px">
+      <h3 style="margin-bottom:8px">🖼️ شعار الشركة</h3>
+      <div class="settings-logo-preview">
+        <img id="setLogoPreview" alt="شعار الشركة" src="" style="display:none">
+        <div style="flex:1">
+          <div class="muted" style="margin-bottom:8px">ارفع الشعار وسيظهر في تسجيل الدخول والـHeader والقائمة الجانبية.</div>
+          <input id="setLogoFile" type="file" accept="image/png,image/jpeg,image/webp">
+          <div class="muted" style="margin-top:5px">يفضل صورة PNG مربعة أو شفافة وبحجم صغير.</div>
+        </div>
+      </div>
+      <button class="btn btn-light" style="margin-top:8px" onclick="removeLogo()">حذف الشعار</button>
+    </div>
+
+    <div style="margin-top:18px">
+      <h3 style="margin-bottom:8px">🎨 ألوان النظام</h3>
+      <div class="formgrid">
+        <div class="field theme-chip"><label>اللون الرئيسي</label><input class="color-input" id="themePrimary" type="color" value="#2c3e50"></div>
+        <div class="field theme-chip"><label>اللون الثانوي</label><input class="color-input" id="themeSecondary" type="color" value="#16a085"></div>
+        <div class="field theme-chip"><label>لون الأزرار/الروابط</label><input class="color-input" id="themeAccent" type="color" value="#2980b9"></div>
+        <div class="field theme-chip"><label>لون الخطر</label><input class="color-input" id="themeDanger" type="color" value="#c0392b"></div>
+        <div class="field theme-chip"><label>لون التنبيه</label><input class="color-input" id="themeWarning" type="color" value="#f39c12"></div>
+        <div class="field theme-chip"><label>خلفية النظام</label><input class="color-input" id="themeBackground" type="color" value="#ecf0f1"></div>
+        <div class="field theme-chip"><label>خلفية القائمة الجانبية</label><input class="color-input" id="themeSidebar" type="color" value="#2c3e50"></div>
+      </div>
+      <div style="margin-top:10px"><button class="btn btn-light" onclick="resetTheme()">إرجاع ألوان النظام الافتراضية</button></div>
+    </div>
+
+    <div style="margin-top:18px">
+      <button class="btn btn-primary" onclick="saveFarmSettings()"><i class="fa-solid fa-save"></i> حفظ كل الإعدادات</button>
+      <button class="btn btn-blue" onclick="previewTheme()"><i class="fa-solid fa-eye"></i> معاينة المظهر</button>
+    </div>
+    <div id="settingsMsg"></div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>💾 النسخ الاحتياطي والاستعادة</h3>
+  <p class="muted">نسخة Excel للقراءة والتدقيق، ونسخة قاعدة بيانات النظام بصيغة JSON يمكن استعادتها لاحقًا.</p>
+  <div class="toolbar" style="border:0;padding:0;margin:0">
+    <button class="btn btn-blue" onclick="exportFullExcelBackup()"><i class="fa-solid fa-file-excel"></i> تنزيل نسخة Excel لكل البيانات</button>
+    <button class="btn btn-primary" onclick="exportDatabaseBackup()"><i class="fa-solid fa-database"></i> تنزيل نسخة قاعدة البيانات</button>
+    <label class="btn btn-warn" style="cursor:pointer">
+      <i class="fa-solid fa-upload"></i> استعادة نسخة قاعدة البيانات
+      <input id="dbBackupFile" type="file" accept=".json,application/json" onchange="restoreDatabaseBackup(event)" style="display:none">
+    </label>
+  </div>
+</div>
+</section>
 
 <section id="batchReport" class="view"><div class="card"><h2>تقرير أداء المجموعات</h2><div class="toolbar"><button class="btn btn-blue" onclick="refreshBatchReport()"><i class="fa-solid fa-rotate"></i> تحديث</button><button class="btn btn-light" onclick="exportTable('batchReportTable','تقرير_المجموعات')"><i class="fa-solid fa-file-excel"></i> تصدير</button></div><table class="table" id="batchReportTable"><thead><tr><th>الشحنة</th><th>العدد</th><th>أول متوسط</th><th>آخر متوسط</th><th>الزيادة</th><th>ADG</th></tr></thead><tbody id="batchReportRows"></tbody></table></div></section>
 
@@ -537,8 +601,89 @@ async function addVehicle(){const p={farm_id:farmId,vehicle_no:$("vNo").value.tr
 async function loadManufacturing(){const {data}=await db.from("manufacturing_orders").select("order_no,product_name,total_output_kg,production_date").eq("farm_id",farmId).order("production_date",{ascending:false});$("moRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.order_no}</td><td>${x.product_name}</td><td>${x.total_output_kg}</td><td>${x.production_date}</td></tr>`).join("")}
 async function createMO(){const p={farm_id:farmId,order_no:$("moNo").value.trim(),product_name:$("moProduct").value.trim(),production_date:$("moDate").value||today(),total_output_kg:num($("moQty").value),created_by:user.id};if(!p.order_no||!p.product_name)return toast("أكمل بيانات أمر التصنيع");const {error}=await db.from("manufacturing_orders").insert(p);if(error)return toast(error.message);await loadManufacturing();toast("تم إنشاء أمر التصنيع")}
 async function loadUsers(){const {data}=await db.from("user_profiles").select("username,full_name,role,active,farm_id").eq("farm_id",farmId).order("username");$("usersRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.username||"-"}</td><td>${x.full_name||"-"}</td><td>${x.role}</td><td>${x.active?"فعال":"موقوف"}</td><td>${farmId.slice(0,8)}...</td></tr>`).join("")}
-async function loadFarmSettings(){const {data}=await db.from("farms").select("name,company_name,fcr_limit,mortality_limit_pct").eq("id",farmId).single();if(data){$("setCompany").value=data.company_name;$("setFarm").value=data.name;$("setFcr").value=data.fcr_limit;$("setMort").value=data.mortality_limit_pct}}
-async function saveFarmSettings(){const {error}=await db.from("farms").update({company_name:$("setCompany").value.trim(),name:$("setFarm").value.trim(),fcr_limit:num($("setFcr").value),mortality_limit_pct:num($("setMort").value)}).eq("id",farmId);if(error)return toast(error.message);$("farmTitle").textContent=$("setCompany").value+" — "+$("setFarm").value;toast("تم حفظ الإعدادات")}
+
+const DEFAULT_THEME={
+ primary:"#2c3e50",secondary:"#16a085",accent:"#2980b9",
+ danger:"#c0392b",warning:"#f39c12",background:"#ecf0f1",sidebar:"#2c3e50"
+};
+function applyTheme(t){
+ const r=document.documentElement;
+ r.style.setProperty("--primary",t.primary||DEFAULT_THEME.primary);
+ r.style.setProperty("--secondary",t.secondary||DEFAULT_THEME.secondary);
+ r.style.setProperty("--accent",t.accent||DEFAULT_THEME.accent);
+ r.style.setProperty("--danger",t.danger||DEFAULT_THEME.danger);
+ r.style.setProperty("--warning",t.warning||DEFAULT_THEME.warning);
+ r.style.setProperty("--bg",t.background||DEFAULT_THEME.background);
+ document.querySelectorAll(".sidebar").forEach(e=>e.style.background=t.sidebar||DEFAULT_THEME.sidebar);
+}
+function setLogo(url){
+ const side=$("sidebarLogo"), sideIcon=$("sidebarIcon"), login=$("loginLogo"), fallback=$("loginLogoFallback"), preview=$("setLogoPreview");
+ [side,login,preview].forEach(e=>{if(e)e.src=url||""});
+ if(side){side.style.display=url?"block":"none"} if(sideIcon){sideIcon.style.display=url?"none":"inline-block"}
+ if(login){login.style.display=url?"block":"none"} if(fallback){fallback.style.display=url?"none":"block"}
+ if(preview){preview.style.display=url?"block":"none"}
+}
+function previewTheme(){
+ const t={primary:$("themePrimary").value,secondary:$("themeSecondary").value,accent:$("themeAccent").value,danger:$("themeDanger").value,warning:$("themeWarning").value,background:$("themeBackground").value,sidebar:$("themeSidebar").value};
+ applyTheme(t); toast("تمت معاينة الألوان. اضغط حفظ كل الإعدادات لتثبيتها.");
+}
+function resetTheme(){
+ $("themePrimary").value=DEFAULT_THEME.primary;$("themeSecondary").value=DEFAULT_THEME.secondary;$("themeAccent").value=DEFAULT_THEME.accent;$("themeDanger").value=DEFAULT_THEME.danger;$("themeWarning").value=DEFAULT_THEME.warning;$("themeBackground").value=DEFAULT_THEME.background;$("themeSidebar").value=DEFAULT_THEME.sidebar;
+ previewTheme();
+}
+function resizeLogo(file){
+ return new Promise((resolve,reject)=>{
+   const reader=new FileReader();
+   reader.onload=e=>{
+     const img=new Image();
+     img.onload=()=>{
+       const max=320, scale=Math.min(1,max/Math.max(img.width,img.height));
+       const c=document.createElement("canvas");c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));
+       const ctx=c.getContext("2d");ctx.drawImage(img,0,0,c.width,c.height);
+       resolve(c.toDataURL("image/webp",0.82));
+     };
+     img.onerror=reject;img.src=e.target.result;
+   };
+   reader.onerror=reject;reader.readAsDataURL(file);
+ });
+}
+async function handleLogoChange(){
+ const file=$("setLogoFile")?.files?.[0]; if(!file)return;
+ if(file.size>4*1024*1024){toast("حجم الشعار كبير. اختر صورة أقل من 4 ميجابايت.");return}
+ try{const url=await resizeLogo(file);$("setLogoFile").dataset.logoData=url;setLogo(url)}catch(e){toast("تعذر قراءة ملف الشعار")}
+}
+$("setLogoFile")?.addEventListener("change",handleLogoChange);
+function removeLogo(){ $("setLogoFile").value=""; $("setLogoFile").dataset.logoData=""; $("setLogoPreview").src=""; setLogo(""); }
+async function loadFarmSettings(){
+ const {data,error}=await db.from("farms").select("name,company_name,fcr_limit,mortality_limit_pct,logo_url,theme_primary,theme_secondary,theme_accent,theme_danger,theme_warning,theme_background,theme_sidebar").eq("id",farmId).single();
+ if(error||!data)return;
+ $("setCompany").value=data.company_name||"";$("setFarm").value=data.name||"";$("setFcr").value=data.fcr_limit??7;$("setMort").value=data.mortality_limit_pct??2;
+ const t={primary:data.theme_primary||DEFAULT_THEME.primary,secondary:data.theme_secondary||DEFAULT_THEME.secondary,accent:data.theme_accent||DEFAULT_THEME.accent,danger:data.theme_danger||DEFAULT_THEME.danger,warning:data.theme_warning||DEFAULT_THEME.warning,background:data.theme_background||DEFAULT_THEME.background,sidebar:data.theme_sidebar||DEFAULT_THEME.sidebar};
+ $("themePrimary").value=t.primary;$("themeSecondary").value=t.secondary;$("themeAccent").value=t.accent;$("themeDanger").value=t.danger;$("themeWarning").value=t.warning;$("themeBackground").value=t.background;$("themeSidebar").value=t.sidebar;
+ applyTheme(t);setLogo(data.logo_url||"");
+}
+async function saveFarmSettings(){
+ const uploaded=$("setLogoFile").dataset.logoData;
+ const p={
+   company_name:$("setCompany").value.trim(),
+   name:$("setFarm").value.trim(),
+   fcr_limit:num($("setFcr").value),
+   mortality_limit_pct:num($("setMort").value),
+   theme_primary:$("themePrimary").value,
+   theme_secondary:$("themeSecondary").value,
+   theme_accent:$("themeAccent").value,
+   theme_danger:$("themeDanger").value,
+   theme_warning:$("themeWarning").value,
+   theme_background:$("themeBackground").value,
+   theme_sidebar:$("themeSidebar").value
+ };
+ if(uploaded!==undefined) p.logo_url=uploaded||null;
+ const {error}=await db.from("farms").update(p).eq("id",farmId);
+ if(error)return message("settingsMsg",error.message,true);
+ $("farmTitle").textContent=p.company_name+" — "+p.name;
+ applyTheme(p); if(uploaded!==undefined)setLogo(uploaded||"");
+ toast("تم حفظ إعدادات المنشأة والمظهر");
+}
 const BACKUP_TABLES=[
  "barns","boats","shipments","animals","animal_weights","batch_weights","barn_movements",
  "feed_items","warehouses","stock","stock_movements","feed_issues","feed_issue_lines","feed_issue_animals",
