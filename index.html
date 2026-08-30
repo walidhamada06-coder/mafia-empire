@@ -134,8 +134,26 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 .export-tools .btn{font-size:12px;padding:8px 11px}
 .btn-excel{background:#1e7145!important;color:#fff!important}
 .btn-print{background:#34495e!important;color:#fff!important}
+
+@media print{
+  @page{size:A4 auto;margin:10mm}
+  body.print-mode{background:#fff!important;overflow:visible!important;height:auto!important}
+  body.print-mode .sidebar,body.print-mode .topbar,body.print-mode .mobile-fab,body.print-mode .mobile-overlay,body.print-mode .export-tools{display:none!important}
+  body.print-mode .app.visible{display:block!important;height:auto!important;min-height:0!important}
+  body.print-mode .main{display:block!important;height:auto!important;min-height:0!important}
+  body.print-mode .work{display:block!important;height:auto!important;max-height:none!important;overflow:visible!important;padding:0!important}
+  body.print-mode .view{display:none!important}
+  body.print-mode .view.print-target{display:block!important;width:100%!important;height:auto!important;max-height:none!important;overflow:visible!important}
+  body.print-mode .card,body.print-mode .form,body.print-mode .chart{break-inside:auto!important;page-break-inside:auto!important;overflow:visible!important;max-height:none!important;height:auto!important}
+  body.print-mode table{width:100%!important;page-break-inside:auto!important}
+  body.print-mode thead{display:table-header-group}
+  body.print-mode tr{page-break-inside:avoid}
+  body.print-mode canvas{display:none!important}
+  body.print-mode .print-chart-image{display:block!important;max-width:100%!important;height:auto!important;margin:8px auto}
+  body.print-mode h2,body.print-mode h3{break-after:avoid-page}
+}
 </style>
-</head>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script></head>
 <body>
 
 <section id="login" class="login">
@@ -596,66 +614,87 @@ function styleWorksheet(ws){
   ws['!rows']=[{hpt:24}];
 }
 
-function exportPageToExcel(page){
+
+async function exportPageToExcel(page){
   try{
-    const section=$(page);
-    if(!section){toast("القسم غير موجود");return;}
-    const wb=XLSX.utils.book_new();
-    const used=new Set();
-    const allTables=section.querySelectorAll("table");
-    let exported=0;
+    const section=$(page); if(!section){toast("القسم غير موجود");return;}
+    if(typeof ExcelJS==='undefined'){toast("مكتبة Excel غير متاحة. أعد تحميل الصفحة.");return;}
+    const wb=new ExcelJS.Workbook();
+    wb.creator="Agro Green Farm ERP";
+    wb.created=new Date();
+    const ws=wb.addWorksheet(page==="dashboard"?"لوحة المؤشرات":"تقرير",{views:[{rightToLeft:true,showGridLines:false}]});
+    const primary="2C3E50", secondary="16A085", accent="2980B9", light="F5F8FA";
+    const title=section.querySelector('h2')?.innerText?.trim() || (page==="dashboard"?"لوحة المؤشرات":"تقرير المزرعة");
+    ws.mergeCells('A1:H1'); ws.getCell('A1').value=title; ws.getCell('A1').font={name:'Aptos',size:18,bold:true,color:{argb:'FFFFFF'}}; ws.getCell('A1').fill={type:'pattern',pattern:'solid',fgColor:{argb:primary}}; ws.getCell('A1').alignment={horizontal:'center',vertical:'middle'}; ws.getRow(1).height=30;
+    ws.mergeCells('A2:H2'); ws.getCell('A2').value=`Agro Green Farm ERP — ${today()}`; ws.getCell('A2').font={name:'Aptos',size:10,color:{argb:'6B7280'}}; ws.getCell('A2').alignment={horizontal:'center'};
 
-    allTables.forEach((table,idx)=>{
-      const name=section.querySelector("h2")?.innerText?.trim() || page;
-      const rows=[];
-      const tr=table.querySelectorAll("tr");
-      tr.forEach(row=>{
-        const cells=Array.from(row.children).map(td=>(td.innerText||"").trim());
-        if(cells.length) rows.push(cells);
-      });
-      if(rows.length<1)return;
-      const ws=XLSX.utils.aoa_to_sheet(rows);
-      styleWorksheet(ws);
-      XLSX.utils.book_append_sheet(wb,ws,safeSheetName(idx?`${name}-${idx+1}`:name,used));
-      exported++;
-    });
-
-    if(exported===0){
-      const fallback=[[section.querySelector("h2")?.innerText?.trim()||"تقرير", "لا توجد بيانات جدول لعرضها"]];
-      const ws=XLSX.utils.aoa_to_sheet(fallback);
-      styleWorksheet(ws);
-      XLSX.utils.book_append_sheet(wb,ws,safeSheetName(page,used));
+    let row=4;
+    if(page==='dashboard'){
+      const kpis=[
+        ['إجمالي الرؤوس',$('kTotal')?.innerText||'0'],['الرصيد الحي',$('kAlive')?.innerText||'0'],['متوسط الوزن الحالي',$('kAvgWeight')?.innerText||'-'],['ADG',$('kAdg')?.innerText||'-'],
+        ['FCR',$('kFcr')?.innerText||'-'],['العلف المصروف (كجم)',$('kFeed')?.innerText||'0'],['معدل النفوق %',$('kMortality')?.innerText||'0%'],['إجمالي الزيادة (كجم)',$('kGain')?.innerText||'0']
+      ];
+      for(let i=0;i<kpis.length;i++){
+        const c=(i%4)*2+1; const r=row+Math.floor(i/4)*2;
+        ws.mergeCells(r,c,r,c+1); ws.getCell(r,c).value=kpis[i][0]; ws.getCell(r,c).fill={type:'pattern',pattern:'solid',fgColor:{argb:secondary}}; ws.getCell(r,c).font={bold:true,color:{argb:'FFFFFF'}}; ws.getCell(r,c).alignment={horizontal:'center'};
+        ws.mergeCells(r+1,c,r+1,c+1); ws.getCell(r+1,c).value=kpis[i][1]; ws.getCell(r+1,c).font={bold:true,size:16,color:{argb:primary}}; ws.getCell(r+1,c).alignment={horizontal:'center'}; ws.getCell(r+1,c).fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFFFF'}};
+      }
+      row+=5;
     }
 
-    XLSX.writeFile(wb,`AgroGreen_${page}_${today()}.xlsx`);
-    toast("تم إنشاء ملف Excel منظم وقابل للفلترة");
-  }catch(e){console.error(e);toast("تعذر إنشاء ملف Excel: "+e.message)}
+    // Write all visible tables under the summary.
+    const tables=section.querySelectorAll('table');
+    for(const table of tables){
+      const trs=[...table.querySelectorAll('tr')].map(tr=>[...tr.children].map(c=>(c.innerText||'').trim())).filter(r=>r.length);
+      if(!trs.length) continue;
+      const header=ws.getRow(row); header.values=trs[0];
+      header.eachCell((cell)=>{cell.font={bold:true,color:{argb:'FFFFFF'}};cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:primary}};cell.alignment={horizontal:'center',vertical:'middle',wrapText:true}}); header.height=24;
+      for(let i=1;i<trs.length;i++){
+        const rr=ws.getRow(row+i); rr.values=trs[i];
+        rr.eachCell(cell=>{cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:(i%2===0)?'F7F9FA':'FFFFFF'}};cell.alignment={vertical:'top',wrapText:true};cell.border={bottom:{style:'thin',color:{argb:'E6EBEE'}}}})
+      }
+      const cols=trs[0].length; for(let c=1;c<=cols;c++){ws.getColumn(c).width=Math.min(34,Math.max(12,Math.max(...trs.slice(0,60).map(r=>String(r[c-1]||'').length))+2));}
+      ws.autoFilter={from:{row, column:1},to:{row:row+trs.length-1,column:cols}}; ws.views=[{rightToLeft:true,showGridLines:false, state:'frozen', ySplit:row}]; row+=trs.length+3;
+    }
+
+    // Embed dashboard chart images into the workbook. ExcelJS supports native images.
+    const chartIds=['statusChart','weightCompareChart','adgChart','fcrChart','feedTrendChart','mortalityChart','scatterFcrAdg','analyticsWeightChart'];
+    const chartNames=['حالة القطيع','الوزن الابتدائي والنهائي','ADG حسب المجموعة','FCR حسب المجموعة','اتجاه العلف','النفوق %','FCR مقابل ADG','تطور الوزن'];
+    let imageCol=10, imageRow=3;
+    for(let i=0;i<chartIds.length;i++){
+      const canvas=$(chartIds[i]); if(!canvas || !canvas.toDataURL) continue;
+      try{
+        const base64=canvas.toDataURL('image/png').split(',')[1];
+        const id=wb.addImage({base64:'data:image/png;base64,'+base64,extension:'png'});
+        ws.getCell(imageRow,imageCol).value=chartNames[i]; ws.getCell(imageRow,imageCol).font={bold:true,color:{argb:primary}};
+        ws.addImage(id,{tl:{col:imageCol-1,row:imageRow},ext:{width:430,height:250}});
+        imageRow+=15;
+      }catch(e){console.warn('chart export failed',chartIds[i],e)}
+    }
+    ws.getColumn(1).width=Math.max(ws.getColumn(1).width||12,18);
+    const buf=await wb.xlsx.writeBuffer();
+    const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`AgroGreen_${page}_${today()}.xlsx`; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+    toast('تم تصدير Excel متكامل مع الرسوم البيانية والبيانات');
+  }catch(e){console.error(e);toast('تعذر إنشاء ملف Excel: '+e.message)}
 }
 
 function printPage(page){
   const section=$(page); if(!section)return;
-  const printWin=window.open("","_blank","width=1100,height=800");
-  if(!printWin){toast("اسمح للنوافذ المنبثقة ثم حاول مرة أخرى");return}
-  const styles=[...document.querySelectorAll("style")].map(s=>s.innerHTML).join("\\n");
-  printWin.document.write(`
-    <!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
-    <title>${section.querySelector("h2")?.innerText||"تقرير المزرعة"}</title>
-    <style>${styles}
-      body{background:#fff!important;padding:20px!important;overflow:auto!important}
-      .export-tools,.mobile-fab,.mobile-overlay,.sidebar,.topbar{display:none!important}
-      .view{display:block!important}
-      .card{box-shadow:none!important;border:1px solid #ddd!important}
-      table{width:100%!important}
-    </style></head><body>
-    ${section.innerHTML}
-    </body></html>
-  `);
-  printWin.document.close();
-  setTimeout(()=>{printWin.focus();printWin.print();},350);
+  // Print from the current document so the entire active section participates in pagination.
+  const original=section.classList.contains('print-target');
+  document.body.classList.add('print-mode');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('print-target'));
+  section.classList.add('print-target');
+  // Convert visible canvases to printable images and keep the original canvases hidden only during print.
+  const temp=[];
+  section.querySelectorAll('canvas').forEach(c=>{try{const img=document.createElement('img');img.src=c.toDataURL('image/png');img.className='print-chart-image';img.style.width='100%';img.style.height='auto';c.style.display='none';c.parentNode.insertBefore(img,c);temp.push({c,img});}catch(e){}});
+  const cleanup=()=>{temp.forEach(x=>{x.img.remove();x.c.style.display='';});section.classList.toggle('print-target',original);document.body.classList.remove('print-mode');window.removeEventListener('afterprint',cleanup);};
+  window.addEventListener('afterprint',cleanup,{once:true});
+  setTimeout(()=>window.print(),120);
 }
 
 function openPage(page){
- closeMobileMenu();
  closeMobileMenu();
  document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));
  document.querySelectorAll(".item[data-page]").forEach(x=>x.classList.remove("active"));
