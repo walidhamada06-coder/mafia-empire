@@ -184,6 +184,7 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
     <div class="item" data-page="boats"><i class="fa-solid fa-ship"></i> المراكب والشحنات</div>
     <div class="item" data-page="items"><i class="fa-solid fa-boxes-stacked"></i> تعريف الأعلاف والبروتين</div>
     <div class="item" data-page="customers"><i class="fa-solid fa-users"></i> تعريف العملاء</div>
+    <div class="item" data-page="customerLedger"><i class="fa-solid fa-file-invoice-dollar"></i> كشف حساب العميل</div>
 
     <div class="head">حركات الماشية</div>
     <div class="item" data-page="bulk"><i class="fa-solid fa-layer-group"></i> استلام شحنة / مجموعة</div>
@@ -207,6 +208,7 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 
     <div class="head">الإدارة والتحكم</div>
     <div class="item" data-page="employees"><i class="fa-solid fa-user-shield"></i> الموظفون والصلاحيات</div>
+    <div class="item" data-page="custody"><i class="fa-solid fa-wallet"></i> العهد والمصروفات</div>
     <div class="item" data-page="settings"><i class="fa-solid fa-gear"></i> الإعدادات</div>
 
     <div class="head">التقارير</div>
@@ -300,8 +302,8 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 </section>
 
 <section id="customers" class="view">
-<div class="card"><h2>تعريف العملاء</h2><div class="form"><div class="formgrid"><div class="field"><label>اسم العميل</label><input id="custName"></div><div class="field"><label>الهاتف</label><input id="custPhone"></div><div class="field"><label>ملاحظات</label><input id="custNotes"></div></div><button class="btn btn-primary" onclick="addCustomer()">حفظ العميل</button></div></div>
-<div class="card"><table class="table"><thead><tr><th>العميل</th><th>الهاتف</th><th>الملاحظات</th></tr></thead><tbody id="customersRows"></tbody></table></div>
+<div class="card"><h2>تعريف العملاء</h2><div class="form"><input type="hidden" id="custId"><div class="formgrid"><div class="field"><label>اسم العميل</label><input id="custName"></div><div class="field"><label>الهاتف</label><input id="custPhone"></div><div class="field"><label>ملاحظات</label><input id="custNotes"></div></div><button class="btn btn-primary" onclick="saveCustomer()">حفظ العميل</button> <button class="btn btn-light" onclick="clearCustomerForm()">جديد</button></div></div>
+<div class="card"><table class="table"><thead><tr><th>العميل</th><th>الهاتف</th><th>الملاحظات</th><th>إجراءات</th></tr></thead><tbody id="customersRows"></tbody></table></div>
 </section>
 
 <section id="bulk" class="view">
@@ -350,7 +352,7 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 <section id="sales" class="view">
 <div class="card">
   <h2>مبيعات العجول</h2>
-  <p class="muted">اختر العنبر أولاً، وسيظهر لك رصيد العجول الحية داخل العنبر فقط. عند تنفيذ البيع تنتقل الرؤوس من الرصيد الحي إلى حالة مباع وتُنشأ الفاتورة وتفاصيلها على السيرفر.</p>
+  <p class="muted">اختر العنبر، ثم حدد العجول. يمكنك إدخال <b>وزن البيع الفعلي</b> لكل رأس، ولا يشترط أن يكون هو وزن آخر تسجيل على النظام.</p>
   <div class="form">
     <div class="formgrid">
       <div class="field"><label>رقم الفاتورة</label><input id="saleInvoiceNo" placeholder="SAL-0001"></div>
@@ -366,16 +368,14 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
         <label class="btn btn-light" style="cursor:pointer"><input id="saleSelectAll" type="checkbox" onchange="toggleSaleAnimals(this)" style="width:auto"> تحديد الكل</label>
       </div>
       <div id="saleAnimalsList" style="max-height:300px;overflow:auto;border:1px solid #ddd;border-radius:7px;background:#fff"></div>
-      <div id="salePreview" class="msg ok">المحدد: 0 رأس | الوزن: 0 كجم | الإجمالي: 0</div>
+      <div id="saleWeightsEditor" style="margin-top:10px"></div>
+      <div id="salePreview" class="msg ok">المحدد: 0 رأس | الوزن الفعلي: 0 كجم | الإجمالي: 0</div>
     </div>
     <button class="btn btn-primary" onclick="sellSelectedAnimals()"><i class="fa-solid fa-hand-holding-dollar"></i> تنفيذ البيع</button>
     <div id="saleMsg"></div>
   </div>
 </div>
-<div class="card">
-  <h3>سجل المبيعات</h3>
-  <div class="tablewrap"><table class="table"><thead><tr><th>الفاتورة</th><th>العميل</th><th>العنبر</th><th>عدد الرؤوس</th><th>الإجمالي</th><th>التاريخ</th></tr></thead><tbody id="salesRows"></tbody></table></div>
-</div>
+<div class="card"><h3>سجل المبيعات</h3><div class="tablewrap"><table class="table"><thead><tr><th>الفاتورة</th><th>العميل</th><th>العنبر</th><th>عدد الرؤوس</th><th>الإجمالي</th><th>التاريخ</th><th>إجراءات</th></tr></thead><tbody id="salesRows"></tbody></table></div></div>
 </section>
 <section id="deaths" class="view"><div class="card"><h2>تسجيل النفوق</h2><div class="form"><div class="formgrid"><div class="field"><label>الحيوان</label><select id="dAnimal"></select></div><div class="field"><label>التاريخ</label><input id="dDate" type="date"></div><div class="field"><label>السبب</label><input id="dReason"></div><div class="field"><label>ملاحظات</label><input id="dNotes"></div></div><button class="btn btn-danger" onclick="registerDeath()">تسجيل النفوق</button><div id="dMsg"></div></div></div>
 <div class="card"><table class="table"><thead><tr><th>الحيوان</th><th>التاريخ</th><th>السبب</th></tr></thead><tbody id="deathsRows"></tbody></table></div></section>
@@ -458,6 +458,37 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 
 <section id="employees" class="view"><div class="card"><h2>الموظفون والصلاحيات</h2><p class="muted">حسابات الدخول الفعلية تُدار من Supabase Authentication، والجدول هنا يحدد الدور والصلاحيات المرتبطة بالمزرعة.</p><div class="card" style="margin:0;background:#f8fafb"><table class="table"><thead><tr><th>المستخدم</th><th>الاسم</th><th>الدور</th><th>الحالة</th><th>المزرعة</th></tr></thead><tbody id="usersRows"></tbody></table></div></div></section>
 
+<section id="customerLedger" class="view">
+<div class="card"><h2>كشف حساب العميل</h2>
+<div class="form"><div class="formgrid">
+<div class="field"><label>العميل</label><select id="ledgerCustomer"></select></div>
+<div class="field"><label>من تاريخ</label><input id="ledgerFrom" type="date"></div>
+<div class="field"><label>إلى تاريخ</label><input id="ledgerTo" type="date"></div>
+</div><button class="btn btn-blue" onclick="refreshCustomerLedger()">عرض الكشف</button></div></div>
+<div class="card"><h3>إضافة دفعة</h3><div class="form"><div class="formgrid">
+<div class="field"><label>المبلغ</label><input id="paymentAmount" type="number" min="0.01" step="0.01"></div>
+<div class="field"><label>تاريخ الدفعة</label><input id="paymentDate" type="date"></div>
+<div class="field"><label>طريقة الدفع</label><select id="paymentMethod"><option value="cash">نقدي</option><option value="bank">تحويل بنكي</option><option value="check">شيك</option><option value="other">أخرى</option></select></div>
+<div class="field"><label>المرجع</label><input id="paymentReference"></div>
+<div class="field" style="grid-column:1/-1"><label>ملاحظات</label><textarea id="paymentNotes"></textarea></div></div><button class="btn btn-primary" onclick="addCustomerPayment()">تسجيل الدفعة</button><div id="paymentMsg"></div></div></div>
+<div class="grid kpis" style="margin-bottom:12px"><div class="kpi"><div><small>إجمالي الفواتير</small><b id="ledgerInvoices">0</b></div></div><div class="kpi"><div><small>إجمالي الدفعات</small><b id="ledgerPayments">0</b></div></div><div class="kpi"><div><small>الرصيد المستحق</small><b id="ledgerBalance">0</b></div></div></div>
+<div class="card"><table class="table"><thead><tr><th>التاريخ</th><th>النوع</th><th>المرجع</th><th>مدين</th><th>دائن</th><th>الرصيد</th><th>البيان</th></tr></thead><tbody id="ledgerRows"></tbody></table></div>
+</section>
+
+<section id="custody" class="view">
+<div class="card"><h2>العهد والمصروفات</h2><p class="muted">سجل موحد لحركة العهدة: صرف عهدة، تسوية، أو مصروف على عهدة موظف.</p>
+<div class="form"><div class="formgrid">
+<div class="field"><label>الموظف</label><select id="custodyEmployee"></select></div>
+<div class="field"><label>نوع الحركة</label><select id="custodyType"><option value="issue">صرف عهدة</option><option value="settlement">تسوية عهدة</option><option value="expense">مصروف</option></select></div>
+<div class="field"><label>المبلغ</label><input id="custodyAmount" type="number" min="0.01" step="0.01"></div>
+<div class="field"><label>التاريخ</label><input id="custodyDate" type="date"></div>
+<div class="field"><label>المرجع</label><input id="custodyReference"></div>
+<div class="field" style="grid-column:1/-1"><label>البيان</label><textarea id="custodyDescription"></textarea></div>
+</div><button class="btn btn-primary" onclick="saveCustodyTransaction()">حفظ الحركة</button><div id="custodyMsg"></div></div></div>
+<div class="grid kpis" style="margin-bottom:12px"><div class="kpi"><div><small>العهد المصروفة</small><b id="custodyIssued">0</b></div></div><div class="kpi"><div><small>التسويات</small><b id="custodySettled">0</b></div></div><div class="kpi"><div><small>مصروفات العهد</small><b id="custodyExpenses">0</b></div></div><div class="kpi"><div><small>الرصيد المفتوح</small><b id="custodyOpen">0</b></div></div></div>
+<div class="card"><table class="table"><thead><tr><th>التاريخ</th><th>الموظف</th><th>النوع</th><th>المبلغ</th><th>المرجع</th><th>البيان</th></tr></thead><tbody id="custodyRows"></tbody></table></div>
+</section>
+
 <section id="settings" class="view">
 <div class="card">
   <h2>⚙️ إعدادات المنشأة والمظهر</h2>
@@ -539,7 +570,7 @@ function toast(t){$("toast").textContent=t;$("toast").style.display="block";setT
 function message(id,text,err=false){const e=$(id);e.className="msg "+(err?"err":"ok");e.textContent=text}
 function num(x){const n=Number(x);return Number.isFinite(n)?n:0}
 function exportTable(id,name){const t=$(id);if(!t)return;const wb=XLSX.utils.table_to_book(t,{sheet:name.slice(0,31)});XLSX.writeFile(wb,name+"_"+today()+".xlsx")}
-function setDates(){["shDate","headDate","bwDate","wDate","fDate","bfDate","dDate","moDate","boatDate"].forEach(id=>{if($(id)&&!$(id).value)$(id).value=today()})}
+function setDates(){["shDate","headDate","bwDate","wDate","fDate","bfDate","dDate","moDate","boatDate","saleDate","paymentDate","ledgerFrom","ledgerTo","custodyDate"].forEach(id=>{if($(id)&&!$(id).value)$(id).value=today()})}
 
 document.querySelectorAll(".item[data-page]").forEach(x=>x.onclick=()=>openPage(x.dataset.page));
 function toggleMobileMenu(){
@@ -739,6 +770,8 @@ async function refreshPage(page){
  if(page==="boats")loadBoats();
  if(page==="items")loadItems();
  if(page==="customers")loadCustomers();
+ if(page==="customerLedger")Promise.all([loadLedgerCustomerOptions(),refreshCustomerLedger()]);
+ if(page==="custody")Promise.all([loadEmployeesForCustody(),loadCustody()]);
  if(page==="bulk")Promise.all([loadBoats(),loadBarns(),loadShipments()]);
  if(page==="heads")Promise.all([loadHeads(),loadBarns(),loadShipments()]);
  if(page==="barns")loadBarns();
@@ -790,14 +823,13 @@ async function loadDashboard(){
 }
 async function loadBoats(){
  const {data,error}=await db.from("boats").select("id,name,arrival_date").eq("farm_id",farmId).order("arrival_date",{ascending:false});
- $("boatsRows").innerHTML=error?`<tr><td colspan="2">${error.message}</td></tr>`:(data||[]).map(x=>`<tr><td>${x.name}</td><td>${x.arrival_date||"-"}</td></tr>`).join("")||'<tr><td colspan="2">لا توجد بيانات</td></tr>';
+ $("boatsRows").innerHTML=error?`<tr><td colspan="3">${error.message}</td></tr>`:(data||[]).map(x=>`<tr><td>${x.name}</td><td>${x.arrival_date||"-"}</td><td><button class="btn btn-light btn-small" onclick="editBoat('${x.id}')">تعديل</button> <button class="btn btn-danger btn-small" onclick="deleteBoat('${x.id}')">حذف</button></td></tr>`).join("")||'<tr><td colspan="3">لا توجد بيانات</td></tr>';
  $("shBoat").innerHTML='<option value="">بدون مركب</option>'+(data||[]).map(x=>`<option value="${x.id}">${x.name}</option>`).join("");
- $("headShipment").innerHTML='<option value="">بدون شحنة</option>';
 }
-async function addBoat(){
- const name=$("boatName").value.trim(),date=$("boatDate").value||today();if(!name)return toast("أدخل اسم المركب");
- const {error}=await db.from("boats").insert({farm_id:farmId,name,arrival_date:date});if(error)return toast(error.message);$("boatName").value="";await loadBoats();toast("تم حفظ المركب");
-}
+async function saveBoat(){const id=$("boatName")?.dataset.editId||null,name=$("boatName").value.trim(),date=$("boatDate").value||today();if(!name)return toast("أدخل اسم المركب");const payload={name,arrival_date:date};const q=id?db.from("boats").update(payload).eq("id",id).eq("farm_id",farmId):db.from("boats").insert({...payload,farm_id:farmId});const {error}=await q;if(error)return toast(error.message);clearBoatForm();await loadBoats();await loadShipments();toast(id?"تم تعديل المركب":"تم إضافة المركب")}
+function editBoat(id){db.from("boats").select("id,name,arrival_date").eq("id",id).eq("farm_id",farmId).single().then(({data,error})=>{if(error)return toast(error.message);$("boatName").value=data.name||"";$("boatDate").value=data.arrival_date||today();$("boatName").dataset.editId=data.id;openPage("boats")})}
+function clearBoatForm(){$("boatName").value="";$('boatDate').value=today();delete $("boatName").dataset.editId}
+async function deleteBoat(id){if(!confirm("حذف المركب؟ إذا كان مرتبطًا بشحنات سيمنع النظام الحذف."))return;const {error}=await db.from("boats").delete().eq("id",id).eq("farm_id",farmId);if(error)return toast(error.message);await loadBoats();toast("تم حذف المركب")}
 async function loadItems(){
  const {data,error}=await db.from("feed_items").select("code,name,item_group,protein_pct,default_cost_per_kg").eq("farm_id",farmId).order("name");
  $("itemsRows").innerHTML=error?`<tr><td colspan="5">${error.message}</td></tr>`:(data||[]).map(x=>`<tr><td>${x.code}</td><td>${x.name}</td><td>${x.item_group}</td><td>${x.protein_pct}%</td><td>${x.default_cost_per_kg}</td></tr>`).join("")||'<tr><td colspan="5">لا توجد أصناف</td></tr>';
@@ -811,13 +843,15 @@ async function addFeedItem(){
  toast("تم حفظ الصنف، وسيظهر تلقائيًا في مخزون الأعلاف بدون إعادة تعريفه");
 }
 async function loadCustomers(){
- const {data}=await db.from("customers").select("name,phone,notes").eq("farm_id",farmId).order("name");
- $("customersRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.name}</td><td>${x.phone||"-"}</td><td>${x.notes||"-"}</td></tr>`).join("");
+ const {data,error}=await db.from("customers").select("id,name,phone,notes").eq("farm_id",farmId).order("name");
+ if(error){$("customersRows").innerHTML=`<tr><td colspan="4">${error.message}</td></tr>`;return}
+ $("customersRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.name}</td><td>${x.phone||"-"}</td><td>${x.notes||"-"}</td><td><button class="btn btn-light btn-small" onclick="editCustomer('${x.id}')">تعديل</button> <button class="btn btn-danger btn-small" onclick="deleteCustomer('${x.id}')">حذف</button></td></tr>`).join("")||'<tr><td colspan="4">لا توجد بيانات</td></tr>';
+ $("saleCustomer").innerHTML='<option value="">اختر العميل</option>'+(data||[]).map(x=>`<option value="${x.id}">${x.name}</option>`).join("");
 }
-async function addCustomer(){
- const p={farm_id:farmId,name:$("custName").value.trim(),phone:$("custPhone").value.trim(),notes:$("custNotes").value.trim()};if(!p.name)return toast("أدخل اسم العميل");
- const {error}=await db.from("customers").insert(p);if(error)return toast(error.message);await loadCustomers();toast("تم حفظ العميل");
-}
+async function saveCustomer(){const id=$("custId").value||null,name=$("custName").value.trim();if(!name)return toast("أدخل اسم العميل");const payload={name,phone:$("custPhone").value.trim(),notes:$("custNotes").value.trim()};const {error}=id?await db.from("customers").update(payload).eq("id",id).eq("farm_id",farmId):await db.from("customers").insert({...payload,farm_id:farmId});if(error)return toast(error.message);clearCustomerForm();await loadCustomers();await loadLedgerCustomerOptions();toast(id?"تم تعديل العميل":"تم إضافة العميل")}
+function clearCustomerForm(){$("custId").value="";$('custName').value="";$('custPhone').value="";$('custNotes').value=""}
+async function editCustomer(id){const {data,error}=await db.from("customers").select("*").eq("id",id).eq("farm_id",farmId).single();if(error)return toast(error.message);$("custId").value=data.id;$("custName").value=data.name||"";$("custPhone").value=data.phone||"";$("custNotes").value=data.notes||"";openPage("customers")}
+async function deleteCustomer(id){if(!confirm("حذف العميل؟ إذا كان لديه فواتير سيمنع النظام الحذف."))return;const {error}=await db.from("customers").delete().eq("id",id).eq("farm_id",farmId);if(error)return toast(error.message);await loadCustomers();await loadLedgerCustomerOptions();toast("تم حذف العميل")}
 async function loadBarns(){
  const {data,error}=await db.from("v_barn_headcount").select("*").eq("farm_id",farmId).order("name");
  $("barnsRows").innerHTML=error?`<tr><td colspan="5">${error.message}</td></tr>`:(data||[]).map(x=>`<tr><td>${x.code}</td><td>${x.name}</td><td>${x.capacity_heads}</td><td>${x.current_heads}</td><td>${x.available_heads}</td></tr>`).join("");
@@ -921,40 +955,20 @@ async function loadSaleLookups(){
 }
 function todayField(id){if($(id)&&!$(id).value)$(id).value=today()}
 async function loadSaleAnimals(){
- const barn=$("saleBarn")?.value;
- if(!barn){$("saleAnimalsList").innerHTML='<div style="padding:14px;text-align:center;color:#777">اختر العنبر لعرض الرصيد المتاح للبيع.</div>';$("saleBarnBalance").textContent="0 رأس";updateSalePreview();return}
- const {data,error}=await db.from("animals").select("id,tag,animal_type,initial_weight_kg,animal_weights(weight_kg,weight_date,created_at)").eq("farm_id",farmId).eq("status","alive").eq("barn_id",barn).order("tag").limit(2000);
- if(error){$("saleAnimalsList").innerHTML=`<div class="msg err">${error.message}</div>`;return}
- const rows=(data||[]).map(a=>{
-   const weights=(a.animal_weights||[]).slice().sort((x,y)=>String(y.weight_date).localeCompare(String(x.weight_date))||String(y.created_at).localeCompare(String(x.created_at)));
-   const w=weights[0]?.weight_kg??a.initial_weight_kg??0;
-   return `<label style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-bottom:1px solid #eee;cursor:pointer"><input class="sale-animal-cb" type="checkbox" value="${a.id}" data-weight="${w}" onchange="updateSalePreview()" style="width:auto"><span style="flex:1"><b>${a.tag}</b> <span class="muted">${a.animal_type||""}</span></span><span class="badge">${w} كجم</span></label>`;
- }).join("");
- $("saleAnimalsList").innerHTML=rows||'<div style="padding:14px;text-align:center;color:#777">لا يوجد رصيد حي في هذا العنبر.</div>';
- $("saleBarnBalance").textContent=`${data?.length||0} رأس`;
- $("saleSelectAll").checked=false;updateSalePreview();
+ const barn=$("saleBarn").value;if(!barn){$("saleAnimalsList").innerHTML='<div style="padding:14px;text-align:center;color:#777">اختر العنبر.</div>';$("saleBarnBalance").textContent="0 رأس";$("saleWeightsEditor").innerHTML="";updateSalePreview();return}
+ const {data,error}=await db.from("animals").select("id,tag,animal_type,initial_weight_kg").eq("farm_id",farmId).eq("barn_id",barn).eq("status","alive").order("tag").limit(1500);
+ if(error){$("saleAnimalsList").innerHTML=error.message;return}
+ const rows=await Promise.all((data||[]).map(async a=>{const {data:w}=await db.from("animal_weights").select("weight_kg,weight_date,created_at").eq("animal_id",a.id).eq("farm_id",farmId).order("weight_date",{ascending:false}).order("created_at",{ascending:false}).limit(1).maybeSingle();return {...a,currentWeight:w?.weight_kg||a.initial_weight_kg||0}}));
+ $("saleBarnBalance").textContent=`${rows.length} رأس`;$("saleAnimalsList").innerHTML=rows.map(a=>`<label style="display:flex;align-items:center;gap:10px;padding:9px;border-bottom:1px solid #eee"><input class="sale-animal-cb" type="checkbox" value="${a.id}" data-default="${a.currentWeight}" onchange="renderSaleWeights();updateSalePreview()" style="width:auto"><span style="flex:1"><b>${a.tag}</b> <span class="muted">${a.animal_type||""}</span></span><span class="badge">آخر وزن ${a.currentWeight} كجم</span></label>`).join("")||'<div style="padding:14px;text-align:center;color:#777">لا يوجد رصيد حي في هذا العنبر.</div>';$("saleSelectAll").checked=false;renderSaleWeights();updateSalePreview();
 }
-function toggleSaleAnimals(source){document.querySelectorAll(".sale-animal-cb").forEach(cb=>cb.checked=source.checked);updateSalePreview()}
-function updateSalePreview(){
- const selected=[...document.querySelectorAll(".sale-animal-cb:checked")];
- const price=num($("salePriceKg")?.value);const weight=selected.reduce((s,cb)=>s+num(cb.dataset.weight),0);const total=weight*price;
- $("salePreview").textContent=`المحدد: ${selected.length} رأس | الوزن: ${weight.toFixed(2)} كجم | الإجمالي: ${total.toFixed(2)}`;
-}
+function toggleSaleAnimals(s){document.querySelectorAll(".sale-animal-cb").forEach(cb=>cb.checked=s.checked);renderSaleWeights();updateSalePreview()}
+function renderSaleWeights(){const selected=[...document.querySelectorAll(".sale-animal-cb:checked")];$("saleWeightsEditor").innerHTML=selected.map(cb=>`<div class="formgrid" style="grid-template-columns:1fr 1fr;gap:8px;margin-top:6px"><div class="field"><label>وزن البيع الفعلي — ${cb.closest("label").querySelector("b")?.innerText||"الرأس"}</label><input class="sale-weight-input" data-id="${cb.value}" type="number" min="0.001" step="0.001" value="${cb.dataset.saleWeight||cb.dataset.default||0}" oninput="updateSalePreview()"></div><div class="field"><label>سعر الكيلو لهذه الرأس (اختياري)</label><input class="sale-price-input" data-id="${cb.value}" type="number" min="0" step="0.01" value="${cb.dataset.salePrice||$("salePriceKg").value||0}" oninput="updateSalePreview()"></div></div>`).join("")}
+function updateSalePreview(){const selected=[...document.querySelectorAll(".sale-animal-cb:checked")];let wt=0,total=0;selected.forEach(cb=>{const w=num(document.querySelector(`.sale-weight-input[data-id="${cb.value}"]`)?.value)||0;const p=num(document.querySelector(`.sale-price-input[data-id="${cb.value}"]`)?.value)||num($("salePriceKg").value);wt+=w;total+=w*p});$("salePreview").textContent=`المحدد: ${selected.length} رأس | الوزن الفعلي: ${wt.toFixed(3)} كجم | الإجمالي: ${total.toLocaleString()}`}
 async function sellSelectedAnimals(){
- const ids=[...document.querySelectorAll(".sale-animal-cb:checked")].map(x=>x.value), barn=$("saleBarn").value, customer=$("saleCustomer").value||null;
- const p={p_invoice_no:$("saleInvoiceNo").value.trim(),p_customer_id:customer,p_barn_id:barn,p_sale_date:$("saleDate").value||today(),p_animal_ids:ids,p_price_per_kg:num($("salePriceKg").value),p_notes:$("saleNotes").value.trim()||null};
- if(!p.p_invoice_no||!barn||!ids.length||p.p_price_per_kg<0)return message("saleMsg","أكمل رقم الفاتورة والعنبر والرؤوس والسعر.",true);
- const {data,error}=await db.rpc("sell_animals_batch",p);
- if(error)return message("saleMsg",error.message,true);
- message("saleMsg","تم تنفيذ البيع بنجاح. رقم العملية: "+data);
- $("saleInvoiceNo").value="";$("salePriceKg").value="";$("saleNotes").value="";await Promise.all([loadSaleAnimals(),loadSales(),loadDashboard()]);
-}
-async function loadSales(){
- const {data,error}=await db.from("sales").select("invoice_no,sale_date,total_amount,customers(name),sale_animals(animal_id,animals(tag,barn_id))").eq("farm_id",farmId).order("sale_date",{ascending:false}).limit(500);
- if(error){$("salesRows").innerHTML=`<tr><td colspan="6">${error.message}</td></tr>`;return}
- const barnMap={};const {data:b}=await db.from("barns").select("id,name").eq("farm_id",farmId);(b||[]).forEach(x=>barnMap[x.id]=x.name);
- $("salesRows").innerHTML=(data||[]).map(s=>{const lines=s.sale_animals||[];const barnIds=[...new Set(lines.map(l=>l.animals?.barn_id).filter(Boolean))];return `<tr><td>${s.invoice_no}</td><td>${s.customers?.name||"-"}</td><td>${barnIds.map(id=>barnMap[id]||"-").join("، ")||"-"}</td><td>${lines.length}</td><td>${num(s.total_amount).toFixed(2)}</td><td>${s.sale_date}</td></tr>`}).join("")||'<tr><td colspan="6">لا توجد مبيعات</td></tr>';
-}
+ const ids=[...document.querySelectorAll(".sale-animal-cb:checked")];const barn=$("saleBarn").value,invoice=$("saleInvoiceNo").value.trim();if(!invoice||!barn||!ids.length)return message("saleMsg","أكمل رقم الفاتورة والعنبر وحدد الرؤوس.",true);const lines=ids.map(cb=>({animal_id:cb.value,sold_weight_kg:num(document.querySelector(`.sale-weight-input[data-id="${cb.value}"]`)?.value),price_per_kg:num(document.querySelector(`.sale-price-input[data-id="${cb.value}"]`)?.value)||num($("salePriceKg").value)}));if(lines.some(x=>x.sold_weight_kg<=0))return message("saleMsg","أدخل وزن البيع الفعلي لكل رأس.",true);const editId=$("saleInvoiceNo").dataset.editId||null;const payload=editId?{p_sale_id:editId,p_customer_id:$("saleCustomer").value||null,p_barn_id:barn,p_sale_date:$("saleDate").value||today(),p_lines:lines,p_price_per_kg:num($("salePriceKg").value),p_notes:$("saleNotes").value.trim()||null}:{p_invoice_no:invoice,p_customer_id:$("saleCustomer").value||null,p_barn_id:barn,p_sale_date:$("saleDate").value||today(),p_lines:lines,p_price_per_kg:num($("salePriceKg").value),p_notes:$("saleNotes").value.trim()||null};const {data,error}=await db.rpc(editId?"update_sale_invoice":"sell_animals_batch",payload);if(error)return message("saleMsg",error.message,true);message("saleMsg",editId?"تم تعديل الفاتورة بنجاح.":"تم تنفيذ البيع بنجاح.");$("saleInvoiceNo").value="";delete $("saleInvoiceNo").dataset.editId;$("salePriceKg").value="";$("saleNotes").value="";await Promise.all([loadSaleAnimals(),loadSales(),loadDashboard()])}
+async function loadSales(){const {data,error}=await db.from("sales").select("id,invoice_no,sale_date,total_amount,customer_id,customers(name),sale_animals(animal_id,sold_weight_kg,price_per_kg,amount,animals(tag,barn_id))").eq("farm_id",farmId).order("sale_date",{ascending:false}).limit(500);if(error){$("salesRows").innerHTML=`<tr><td colspan="7">${error.message}</td></tr>`;return}const {data:b}=await db.from("barns").select("id,name").eq("farm_id",farmId);const bm=Object.fromEntries((b||[]).map(x=>[x.id,x.name]));$("salesRows").innerHTML=(data||[]).map(s=>{const l=s.sale_animals||[];const barn=[...new Set(l.map(x=>bm[x.animals?.barn_id]).filter(Boolean))].join("، ");return `<tr><td>${s.invoice_no}</td><td>${s.customers?.name||"-"}</td><td>${barn||"-"}</td><td>${l.length}</td><td>${num(s.total_amount).toLocaleString()}</td><td>${s.sale_date}</td><td><button class="btn btn-light btn-small" onclick="editSale('${s.id}')">تعديل</button> <button class="btn btn-danger btn-small" onclick="deleteSale('${s.id}')">حذف</button></td></tr>`}).join("")||'<tr><td colspan="7">لا توجد مبيعات</td></tr>'}
+async function editSale(id){const {data,error}=await db.from("sales").select("id,invoice_no,customer_id,sale_date,notes,sale_animals(animal_id,sold_weight_kg,price_per_kg,animals(barn_id))").eq("id",id).eq("farm_id",farmId).single();if(error)return toast(error.message);$("saleInvoiceNo").value=data.invoice_no||"";$("saleInvoiceNo").dataset.editId=data.id;$("saleCustomer").value=data.customer_id||"";$("saleDate").value=data.sale_date||today();$("saleNotes").value=data.notes||"";const barn=data.sale_animals?.[0]?.animals?.barn_id||"";$("saleBarn").value=barn;await loadSaleAnimals();data.sale_animals?.forEach(line=>{const cb=document.querySelector(`.sale-animal-cb[value="${line.animal_id}"]`);if(cb){cb.checked=true;cb.dataset.saleWeight=line.sold_weight_kg;cb.dataset.salePrice=line.price_per_kg}});renderSaleWeights();data.sale_animals?.forEach(line=>{const w=document.querySelector(`.sale-weight-input[data-id="${line.animal_id}"]`);const pr=document.querySelector(`.sale-price-input[data-id="${line.animal_id}"]`);if(w)w.value=line.sold_weight_kg;if(pr)pr.value=line.price_per_kg});updateSalePreview();openPage("sales");toast("تم تحميل الفاتورة للتعديل")}
+async function deleteSale(id){if(!confirm("حذف الفاتورة وإرجاع العجول للرصيد الحي؟"))return;const {error}=await db.rpc("delete_sale_invoice",{p_sale_id:id});if(error)return toast(error.message);await Promise.all([loadSales(),loadDashboard()]);toast("تم حذف الفاتورة وإرجاع الرؤوس")}
 async function registerDeath(){const tag=$("dAnimal").value,date=$("dDate").value||today();const {data:a}=await db.from("animals").select("id").eq("farm_id",farmId).eq("tag",tag).single();if(!a)return message("dMsg","الحيوان غير موجود.",true);const {error}=await db.rpc("register_animal_death",{p_animal_id:a.id,p_death_date:date,p_reason:$("dReason").value.trim()||null,p_notes:$("dNotes").value.trim()||null});if(error)return message("dMsg",error.message,true);message("dMsg","تم تسجيل النفوق.");await Promise.all([loadDeaths(),loadHeads(),loadDashboard()])}
 async function loadDeaths(){const {data}=await db.from("animal_deaths").select("death_date,reason,animals(tag)").eq("farm_id",farmId).order("death_date",{ascending:false});$("deathsRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.animals?.tag||"-"}</td><td>${x.death_date}</td><td>${x.reason||"-"}</td></tr>`).join("")}
 async function showSelectedFeedItem(){
@@ -1049,6 +1063,12 @@ async function handleLogoChange(){
 }
 $("setLogoFile")?.addEventListener("change",handleLogoChange);
 function removeLogo(){ $("setLogoFile").value=""; $("setLogoFile").dataset.logoData=""; $("setLogoPreview").src=""; setLogo(""); }
+async function loadLedgerCustomerOptions(){const {data}=await db.from("customers").select("id,name").eq("farm_id",farmId).order("name");$("ledgerCustomer").innerHTML=(data||[]).map(x=>`<option value="${x.id}">${x.name}</option>`).join("")}
+async function addCustomerPayment(){const cid=$("ledgerCustomer").value,amount=num($("paymentAmount").value),date=$("paymentDate").value||today();if(!cid||amount<=0)return message("paymentMsg","اختر العميل وأدخل مبلغًا صحيحًا.",true);const {error}=await db.from("customer_payments").insert({farm_id:farmId,customer_id:cid,payment_date:date,amount,payment_method:$("paymentMethod").value,reference:$("paymentReference").value.trim()||null,notes:$("paymentNotes").value.trim()||null,created_by:user.id});if(error)return message("paymentMsg",error.message,true);message("paymentMsg","تم تسجيل الدفعة.");$("paymentAmount").value="";$("paymentReference").value="";$("paymentNotes").value="";await refreshCustomerLedger()}
+async function refreshCustomerLedger(){const cid=$("ledgerCustomer").value;if(!cid)return;let sq=db.from("sales").select("id,invoice_no,sale_date,total_amount").eq("farm_id",farmId).eq("customer_id",cid).order("sale_date");if($("ledgerFrom").value)sq=sq.gte("sale_date",$("ledgerFrom").value);if($("ledgerTo").value)sq=sq.lte("sale_date",$("ledgerTo").value);const {data:sales=[]}=await sq;let pq=db.from("customer_payments").select("payment_date,amount,reference,notes,payment_method").eq("farm_id",farmId).eq("customer_id",cid).order("payment_date");if($("ledgerFrom").value)pq=pq.gte("payment_date",$("ledgerFrom").value);if($("ledgerTo").value)pq=pq.lte("payment_date",$("ledgerTo").value);const {data:pays=[],error}=await pq;if(error)return toast(error.message);const rows=[...sales.map(x=>({date:x.sale_date,type:"فاتورة",ref:x.invoice_no,debit:num(x.total_amount),credit:0,note:"بيع عجول"})),...pays.map(x=>({date:x.payment_date,type:"دفعة",ref:x.reference||x.payment_method||"-",debit:0,credit:num(x.amount),note:x.notes||"دفعة"}))].sort((a,b)=>a.date.localeCompare(b.date));let running=0;rows.forEach(r=>running+=r.debit-r.credit);const inv=sales.reduce((s,x)=>s+num(x.total_amount),0),pay=pays.reduce((s,x)=>s+num(x.amount),0);$("ledgerInvoices").textContent=inv.toLocaleString();$("ledgerPayments").textContent=pay.toLocaleString();$("ledgerBalance").textContent=(inv-pay).toLocaleString();running=0;$("ledgerRows").innerHTML=rows.map(r=>{running+=r.debit-r.credit;return `<tr><td>${r.date}</td><td>${r.type}</td><td>${r.ref}</td><td>${r.debit.toLocaleString()}</td><td>${r.credit.toLocaleString()}</td><td>${running.toLocaleString()}</td><td>${r.note}</td></tr>`}).join("")||'<tr><td colspan="7">لا توجد حركة</td></tr>'}
+async function loadEmployeesForCustody(){const {data}=await db.from("employees").select("id,name").eq("farm_id",farmId).eq("active",true).order("name");$("custodyEmployee").innerHTML=(data||[]).map(x=>`<option value="${x.id}">${x.name}</option>`).join("")}
+async function saveCustodyTransaction(){const emp=$("custodyEmployee").value,type=$("custodyType").value,amount=num($("custodyAmount").value),date=$("custodyDate").value||today();if(!emp||amount<=0)return message("custodyMsg","اختر موظفًا وأدخل مبلغًا صحيحًا.",true);const {error}=await db.from("employee_custody_transactions").insert({farm_id:farmId,employee_id:emp,transaction_type:type,transaction_date:date,amount,description:$("custodyDescription").value.trim()||null,reference:$("custodyReference").value.trim()||null,created_by:user.id});if(error)return message("custodyMsg",error.message,true);message("custodyMsg","تم حفظ الحركة.");$("custodyAmount").value="";$("custodyDescription").value="";$("custodyReference").value="";await loadCustody()}
+async function loadCustody(){const {data,error}=await db.from("employee_custody_transactions").select("id,employee_id,transaction_type,transaction_date,amount,description,reference,employees(name)").eq("farm_id",farmId).order("transaction_date",{ascending:false});if(error){$("custodyRows").innerHTML=`<tr><td colspan="6">${error.message}</td></tr>`;return}const sum=(t)=> (data||[]).filter(x=>x.transaction_type===t).reduce((s,x)=>s+num(x.amount),0);const issued=sum("issue"),settled=sum("settlement"),exp=sum("expense");$("custodyIssued").textContent=issued.toLocaleString();$("custodySettled").textContent=settled.toLocaleString();$("custodyExpenses").textContent=exp.toLocaleString();$("custodyOpen").textContent=Math.max(0,issued-settled-exp).toLocaleString();const labels={issue:"صرف عهدة",settlement:"تسوية عهدة",expense:"مصروف"};$("custodyRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.transaction_date}</td><td>${x.employees?.name||"-"}</td><td>${labels[x.transaction_type]||x.transaction_type}</td><td>${num(x.amount).toLocaleString()}</td><td>${x.reference||"-"}</td><td>${x.description||"-"}</td></tr>`).join("")||'<tr><td colspan="6">لا توجد حركة</td></tr>'}
 async function loadFarmSettings(){
  const {data,error}=await db.from("farms").select("name,company_name,fcr_limit,mortality_limit_pct,logo_url,theme_primary,theme_secondary,theme_accent,theme_danger,theme_warning,theme_background,theme_sidebar").eq("id",farmId).single();
  if(error||!data)return;
