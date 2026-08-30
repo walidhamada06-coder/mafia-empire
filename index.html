@@ -275,7 +275,7 @@ async function refreshPage(page){
  if(page==="deaths")Promise.all([loadWeightAnimals(),loadDeaths()]);
  if(page==="analytics")loadAnalytics();
  if(page==="fleet")loadVehicles();
- if(page==="inventory")loadInventory();
+ if(page==="inventory")Promise.all([loadWarehouses(),loadInventory()]);
  if(page==="warehouses")loadWarehousesPage();
  if(page==="manufacturing")loadManufacturing();
  if(page==="employees")loadUsers();
@@ -378,8 +378,17 @@ async function addSingleAnimal(){
  toast("التكويد الفردي المباشر يحتاج UUID للحيوان؛ استخدم استلام شحنة في النسخة الحالية، وسنضيف التكويد الفردي في الخطوة التالية.");
 }
 async function loadWarehouses(){
- const {data}=await db.from("warehouses").select("id,name").eq("farm_id",farmId).order("name");
- ["bfWarehouse","fWarehouse","iWarehouse"].forEach(id=>{if($(id))$(id).innerHTML=(data||[]).map(x=>`<option value="${x.id}">${x.name}</option>`).join("")});
+ const {data,error}=await db.from("warehouses")
+   .select("id,code,name,warehouse_type,active")
+   .eq("farm_id",farmId)
+   .eq("active",true)
+   .eq("warehouse_type","feed")
+   .order("name");
+ if(error){ console.error(error); return; }
+ const options=(data||[]).map(x=>`<option value="${x.id}">${x.name}</option>`).join("");
+ ["bfWarehouse","fWarehouse","iWarehouse"].forEach(id=>{
+   if($(id)) $(id).innerHTML='<option value="">اختر مستودع الأعلاف</option>'+options;
+ });
 }
 
 async function loadWarehousesPage(){
@@ -440,8 +449,10 @@ async function populateInventoryFeedItems(){
  const {data,error}=await db.from("feed_items").select("id,code,name,protein_pct,default_cost_per_kg,item_group").eq("farm_id",farmId).eq("active",true).order("name");
  if(error)return;
  $("iFeedItem").innerHTML='<option value="">اختر الصنف من التعريف</option>'+(data||[]).map(x=>`<option value="${x.id}" data-protein="${x.protein_pct}" data-cost="${x.default_cost_per_kg}">${x.name} — ${x.code} (${x.protein_pct}%)</option>`).join("");
+ if((data||[]).length===0) $("iFeedItem").innerHTML='<option value="">لا توجد أصناف في تعريف الأعلاف</option>';
 }
 async function loadInventory(){
+ await loadWarehouses();
  const {data,error}=await db.from("v_inventory_status").select("*").eq("farm_id",farmId).order("name");
  const {data:wh}=await db.from("warehouses").select("id,name").eq("farm_id",farmId);const m=Object.fromEntries((wh||[]).map(x=>[x.id,x.name]));
  $("inventoryRows").innerHTML=error?`<tr><td colspan="7">${error.message}</td></tr>`:(data||[]).map(x=>`<tr><td>${x.name}</td><td>${x.item_code||"-"}</td><td>${m[x.warehouse_id]||"-"}</td><td>${x.qty_kg}</td><td>${x.protein_pct}%</td><td>${x.cost_per_kg}</td><td>${x.stock_status==="low"?'<span class="bad">منخفض</span>':'<span class="ok">جيد</span>'}</td></tr>`).join("")||'<tr><td colspan="7">لا توجد أصناف معرفة بعد</td></tr>';
