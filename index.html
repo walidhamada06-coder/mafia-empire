@@ -73,6 +73,7 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 
     <div class="head">المخزون والتصنيع</div>
     <div class="item" data-page="inventory"><i class="fa-solid fa-boxes-stacked"></i> مخزون الأعلاف</div>
+    <div class="item" data-page="warehouses"><i class="fa-solid fa-warehouse"></i> المستودعات</div>
     <div class="item" data-page="manufacturing"><i class="fa-solid fa-industry"></i> تصنيع العلف</div>
 
     <div class="head">الإدارة والتحكم</div>
@@ -183,6 +184,42 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 <section id="inventory" class="view"><div class="card"><h2>مخزون الأعلاف</h2><p class="muted">الأصناف هنا تأتي تلقائيًا من «تعريف الأعلاف والبروتين». لا تحتاج لإنشاء الصنف مرة ثانية؛ اختر الصنف الرئيسي وحدد رصيده في المخزن.</p><div class="form"><div class="formgrid"><div class="field"><label>المخزن</label><select id="iWarehouse"></select></div><div class="field"><label>الصنف من تعريف الأعلاف</label><select id="iFeedItem" onchange="showSelectedFeedItem()"></select></div><div class="field"><label>الوحدة</label><input id="iUnit" value="kg" readonly></div><div class="field"><label>الرصيد الافتتاحي / الحالي</label><input id="iOpening" type="number" min="0"></div><div class="field"><label>البروتين %</label><input id="iProtein" type="number" readonly></div><div class="field"><label>التكلفة/كجم</label><input id="iCost" type="number" step="0.0001"></div><div class="field"><label>حد الطلب</label><input id="iMin" type="number" min="0"></div></div><button class="btn btn-primary" onclick="addStock()"><i class="fa-solid fa-link"></i> ربط الصنف بالمخزون / تحديث الرصيد</button></div></div>
 <div class="card"><table class="table"><thead><tr><th>الصنف</th><th>الكود</th><th>المخزن</th><th>الرصيد</th><th>البروتين</th><th>التكلفة</th><th>الحالة</th></tr></thead><tbody id="inventoryRows"></tbody></table></div></section>
 
+
+<section id="warehouses" class="view">
+<div class="card">
+  <h2>المستودعات</h2>
+  <p class="muted">إدارة المستودعات التي تستقبل أرصدة الأصناف. أي صنف جديد من تعريف الأعلاف والبروتين يظهر تلقائيًا في مستودعات الأعلاف الفعالة.</p>
+  <div class="form">
+    <div class="formgrid">
+      <div class="field"><label>كود المستودع</label><input id="whCode" placeholder="WH04"></div>
+      <div class="field"><label>اسم المستودع</label><input id="whName" placeholder="مخزن أعلاف 2"></div>
+      <div class="field"><label>نوع المستودع</label>
+        <select id="whType">
+          <option value="feed">أعلاف</option>
+          <option value="tools">أدوات</option>
+          <option value="medicine">أدوية</option>
+          <option value="general">عام</option>
+        </select>
+      </div>
+      <div class="field"><label>الحالة</label>
+        <select id="whActive"><option value="true">فعال</option><option value="false">موقوف</option></select>
+      </div>
+      <div class="field" style="grid-column:1/-1"><label>ملاحظات</label><textarea id="whNotes"></textarea></div>
+    </div>
+    <button class="btn btn-primary" onclick="addWarehouse()"><i class="fa-solid fa-plus"></i> إضافة مستودع</button>
+  </div>
+</div>
+
+<div class="card">
+  <h3>المستودعات الحالية</h3>
+  <div class="tablewrap">
+    <table class="table">
+      <thead><tr><th>الكود</th><th>المستودع</th><th>النوع</th><th>الحالة</th><th>عدد الأصناف</th></tr></thead>
+      <tbody id="warehousesRows"></tbody>
+    </table>
+  </div>
+</div>
+</section>
 <section id="manufacturing" class="view"><div class="card"><h2>تصنيع العلف</h2><p class="muted">نحتفظ بشاشة التصنيع، وبعد اختبار المخزون سنربط الاستهلاك والإنتاج بدالة ذرية واحدة لمنع أي تلاعب أو رصيد سالب.</p><div class="form"><div class="formgrid"><div class="field"><label>رقم أمر التصنيع</label><input id="moNo"></div><div class="field"><label>المنتج النهائي</label><input id="moProduct"></div><div class="field"><label>التاريخ</label><input id="moDate" type="date"></div><div class="field"><label>إجمالي الإنتاج كجم</label><input id="moQty" type="number"></div></div><button class="btn btn-primary" onclick="createMO()">إنشاء أمر تصنيع</button></div></div>
 <div class="card"><table class="table"><thead><tr><th>الأمر</th><th>المنتج</th><th>الإنتاج</th><th>التاريخ</th></tr></thead><tbody id="moRows"></tbody></table></div></section>
 
@@ -239,6 +276,7 @@ async function refreshPage(page){
  if(page==="analytics")loadAnalytics();
  if(page==="fleet")loadVehicles();
  if(page==="inventory")loadInventory();
+ if(page==="warehouses")loadWarehousesPage();
  if(page==="manufacturing")loadManufacturing();
  if(page==="employees")loadUsers();
  if(page==="settings")loadFarmSettings();
@@ -342,6 +380,31 @@ async function addSingleAnimal(){
 async function loadWarehouses(){
  const {data}=await db.from("warehouses").select("id,name").eq("farm_id",farmId).order("name");
  ["bfWarehouse","fWarehouse","iWarehouse"].forEach(id=>{if($(id))$(id).innerHTML=(data||[]).map(x=>`<option value="${x.id}">${x.name}</option>`).join("")});
+}
+
+async function loadWarehousesPage(){
+ const {data,error}=await db.from("warehouses").select("id,code,name,warehouse_type,active").eq("farm_id",farmId).order("name");
+ if(error){$("warehousesRows").innerHTML=`<tr><td colspan="5">${error.message}</td></tr>`;return}
+ const ids=(data||[]).map(x=>x.id);
+ let counts={};
+ if(ids.length){
+   const {data:stockRows}=await db.from("stock").select("warehouse_id,id").eq("farm_id",farmId);
+   (stockRows||[]).forEach(s=>counts[s.warehouse_id]=(counts[s.warehouse_id]||0)+1);
+ }
+ const types={feed:"أعلاف",tools:"أدوات",medicine:"أدوية",general:"عام"};
+ $("warehousesRows").innerHTML=(data||[]).map(x=>`<tr>
+   <td>${x.code}</td><td>${x.name}</td><td>${types[x.warehouse_type]||x.warehouse_type}</td>
+   <td>${x.active?'<span class="ok">فعال</span>':'<span class="bad">موقوف</span>'}</td>
+   <td>${counts[x.id]||0}</td>
+ </tr>`).join("")||'<tr><td colspan="5">لا توجد مستودعات</td></tr>';
+}
+async function addWarehouse(){
+ const p={farm_id:farmId,code:$("whCode").value.trim(),name:$("whName").value.trim(),warehouse_type:$("whType").value,active:$("whActive").value==="true",notes:$("whNotes").value.trim()};
+ if(!p.code||!p.name)return toast("أدخل كود واسم المستودع");
+ const {error}=await db.from("warehouses").insert(p);
+ if(error)return toast(error.message);
+ $("whCode").value="";$("whName").value="";$("whNotes").value="";
+ await loadWarehousesPage(); await loadWarehouses(); toast("تم إنشاء المستودع");
 }
 async function loadStockOptions(){const {data}=await db.from("v_inventory_status").select("id,warehouse_id,name,qty_kg,protein_pct,cost_per_kg").eq("farm_id",farmId);const o=(data||[]).map(x=>`<option value="${x.id}" data-wh="${x.warehouse_id}">${x.name} — ${x.qty_kg} كجم</option>`).join("");["bfStock","fStock"].forEach(id=>{if($(id))$(id).innerHTML='<option value="">اختر الصنف</option>'+o})}
 async function issueGroupFeed(){await issueStock("bfWarehouse","bfStock","bfQty","bfBarn","bfShipment","bfDate","bfMsg","group")}
