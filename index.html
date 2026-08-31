@@ -1201,67 +1201,86 @@ function selectedFilters(prefix){
 function avg(arr){return arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:null}
 function daysBetween(a,b){return Math.max(0,Math.round((new Date(b)-new Date(a))/86400000))}
 async function buildGroupAnalytics(filters){
- const {data:ships}=await db.from("shipments").select("id,code,boat_id,head_count,arrival_date,boats(name)").eq("farm_id",farmId);
+ const {data:ships}=await db.from("shipments")
+   .select("id,code,boat_id,head_count,arrival_date,total_initial_weight_kg,boats(name)")
+   .eq("farm_id",farmId);
  const allShips=ships||[];
  let scoped=allShips;
  if(filters.boat!=="all") scoped=scoped.filter(s=>s.boat_id===filters.boat);
  if(filters.shipment!=="all") scoped=scoped.filter(s=>s.id===filters.shipment);
  const shipmentIds=scoped.map(s=>s.id);
- if(!shipmentIds.length)return {groups:[],heads:[],feedMoves:[],deaths:[]};
+ if(!shipmentIds.length)return {groups:[],heads:[],feedMoves:[],deaths:[],statusCounts:{alive:0,sold:0,dead:0}};
 
- const [{data:bw},{data:deathRows},{data:feedIssues},{data:movements}]=await Promise.all([
-  db.from("batch_weights").select("shipment_id,total_weight_kg,head_count,average_weight_kg,weight_date").eq("farm_id",farmId).in("shipment_id",shipmentIds).order("weight_date"),
-  db.from("animal_deaths").select("animal_id,death_date,animals(shipment_id)").eq("farm_id",farmId).in("animals.shipment_id",shipmentIds),
-  db.from("feed_issues").select("id,shipment_id,barn_id,issue_date,total_qty_kg,average_protein_pct").eq("farm_id",farmId).in("shipment_id",shipmentIds),
-  db.from("stock_movements").select("qty_kg,movement_date,reference_type").eq("farm_id",farmId).eq("movement_type","issue")
+ const [{data:bw},{data:deathRows},{data:feedIssues}]=await Promise.all([
+  db.from("batch_weights")
+    .select("shipment_id,total_weight_kg,head_count,average_weight_kg,weight_date")
+    .eq("farm_id",farmId).in("shipment_id",shipmentIds).order("weight_date"),
+  db.from("animal_deaths")
+    .select("animal_id,death_date,animals(shipment_id)")
+    .eq("farm_id",farmId).in("animals.shipment_id",shipmentIds),
+  db.from("feed_issues")
+    .select("id,shipment_id,barn_id,issue_date,total_qty_kg,average_protein_pct")
+    .eq("farm_id",farmId).in("shipment_id",shipmentIds)
  ]);
 
  const inRange=d=>{if(!d)return true;return (!filters.from||d>=filters.from)&&(!filters.to||d<=filters.to)};
  const deaths=(deathRows||[]).filter(d=>inRange(d.death_date));
 
- // IMPORTANT: Supabase REST commonly caps a plain select at 1000 rows.
- // Dashboard headcounts therefore use exact database counts, not fetched row counts.
  const statusCounts={alive:0,sold:0,dead:0};
  await Promise.all(["alive","sold","dead"].map(async status=>{
-   let q=db.from("animals").select("id",{count:"exact",head:true}).eq("farm_id",farmId).in("shipment_id",shipmentIds).eq("status",status);
-   const {count}=await q; statusCounts[status]=count||0;
+   const {count}=await db.from("animals")
+     .select("id",{count:"exact",head:true})
+     .eq("farm_id",farmId)
+     .in("shipment_id",shipmentIds)
+     .eq("status",status);
+   statusCounts[status]=count||0;
  }));
 
  const groups=scoped.map(s=>{
-   const weights=(bw||[]).filter(w=>w.shipment_id===s.id).filter(w=>inRange(w.weight_date));
+   const weights=(bw||[]).filter(w=>w.shipment_id===s.id && inRange(w.weight_date))
+     .sort((a,b)=>String(a.weight_date).localeCompare(String(b.weight_date)));
    const first=weights[0]||null,last=weights[weights.length-1]||null;
 
-   // Baseline weight: when there is only one later group weighing,
-   // compare it to the shipment's recorded initial average weight.
-   // This prevents the initial weight itself from being mistaken for a
-   // second weighing and avoids the old 15.3 kg/day ADG error.
-   const shipmentInitialAvg = num(s.total_initial_weight_kg) / Math.max(1,num(s.head_count));
-   const effectiveInitialWeight = shipmentInitialAvg>0 ? shipmentInitialAvg : (first?num(first.average_weight_kg):0);
-   const effectiveInitialDate = s.arrival_date || (first?first.weight_date:null);
+   // Baseline = shipment intake average weight, based on total_initial_weight/head_count.
+   const shipmentInitialAvg=num(s.total_initial_weight_kg)/Math.max(1,num(s.head_count));
+   const baselineW=shipmentInitialAvg>0 ? shipmentInitialAvg : (first?num(first.average_weight_kg):0);
+   const baselineDate=s.arrival_date || (first?first.weight_date:null);
 
    let firstW=0,lastW=0,days=0,gain=0,adg=null;
    if(weights.length===1){
-     firstW=effectiveInitialWeight;
+     firstW=baselineW;
      lastW=num(last.average_weight_kg);
-     gain=Math.max(0,lastW-firstW);
-     days=(effectiveInitialDate&&last.weight_date)?daysBetween(effectiveInitialDate,last.weight_date):0;
+     gain=lastW-firstW; // can be negative; don't hide it
+     days=daysBetween(baselineDate,last.weight_date);
      adg=days>0?gain/days:null;
    }else if(weights.length>=2){
      firstW=num(first.average_weight_kg);
      lastW=num(last.average_weight_kg);
-     gain=Math.max(0,lastW-firstW);
+     gain=lastW-firstW;
      days=daysBetween(first.weight_date,last.weight_date);
      adg=days>0?gain/days:null;
    }
 
-   const groupFeed=(feedIssues||[]).filter(f=>f.shipment_id===s.id && inRange(f.issue_date)).reduce((z,f)=>z+num(f.total_qty_kg),0);
+   const groupFeed=(feedIssues||[])
+     .filter(f=>f.shipment_id===s.id && inRange(f.issue_date))
+     .reduce((z,f)=>z+num(f.total_qty_kg),0);
+
    const groupDeaths=deaths.filter(d=>d.animals?.shipment_id===s.id).length;
    const headCount=num(s.head_count);
-   const fcr=(gain>0&&groupFeed>0&&headCount>0)?groupFeed/(gain*headCount):null;
+
+   // FCR on as-fed basis: total feed / total live-weight gain.
+   const totalGainKg=gain*headCount;
+   const fcr=(totalGainKg>0&&groupFeed>0)?groupFeed/totalGainKg:null;
    const mort=headCount?groupDeaths/headCount*100:0;
-   return {id:s.id,code:s.code,boat:s.boats?.name||"-",count:headCount,firstW,lastW,gain,days,adg,feed:groupFeed,fcr,mortality:mort};
+
+   return {
+     id:s.id,code:s.code,boat:s.boats?.name||"-",count:headCount,
+     firstW,lastW,gain,days,adg,feed:groupFeed,fcr,mortality:mort,
+     totalGainKg,initialAvg:baselineW,initialDate:baselineDate
+   };
  });
- return {groups,heads:[],feedMoves:movements||[],deaths,statusCounts};
+
+ return {groups,heads:[],feedMoves:[],deaths,statusCounts};
 }
 function scoreGroup(g,fcrLimit,mortLimit){
  if(g.fcr===null)return ["بيانات ناقصة","warn"];
@@ -1286,38 +1305,68 @@ function drawDashboardCharts(groups,totalAlive,totalSold,totalDead){
 }
 async function refreshDashboardAnalytics(){
  const f=selectedFilters("dash");
- const {groups,deaths,statusCounts}=await buildGroupAnalytics(f);
- const alive=statusCounts.alive||0,sold=statusCounts.sold||0,dead=statusCounts.dead||0;
- const totalHeads=alive+sold+dead;
- const latest=groups.filter(g=>g.lastW>0).map(g=>g.lastW);$("kTotal").textContent=totalHeads;$("kAlive").textContent=alive;$("kAvgWeight").textContent=latest.length?avg(latest).toFixed(1):"-";
- const adgs=groups.filter(g=>g.adg);$("kAdg").textContent=adgs.length?avg(adgs.map(g=>g.adg)).toFixed(3):"-";
- const fcrs=groups.filter(g=>g.fcr);$("kFcr").textContent=fcrs.length?avg(fcrs.map(g=>g.fcr)).toFixed(2):"-";
- const feed=groups.reduce((s,g)=>s+num(g.feed),0);$("kFeed").textContent=feed.toLocaleString();
- $("kMortality").textContent=(totalHeads?(dead/totalHeads*100):0).toFixed(2)+"%";
- $("kGain").textContent=groups.reduce((s,g)=>s+g.gain*g.count,0).toFixed(0);
- $("dashNote").className="msg ok";$("dashNote").textContent=(f.shipment!=="all"?"تحليل مجموعة محددة":"تحليل المزرعة")+(f.boat!=="all"?" — مركب محدد":"")+"؛ FCR محسوب من العلف المسجل بالمجموعة (as-fed) عندما يكون الصرف مرتبطًا بالشحنة في feed_issues؛ لا يقارن مباشرة بـDMI قبل تحديد المادة الجافة.";
- drawDashboardCharts(groups,alive,sold,dead);renderDashGroups(groups);
+ const {groups,statusCounts}=await buildGroupAnalytics(f);
+ const alive=statusCounts.alive,sold=statusCounts.sold,dead=statusCounts.dead;
+ const totalHeads=groups.reduce((s,g)=>s+g.count,0);
+ const totalGain=groups.reduce((s,g)=>s+Math.max(0,num(g.totalGainKg)),0);
+ const totalFeed=groups.reduce((s,g)=>s+num(g.feed),0);
+
+ const weightedAdgDen=groups.reduce((s,g)=>s+(g.adg!==null?g.count:0),0);
+ const weightedAdgNum=groups.reduce((s,g)=>s+(g.adg!==null?g.adg*g.count:0),0);
+ const weightedAdg=weightedAdgDen?weightedAdgNum/weightedAdgDen:null;
+ const overallFcr=totalGain>0&&totalFeed>0?totalFeed/totalGain:null;
+
+ const currentWeights=groups.filter(g=>g.lastW>0);
+ const avgCurrent=currentWeights.length
+   ? currentWeights.reduce((s,g)=>s+g.lastW*g.count,0)/currentWeights.reduce((s,g)=>s+g.count,0)
+   : null;
+
+ $("kTotal").textContent=totalHeads||0;
+ $("kAlive").textContent=alive||0;
+ $("kAvgWeight").textContent=avgCurrent===null?"-":avgCurrent.toFixed(1);
+ $("kAdg").textContent=weightedAdg===null?"-":weightedAdg.toFixed(3);
+ $("kFcr").textContent=overallFcr===null?"-":overallFcr.toFixed(2);
+ $("kFeed").textContent=totalFeed.toLocaleString();
+ $("kMortality").textContent=(totalHeads?((dead/totalHeads)*100):0).toFixed(2)+"%";
+ $("kGain").textContent=totalGain.toFixed(0);
+ $("dashNote").className="msg ok";
+ $("dashNote").textContent=(f.shipment!=="all"?"تحليل مجموعة محددة":"تحليل المزرعة")+
+   (f.boat!=="all"?" — مركب محدد":"")+
+   "؛ ADG محسوب من وزن الاستلام كخط أساس، وFCR = العلف المصروف ÷ الزيادة الحية.";
+ drawDashboardCharts(groups,alive,sold,dead);
+ renderDashGroups(groups);
 }
 function resetDashboardFilters(){["dashBoat","dashShipment"].forEach(id=>{$(id).value="all"});["dashFrom","dashTo"].forEach(id=>$(id).value="");refreshDashboardAnalytics()}
 
 async function refreshAdvancedAnalytics(){
  const f={boat:$("anBoat").value,shipment:$("anBatch").value,from:$("anFrom").value,to:$("anTo").value};
- const {groups}=await buildGroupAnalytics(f), fl=num($("anFcrLimit").value)||7, ml=num($("anMortLimit").value)||2;
- const validF=groups.filter(g=>g.fcr!==null),validA=groups.filter(g=>g.adg!==null);
- $("aAdg").textContent=validA.length?avg(validA.map(g=>g.adg)).toFixed(3):"-";
- $("aFcr").textContent=validF.length?avg(validF.map(g=>g.fcr)).toFixed(2):"-";
- $("aFeed").textContent=groups.reduce((s,g)=>s+g.feed,0).toLocaleString();
- $("aGain").textContent=groups.reduce((s,g)=>s+g.gain*g.count,0).toFixed(0);
- const totalHeads=groups.reduce((s,g)=>s+g.count,0),dead=groups.reduce((s,g)=>s+Math.round(g.count*g.mortality/100),0);
- $("aMortality").textContent=(totalHeads?dead/totalHeads*100:0).toFixed(2)+"%";
+ const {groups,statusCounts}=await buildGroupAnalytics(f);
+ const fl=num($("anFcrLimit").value)||7, ml=num($("anMortLimit").value)||2;
+
+ const totalHeads=groups.reduce((s,g)=>s+g.count,0);
+ const totalGain=groups.reduce((s,g)=>s+Math.max(0,num(g.totalGainKg)),0);
+ const totalFeed=groups.reduce((s,g)=>s+num(g.feed),0);
+ const validA=groups.filter(g=>g.adg!==null);
+ const weightedAdg=validA.length
+   ? validA.reduce((s,g)=>s+g.adg*g.count,0)/validA.reduce((s,g)=>s+g.count,0)
+   : null;
+ const overallFcr=totalGain>0&&totalFeed>0?totalFeed/totalGain:null;
+
+ $("aAdg").textContent=weightedAdg===null?"-":weightedAdg.toFixed(3);
+ $("aFcr").textContent=overallFcr===null?"-":overallFcr.toFixed(2);
+ $("aFeed").textContent=totalFeed.toLocaleString();
+ $("aGain").textContent=totalGain.toFixed(0);
+ $("aMortality").textContent=(totalHeads?((statusCounts.dead/totalHeads)*100):0).toFixed(2)+"%";
  $("aFeedCost").textContent="-";
- $("anAlert").className=(groups.some(g=>g.fcr>fl||g.mortality>ml))?"msg err":"msg ok";
- $("anAlert").textContent=groups.some(g=>g.fcr>fl||g.mortality>ml)?"يوجد تحذيرات في FCR أو النفوق":"لا توجد تنبيهات تتجاوز الحدود المحددة.";
- $("analyticsRows").innerHTML=groups.map(g=>{const [t,c]=scoreGroup(g,fl,ml);return `<tr><td>${g.code}</td><td>${g.boat}</td><td>${g.count}</td><td>${g.firstW||"-"}</td><td>${g.lastW||"-"}</td><td>${g.gain||0}</td><td>${g.days||"-"}</td><td>${g.adg?g.adg.toFixed(3):"-"}</td><td>${g.feed.toFixed(1)}</td><td>${g.fcr?g.fcr.toFixed(2):"-"}</td><td>${g.mortality.toFixed(2)}%</td><td class="${c}">${t}</td></tr>`}).join("")||'<tr><td colspan="12">لا توجد بيانات</td></tr>';
- destroyChart(scatterFcrAdg);
- scatterFcrAdg=new Chart($("scatterFcrAdg"),{type:"scatter",data:{datasets:[{label:"المجموعات",data:groups.filter(g=>g.fcr&&g.adg).map(g=>({x:g.fcr,y:g.adg,label:g.code})),backgroundColor:"#8e44ad"}]},options:{responsive:true,scales:{x:{title:{display:true,text:"FCR"}},y:{title:{display:true,text:"ADG"}}}}});
- destroyChart(analyticsWeightChart);
- analyticsWeightChart=new Chart($("analyticsWeightChart"),{type:"bar",data:{labels:groups.map(g=>g.code),datasets:[{label:"أول وزن",data:groups.map(g=>g.firstW||0),backgroundColor:"#95a5a6"},{label:"آخر وزن",data:groups.map(g=>g.lastW||0),backgroundColor:"#2980b9"}]},options:{responsive:true}});
+
+ const alerts=groups.some(g=>(g.fcr!==null&&g.fcr>fl)||g.mortality>ml);
+ $("anAlert").className=alerts?"msg err":"msg ok";
+ $("anAlert").textContent=alerts
+   ?"يوجد مجموعات تحتاج متابعة حسب حدود FCR أو النفوق المحددة."
+   :"الأداء داخل الحدود المحددة.";
+
+ drawAdvancedCharts(groups);
+ renderAdvancedGroups(groups);
 }
 function resetAnalyticsFilters(){["anBoat","anBatch"].forEach(id=>{$(id).value="all"});["anFrom","anTo"].forEach(id=>$(id).value="");refreshAdvancedAnalytics()}
 
