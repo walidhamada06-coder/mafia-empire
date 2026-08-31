@@ -1199,7 +1199,7 @@ function selectedFilters(prefix){
 }
 
 function avg(arr){return arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:null}
-function daysBetween(a,b){return Math.max(1,Math.round((new Date(b)-new Date(a))/86400000))}
+function daysBetween(a,b){return Math.max(0,Math.round((new Date(b)-new Date(a))/86400000))}
 async function buildGroupAnalytics(filters){
  const {data:ships}=await db.from("shipments").select("id,code,boat_id,head_count,arrival_date,boats(name)").eq("farm_id",farmId);
  const allShips=ships||[];
@@ -1230,11 +1230,30 @@ async function buildGroupAnalytics(filters){
  const groups=scoped.map(s=>{
    const weights=(bw||[]).filter(w=>w.shipment_id===s.id).filter(w=>inRange(w.weight_date));
    const first=weights[0]||null,last=weights[weights.length-1]||null;
-   const firstW=first?num(first.average_weight_kg):0;
-   const lastW=last?num(last.average_weight_kg):firstW;
-   const gain=Math.max(0,lastW-firstW);
-   const days=first&&last?daysBetween(first.weight_date,last.weight_date):0;
-   const adg=days>0?gain/days:null;
+
+   // Baseline weight: when there is only one later group weighing,
+   // compare it to the shipment's recorded initial average weight.
+   // This prevents the initial weight itself from being mistaken for a
+   // second weighing and avoids the old 15.3 kg/day ADG error.
+   const shipmentInitialAvg = num(s.total_initial_weight_kg) / Math.max(1,num(s.head_count));
+   const effectiveInitialWeight = shipmentInitialAvg>0 ? shipmentInitialAvg : (first?num(first.average_weight_kg):0);
+   const effectiveInitialDate = s.arrival_date || (first?first.weight_date:null);
+
+   let firstW=0,lastW=0,days=0,gain=0,adg=null;
+   if(weights.length===1){
+     firstW=effectiveInitialWeight;
+     lastW=num(last.average_weight_kg);
+     gain=Math.max(0,lastW-firstW);
+     days=(effectiveInitialDate&&last.weight_date)?daysBetween(effectiveInitialDate,last.weight_date):0;
+     adg=days>0?gain/days:null;
+   }else if(weights.length>=2){
+     firstW=num(first.average_weight_kg);
+     lastW=num(last.average_weight_kg);
+     gain=Math.max(0,lastW-firstW);
+     days=daysBetween(first.weight_date,last.weight_date);
+     adg=days>0?gain/days:null;
+   }
+
    const groupFeed=(feedIssues||[]).filter(f=>f.shipment_id===s.id && inRange(f.issue_date)).reduce((z,f)=>z+num(f.total_qty_kg),0);
    const groupDeaths=deaths.filter(d=>d.animals?.shipment_id===s.id).length;
    const headCount=num(s.head_count);
@@ -1276,7 +1295,7 @@ async function refreshDashboardAnalytics(){
  const feed=groups.reduce((s,g)=>s+num(g.feed),0);$("kFeed").textContent=feed.toLocaleString();
  $("kMortality").textContent=(totalHeads?(dead/totalHeads*100):0).toFixed(2)+"%";
  $("kGain").textContent=groups.reduce((s,g)=>s+g.gain*g.count,0).toFixed(0);
- $("dashNote").className="msg ok";$("dashNote").textContent=(f.shipment!=="all"?"تحليل مجموعة محددة":"تحليل المزرعة")+(f.boat!=="all"?" — مركب محدد":"")+"؛ FCR يحسب للمجموعة عندما يكون صرف العلف مرتبطًا بالشحنة في feed_issues.";
+ $("dashNote").className="msg ok";$("dashNote").textContent=(f.shipment!=="all"?"تحليل مجموعة محددة":"تحليل المزرعة")+(f.boat!=="all"?" — مركب محدد":"")+"؛ FCR محسوب من العلف المسجل بالمجموعة (as-fed) عندما يكون الصرف مرتبطًا بالشحنة في feed_issues؛ لا يقارن مباشرة بـDMI قبل تحديد المادة الجافة.";
  drawDashboardCharts(groups,alive,sold,dead);renderDashGroups(groups);
 }
 function resetDashboardFilters(){["dashBoat","dashShipment"].forEach(id=>{$(id).value="all"});["dashFrom","dashTo"].forEach(id=>$(id).value="");refreshDashboardAnalytics()}
