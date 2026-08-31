@@ -1209,34 +1209,41 @@ async function buildGroupAnalytics(filters){
  const shipmentIds=scoped.map(s=>s.id);
  if(!shipmentIds.length)return {groups:[],heads:[],feedMoves:[],deaths:[]};
 
- const [{data:heads},{data:bw},{data:deathRows},{data:feedIssues},{data:movements}]=await Promise.all([
-  db.from("animals").select("id,tag,shipment_id,status,initial_weight_kg,initial_weight_date").eq("farm_id",farmId).in("shipment_id",shipmentIds),
+ const [{data:bw},{data:deathRows},{data:feedIssues},{data:movements}]=await Promise.all([
   db.from("batch_weights").select("shipment_id,total_weight_kg,head_count,average_weight_kg,weight_date").eq("farm_id",farmId).in("shipment_id",shipmentIds).order("weight_date"),
-  db.from("animal_deaths").select("animal_id,death_date,animals(shipment_id)").eq("farm_id",farmId),
+  db.from("animal_deaths").select("animal_id,death_date,animals(shipment_id)").eq("farm_id",farmId).in("animals.shipment_id",shipmentIds),
   db.from("feed_issues").select("id,shipment_id,barn_id,issue_date,total_qty_kg,average_protein_pct").eq("farm_id",farmId).in("shipment_id",shipmentIds),
   db.from("stock_movements").select("qty_kg,movement_date,reference_type").eq("farm_id",farmId).eq("movement_type","issue")
  ]);
+
  const inRange=d=>{if(!d)return true;return (!filters.from||d>=filters.from)&&(!filters.to||d<=filters.to)};
- const scopedHeads=(heads||[]).filter(h=>inRange(h.initial_weight_date)||!filters.from&&!filters.to);
- const deaths=(deathRows||[]).filter(d=>inRange(d.death_date)).filter(d=>shipmentIds.includes(d.animals?.shipment_id));
+ const deaths=(deathRows||[]).filter(d=>inRange(d.death_date));
+
+ // IMPORTANT: Supabase REST commonly caps a plain select at 1000 rows.
+ // Dashboard headcounts therefore use exact database counts, not fetched row counts.
+ const statusCounts={alive:0,sold:0,dead:0};
+ await Promise.all(["alive","sold","dead"].map(async status=>{
+   let q=db.from("animals").select("id",{count:"exact",head:true}).eq("farm_id",farmId).in("shipment_id",shipmentIds).eq("status",status);
+   const {count}=await q; statusCounts[status]=count||0;
+ }));
+
  const groups=scoped.map(s=>{
-   const gheads=(heads||[]).filter(h=>h.shipment_id===s.id);
    const weights=(bw||[]).filter(w=>w.shipment_id===s.id).filter(w=>inRange(w.weight_date));
    const first=weights[0]||null,last=weights[weights.length-1]||null;
-   const firstW=first?num(first.average_weight_kg):num(s.head_count?0:0);
+   const firstW=first?num(first.average_weight_kg):0;
    const lastW=last?num(last.average_weight_kg):firstW;
    const gain=Math.max(0,lastW-firstW);
    const days=first&&last?daysBetween(first.weight_date,last.weight_date):0;
    const adg=days>0?gain/days:null;
    const groupFeed=(feedIssues||[]).filter(f=>f.shipment_id===s.id && inRange(f.issue_date)).reduce((z,f)=>z+num(f.total_qty_kg),0);
    const groupDeaths=deaths.filter(d=>d.animals?.shipment_id===s.id).length;
-   const fcr=(gain>0&&groupFeed>0&&gheads.length>0)?groupFeed/(gain*gheads.length):null;
-   const mort=gheads.length?groupDeaths/gheads.length*100:0;
-   return {id:s.id,code:s.code,boat:s.boats?.name||"-",count:gheads.length||s.head_count,firstW,lastW,gain,days,adg,feed:groupFeed,fcr,mortality:mort};
+   const headCount=num(s.head_count);
+   const fcr=(gain>0&&groupFeed>0&&headCount>0)?groupFeed/(gain*headCount):null;
+   const mort=headCount?groupDeaths/headCount*100:0;
+   return {id:s.id,code:s.code,boat:s.boats?.name||"-",count:headCount,firstW,lastW,gain,days,adg,feed:groupFeed,fcr,mortality:mort};
  });
- return {groups,heads:scopedHeads,feedMoves:movements||[],deaths};
+ return {groups,heads:[],feedMoves:movements||[],deaths,statusCounts};
 }
-
 function scoreGroup(g,fcrLimit,mortLimit){
  if(g.fcr===null)return ["بيانات ناقصة","warn"];
  if(g.mortality>mortLimit||g.fcr>fcrLimit)return ["يحتاج متابعة","bad"];
@@ -1260,13 +1267,14 @@ function drawDashboardCharts(groups,totalAlive,totalSold,totalDead){
 }
 async function refreshDashboardAnalytics(){
  const f=selectedFilters("dash");
- const {groups,heads,deaths}=await buildGroupAnalytics(f);
- let alive=heads.filter(h=>h.status==="alive").length,sold=heads.filter(h=>h.status==="sold").length,dead=heads.filter(h=>h.status==="dead").length;
- const latest=groups.filter(g=>g.lastW>0).map(g=>g.lastW);$("kTotal").textContent=heads.length;$("kAlive").textContent=alive;$("kAvgWeight").textContent=latest.length?avg(latest).toFixed(1):"-";
+ const {groups,deaths,statusCounts}=await buildGroupAnalytics(f);
+ const alive=statusCounts.alive||0,sold=statusCounts.sold||0,dead=statusCounts.dead||0;
+ const totalHeads=alive+sold+dead;
+ const latest=groups.filter(g=>g.lastW>0).map(g=>g.lastW);$("kTotal").textContent=totalHeads;$("kAlive").textContent=alive;$("kAvgWeight").textContent=latest.length?avg(latest).toFixed(1):"-";
  const adgs=groups.filter(g=>g.adg);$("kAdg").textContent=adgs.length?avg(adgs.map(g=>g.adg)).toFixed(3):"-";
  const fcrs=groups.filter(g=>g.fcr);$("kFcr").textContent=fcrs.length?avg(fcrs.map(g=>g.fcr)).toFixed(2):"-";
  const feed=groups.reduce((s,g)=>s+num(g.feed),0);$("kFeed").textContent=feed.toLocaleString();
- $("kMortality").textContent=(heads.length?(deaths.length/heads.length*100):0).toFixed(2)+"%";
+ $("kMortality").textContent=(totalHeads?(dead/totalHeads*100):0).toFixed(2)+"%";
  $("kGain").textContent=groups.reduce((s,g)=>s+g.gain*g.count,0).toFixed(0);
  $("dashNote").className="msg ok";$("dashNote").textContent=(f.shipment!=="all"?"تحليل مجموعة محددة":"تحليل المزرعة")+(f.boat!=="all"?" — مركب محدد":"")+"؛ FCR يحسب للمجموعة عندما يكون صرف العلف مرتبطًا بالشحنة في feed_issues.";
  drawDashboardCharts(groups,alive,sold,dead);renderDashGroups(groups);
