@@ -991,9 +991,9 @@ async function populateInventoryFeedItems(){
 }
 async function loadInventory(){
  await loadWarehouses();
- const {data,error}=await db.from("v_inventory_status").select("*").eq("farm_id",farmId).order("name");
+ const {data,error}=await db.from("v_inventory_status").select("*").eq("farm_id",farmId).order("item_name");
  const {data:wh}=await db.from("warehouses").select("id,name").eq("farm_id",farmId);const m=Object.fromEntries((wh||[]).map(x=>[x.id,x.name]));
- $("inventoryRows").innerHTML=error?`<tr><td colspan="7">${error.message}</td></tr>`:(data||[]).map(x=>`<tr><td>${x.name}</td><td>${x.item_code||"-"}</td><td>${m[x.warehouse_id]||"-"}</td><td>${x.qty_kg}</td><td>${x.protein_pct}%</td><td>${x.cost_per_kg}</td><td>${x.stock_status==="low"?'<span class="bad">منخفض</span>':'<span class="ok">جيد</span>'}</td></tr>`).join("")||'<tr><td colspan="7">لا توجد أصناف معرفة بعد</td></tr>';
+ $("inventoryRows").innerHTML=error?`<tr><td colspan="7">${error.message}</td></tr>`:(data||[]).map(x=>`<tr><td>${x.item_name||x.stock_name||"-"}</td><td>${x.item_code||"-"}</td><td>${m[x.warehouse_id]||"-"}</td><td>${x.qty_kg}</td><td>${x.protein_pct}%</td><td>${x.cost_per_kg}</td><td>${x.stock_status==="low"?'<span class="bad">منخفض</span>':'<span class="ok">جيد</span>'}</td></tr>`).join("")||'<tr><td colspan="7">لا توجد أصناف معرفة بعد</td></tr>';
  $("bfStock").innerHTML='<option value="">اختر الصنف</option>'+(data||[]).map(x=>`<option value="${x.id}" data-wh="${x.warehouse_id}">${x.name} — ${x.qty_kg} كجم</option>`).join("");
  $("fStock").innerHTML=$("bfStock").innerHTML;
  await populateInventoryFeedItems();
