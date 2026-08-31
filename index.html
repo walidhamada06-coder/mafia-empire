@@ -1204,26 +1204,37 @@ async function buildGroupAnalytics(filters){
  const {data:ships}=await db.from("shipments")
    .select("id,code,boat_id,head_count,arrival_date,total_initial_weight_kg,boats(name)")
    .eq("farm_id",farmId);
+
  const allShips=ships||[];
  let scoped=allShips;
  if(filters.boat!=="all") scoped=scoped.filter(s=>s.boat_id===filters.boat);
  if(filters.shipment!=="all") scoped=scoped.filter(s=>s.id===filters.shipment);
+
  const shipmentIds=scoped.map(s=>s.id);
- if(!shipmentIds.length)return {groups:[],heads:[],feedMoves:[],deaths:[],statusCounts:{alive:0,sold:0,dead:0}};
+ if(!shipmentIds.length)
+   return {groups:[],heads:[],feedMoves:[],deaths:[],statusCounts:{alive:0,sold:0,dead:0}};
 
  const [{data:bw},{data:deathRows},{data:feedIssues}]=await Promise.all([
-  db.from("batch_weights")
-    .select("shipment_id,total_weight_kg,head_count,average_weight_kg,weight_date")
-    .eq("farm_id",farmId).in("shipment_id",shipmentIds).order("weight_date"),
-  db.from("animal_deaths")
-    .select("animal_id,death_date,animals(shipment_id)")
-    .eq("farm_id",farmId).in("animals.shipment_id",shipmentIds),
-  db.from("feed_issues")
-    .select("id,shipment_id,barn_id,issue_date,total_qty_kg,average_protein_pct")
-    .eq("farm_id",farmId).in("shipment_id",shipmentIds)
+   db.from("batch_weights")
+     .select("shipment_id,total_weight_kg,head_count,average_weight_kg,weight_date")
+     .eq("farm_id",farmId)
+     .in("shipment_id",shipmentIds)
+     .order("weight_date"),
+   db.from("animal_deaths")
+     .select("animal_id,death_date,animals(shipment_id)")
+     .eq("farm_id",farmId)
+     .in("animals.shipment_id",shipmentIds),
+   db.from("feed_issues")
+     .select("id,shipment_id,barn_id,issue_date,total_qty_kg,average_protein_pct")
+     .eq("farm_id",farmId)
+     .in("shipment_id",shipmentIds)
  ]);
 
- const inRange=d=>{if(!d)return true;return (!filters.from||d>=filters.from)&&(!filters.to||d<=filters.to)};
+ const inRange=d=>{
+   if(!d)return true;
+   return (!filters.from||d>=filters.from)&&(!filters.to||d<=filters.to);
+ };
+
  const deaths=(deathRows||[]).filter(d=>inRange(d.death_date));
 
  const statusCounts={alive:0,sold:0,dead:0};
@@ -1237,46 +1248,96 @@ async function buildGroupAnalytics(filters){
  }));
 
  const groups=scoped.map(s=>{
-   const weights=(bw||[]).filter(w=>w.shipment_id===s.id && inRange(w.weight_date))
-     .sort((a,b)=>String(a.weight_date).localeCompare(String(b.weight_date)));
-   const first=weights[0]||null,last=weights[weights.length-1]||null;
-
-   // Baseline = shipment intake average weight, based on total_initial_weight/head_count.
    const shipmentInitialAvg=num(s.total_initial_weight_kg)/Math.max(1,num(s.head_count));
-   const baselineW=shipmentInitialAvg>0 ? shipmentInitialAvg : (first?num(first.average_weight_kg):0);
-   const baselineDate=s.arrival_date || (first?first.weight_date:null);
+   const baselineW=shipmentInitialAvg>0?shipmentInitialAvg:0;
+   const baselineDate=s.arrival_date||null;
+
+   let weights=(bw||[])
+     .filter(w=>w.shipment_id===s.id&&inRange(w.weight_date))
+     .sort((a,b)=>String(a.weight_date).localeCompare(String(b.weight_date)));
+
+   /*
+    * كثيرًا ما يتم تسجيل وزن "استلام/مرجعي" للمجموعة بنفس متوسط وزن الشحنة
+    * وفي نفس تاريخ الوزن الفعلي. هذا السجل لا يجب أن يكون نقطة قياس مستقلة،
+    * وإلا يصبح فرق الأيام = 0 ويظهر ADG كشرطة.
+    *
+    * إذا كان أول وزن يساوي تقريبًا متوسط الاستلام وفي نفس تاريخ أول قياس،
+    * نتجاهله كـ duplicate baseline ونستخدم آخر وزن فعلي.
+    */
+   if(weights.length>=2 && baselineDate && weights[0].weight_date===baselineDate){
+     const firstRecorded=num(weights[0].average_weight_kg);
+     const tolerance=Math.max(0.5,baselineW*0.005);
+     if(Math.abs(firstRecorded-baselineW)<=tolerance){
+       weights=weights.slice(1);
+     }
+   }
+
+   const last=weights.length?weights[weights.length-1]:null;
 
    let firstW=0,lastW=0,days=0,gain=0,adg=null;
-   if(weights.length===1){
+
+   if(weights.length===0){
+     // no later weighing
+     firstW=baselineW;
+     lastW=0;
+   }else if(weights.length===1){
      firstW=baselineW;
      lastW=num(last.average_weight_kg);
-     gain=lastW-firstW; // can be negative; don't hide it
+     gain=lastW-firstW;
      days=daysBetween(baselineDate,last.weight_date);
      adg=days>0?gain/days:null;
-   }else if(weights.length>=2){
-     firstW=num(first.average_weight_kg);
+   }else{
+     const first=weights[0];
+     firstW=baselineW>0 && first.weight_date===baselineDate?baselineW:num(first.average_weight_kg);
      lastW=num(last.average_weight_kg);
      gain=lastW-firstW;
-     days=daysBetween(first.weight_date,last.weight_date);
+
+     // Prefer intake-to-latest when the first recorded weighing is also the intake baseline.
+     if(baselineDate && first.weight_date===baselineDate){
+       days=daysBetween(baselineDate,last.weight_date);
+     }else{
+       days=daysBetween(first.weight_date,last.weight_date);
+     }
+     adg=days>0?gain/days:null;
+   }
+
+   // If we have a later weight, gain is relative to intake baseline.
+   if(last && baselineW>0){
+     firstW=baselineW;
+     lastW=num(last.average_weight_kg);
+     gain=lastW-firstW;
+     days=daysBetween(baselineDate,last.weight_date);
      adg=days>0?gain/days:null;
    }
 
    const groupFeed=(feedIssues||[])
-     .filter(f=>f.shipment_id===s.id && inRange(f.issue_date))
+     .filter(f=>f.shipment_id===s.id&&inRange(f.issue_date))
      .reduce((z,f)=>z+num(f.total_qty_kg),0);
 
    const groupDeaths=deaths.filter(d=>d.animals?.shipment_id===s.id).length;
    const headCount=num(s.head_count);
 
-   // FCR on as-fed basis: total feed / total live-weight gain.
-   const totalGainKg=gain*headCount;
+   // FCR (as-fed) = total feed / total live-weight gain.
+   const totalGainKg=Math.max(0,gain*headCount);
    const fcr=(totalGainKg>0&&groupFeed>0)?groupFeed/totalGainKg:null;
    const mort=headCount?groupDeaths/headCount*100:0;
 
    return {
-     id:s.id,code:s.code,boat:s.boats?.name||"-",count:headCount,
-     firstW,lastW,gain,days,adg,feed:groupFeed,fcr,mortality:mort,
-     totalGainKg,initialAvg:baselineW,initialDate:baselineDate
+     id:s.id,
+     code:s.code,
+     boat:s.boats?.name||"-",
+     count:headCount,
+     firstW,
+     lastW,
+     gain,
+     days,
+     adg,
+     feed:groupFeed,
+     fcr,
+     mortality:mort,
+     totalGainKg,
+     initialAvg:baselineW,
+     initialDate:baselineDate
    };
  });
 
@@ -1332,7 +1393,7 @@ async function refreshDashboardAnalytics(){
  $("dashNote").className="msg ok";
  $("dashNote").textContent=(f.shipment!=="all"?"تحليل مجموعة محددة":"تحليل المزرعة")+
    (f.boat!=="all"?" — مركب محدد":"")+
-   "؛ ADG محسوب من وزن الاستلام كخط أساس، وFCR = العلف المصروف ÷ الزيادة الحية.";
+   "؛ ADG محسوب من وزن الاستلام كخط أساس حتى آخر وزن فعلي؛ والوزن المرجعي المكرر في نفس يوم الاستلام لا يُحسب كقياس جديد. FCR = العلف المصروف ÷ الزيادة الحية.";
  drawDashboardCharts(groups,alive,sold,dead);
  renderDashGroups(groups);
 }
