@@ -203,6 +203,11 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
     <div class="item" data-page="analytics"><i class="fa-solid fa-chart-column"></i> مركز التحليلات والأداء</div>
     <div class="item" data-page="fleet"><i class="fa-solid fa-truck-fast"></i> نظام متابعة الأسطول</div>
 
+    <div class="head">البيطرة والتحصينات</div>
+    <div class="item" data-page="hospital"><i class="fa-solid fa-hospital"></i> المستشفى البيطري</div>
+    <div class="item" data-page="medications"><i class="fa-solid fa-pills"></i> الأدوية والمخزون</div>
+    <div class="item" data-page="vaccinations"><i class="fa-solid fa-syringe"></i> التحصينات</div>
+
     <div class="head">المخزون والتصنيع</div>
     <div class="item" data-page="inventory"><i class="fa-solid fa-boxes-stacked"></i> مخزون الأعلاف</div>
     <div class="item" data-page="warehouses"><i class="fa-solid fa-warehouse"></i> المستودعات</div>
@@ -265,6 +270,12 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 <div class="kpi"><div class="kpi-icon" style="background:#f39c12"><i class="fa-solid fa-wheat-awn"></i></div><div><small>العلف المصروف كجم</small><b id="kFeed">0</b></div></div>
 <div class="kpi"><div class="kpi-icon" style="background:#c0392b"><i class="fa-solid fa-skull"></i></div><div><small>النفوق %</small><b id="kMortality">0%</b></div></div>
 <div class="kpi"><div class="kpi-icon" style="background:#34495e"><i class="fa-solid fa-weight-hanging"></i></div><div><small>إجمالي الزيادة الحية كجم</small><b id="kGain">0</b></div></div>
+</div>
+<div class="grid kpis" style="margin-top:12px">
+<div class="kpi"><div class="kpi-icon" style="background:#8e44ad"><i class="fa-solid fa-hospital"></i></div><div><small>العجول بالمستشفى</small><b id="kHospital">0</b></div></div>
+<div class="kpi"><div class="kpi-icon" style="background:#e67e22"><i class="fa-solid fa-temperature-half"></i></div><div><small>متوسط حرارة المستشفى</small><b id="kHospitalTemp">-</b></div></div>
+<div class="kpi"><div class="kpi-icon" style="background:#2980b9"><i class="fa-solid fa-stethoscope"></i></div><div><small>حالات تحتاج متابعة</small><b id="kHospitalFollow">0</b></div></div>
+<div class="kpi"><div class="kpi-icon" style="background:#c0392b"><i class="fa-solid fa-triangle-exclamation"></i></div><div><small>أدوية منتهية/قريبة</small><b id="kMedExpiry">0</b></div></div>
 </div>
 
 <div class="fcr-method-note">FCR التشغيلي = كمية العلف على أساس المادة الجافة ÷ صافي الزيادة الحية. ويتم استخدام نسب المادة الجافة المرجعية للأصناف، ويمكن تعديلها لاحقًا من تعريف الأعلاف.</div>
@@ -492,6 +503,88 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 </div><button class="btn btn-primary" onclick="saveCustodyTransaction()">حفظ الحركة</button><div id="custodyMsg"></div></div></div>
 <div class="grid kpis" style="margin-bottom:12px"><div class="kpi"><div><small>العهد المصروفة</small><b id="custodyIssued">0</b></div></div><div class="kpi"><div><small>التسويات</small><b id="custodySettled">0</b></div></div><div class="kpi"><div><small>مصروفات العهد</small><b id="custodyExpenses">0</b></div></div><div class="kpi"><div><small>الرصيد المفتوح</small><b id="custodyOpen">0</b></div></div></div>
 <div class="card"><table class="table"><thead><tr><th>التاريخ</th><th>الموظف</th><th>النوع</th><th>المبلغ</th><th>المرجع</th><th>البيان</th></tr></thead><tbody id="custodyRows"></tbody></table></div>
+</section>
+
+
+<section id="hospital" class="view">
+<div class="card"><h2>🏥 المستشفى البيطري</h2>
+<p class="muted">تسجيل دخول العجل للمستشفى، حالته، درجة الحرارة، التشخيص والعلاج، مع سجل حراري كامل.</p>
+<div class="form"><div class="formgrid">
+<div class="field"><label>العنبر</label><select id="hBarn" onchange="loadHospitalAnimals()"></select></div>
+<div class="field"><label>العجل</label><select id="hAnimal"></select></div>
+<div class="field"><label>تاريخ الدخول</label><input id="hEntryDate" type="date"></div>
+<div class="field"><label>الحالة</label><select id="hStatus"><option value="active">تحت العلاج</option><option value="followup">تحت المتابعة</option><option value="recovered">تماثل للشفاء</option><option value="discharged">خرج من المستشفى</option></select></div>
+<div class="field"><label>درجة الحرارة °C</label><input id="hTemp" type="number" step="0.1" placeholder="39.2"></div>
+<div class="field"><label>التشخيص</label><input id="hDiagnosis" placeholder="ارتفاع حرارة / التهاب..."></div>
+<div class="field" style="grid-column:1/-1"><label>العلاج والملاحظات</label><textarea id="hTreatment"></textarea></div>
+</div>
+<button class="btn btn-primary" onclick="saveHospitalCase()">حفظ الحالة</button>
+</div></div>
+
+<div class="card"><h3>الحالات الحالية</h3>
+<table class="table"><thead><tr><th>العجل</th><th>العنبر</th><th>الدخول</th><th>الحالة</th><th>آخر حرارة</th><th>التشخيص</th><th>المتابعة</th></tr></thead>
+<tbody id="hospitalRows"></tbody></table></div>
+
+<div class="card"><h3>تسجيل قياس حرارة</h3>
+<div class="form"><div class="formgrid">
+<div class="field"><label>الحالة</label><select id="hTempCase"></select></div>
+<div class="field"><label>التاريخ والوقت</label><input id="hTempAt" type="datetime-local"></div>
+<div class="field"><label>الحرارة °C</label><input id="hTempValue" type="number" step="0.1"></div>
+<div class="field"><label>ملاحظات</label><input id="hTempNotes"></div>
+</div><button class="btn btn-blue" onclick="saveHospitalTemp()">تسجيل الحرارة</button></div></div>
+</section>
+
+<section id="medications" class="view">
+<div class="card"><h2>💊 الأدوية والمخزون</h2>
+<div class="form"><div class="formgrid">
+<div class="field"><label>كود الدواء</label><input id="medCode" placeholder="MED-001"></div>
+<div class="field"><label>اسم الدواء</label><input id="medName"></div>
+<div class="field"><label>الشكل/الوحدة</label><input id="medUnit" placeholder="زجاجة / عبوة / قرص"></div>
+<div class="field"><label>تركيز الدواء</label><input id="medStrength"></div>
+<div class="field" style="grid-column:1/-1"><label>ملاحظات</label><textarea id="medNotes"></textarea></div>
+</div><button class="btn btn-primary" onclick="saveMedication()">إضافة دواء</button></div></div>
+
+<div class="card"><h3>استلام دفعة دواء</h3>
+<div class="form"><div class="formgrid">
+<div class="field"><label>الدواء</label><select id="medReceiptItem"></select></div>
+<div class="field"><label>رقم التشغيلة Batch/Lot</label><input id="medLot"></div>
+<div class="field"><label>تاريخ الاستلام</label><input id="medReceiptDate" type="date"></div>
+<div class="field"><label>تاريخ الصلاحية</label><input id="medExpiryDate" type="date"></div>
+<div class="field"><label>الكمية</label><input id="medReceiptQty" type="number" min="0" step="0.001"></div>
+<div class="field"><label>سعر الوحدة</label><input id="medUnitCost" type="number" min="0" step="0.01"></div>
+<div class="field"><label>المورد</label><input id="medSupplier"></div>
+</div><button class="btn btn-primary" onclick="receiveMedication()">تسجيل الاستلام</button></div></div>
+
+<div class="card"><h3>مخزون الأدوية حسب الصلاحية</h3>
+<table class="table"><thead><tr><th>الدواء</th><th>التشغيلة</th><th>الاستلام</th><th>الصلاحية</th><th>الكمية</th><th>سعر الوحدة</th><th>الحالة</th></tr></thead>
+<tbody id="medStockRows"></tbody></table></div>
+
+<div class="card"><h3>صرف دواء لحالة بيطرية</h3>
+<div class="form"><div class="formgrid">
+<div class="field"><label>الحالة</label><select id="medIssueCase"></select></div>
+<div class="field"><label>دفعة الدواء</label><select id="medIssueLot"></select></div>
+<div class="field"><label>الكمية</label><input id="medIssueQty" type="number" min="0.001" step="0.001"></div>
+<div class="field"><label>تاريخ الصرف</label><input id="medIssueDate" type="date"></div>
+<div class="field" style="grid-column:1/-1"><label>ملاحظات</label><input id="medIssueNotes"></div>
+</div><button class="btn btn-warn" onclick="issueMedication()">صرف الدواء</button></div></div>
+</section>
+
+<section id="vaccinations" class="view">
+<div class="card"><h2>💉 التحصينات</h2>
+<div class="form"><div class="formgrid">
+<div class="field"><label>العجل</label><select id="vacAnimal"></select></div>
+<div class="field"><label>اسم التحصين</label><input id="vacName" placeholder="الحمى القلاعية"></div>
+<div class="field"><label>الجرعة</label><input id="vacDose"></div>
+<div class="field"><label>تاريخ التحصين</label><input id="vacDate" type="date"></div>
+<div class="field"><label>رقم التشغيلة</label><input id="vacLot"></div>
+<div class="field"><label>موعد الجرعة التالية</label><input id="vacNextDate" type="date"></div>
+<div class="field"><label>المحصل/الطبيب</label><input id="vacBy"></div>
+<div class="field" style="grid-column:1/-1"><label>ملاحظات</label><textarea id="vacNotes"></textarea></div>
+</div><button class="btn btn-primary" onclick="saveVaccination()">تسجيل التحصين</button></div></div>
+
+<div class="card"><h3>سجل التحصينات</h3>
+<table class="table"><thead><tr><th>العجل</th><th>التحصين</th><th>الجرعة</th><th>التاريخ</th><th>التشغيلة</th><th>الجرعة التالية</th><th>المحصل</th></tr></thead>
+<tbody id="vacRows"></tbody></table></div>
 </section>
 
 <section id="settings" class="view">
@@ -790,6 +883,9 @@ async function refreshPage(page){
  if(page==="fleet")loadVehicles();
  if(page==="inventory")Promise.all([loadWarehouses(),loadInventory()]);
  if(page==="warehouses")loadWarehousesPage();
+ if(page==="hospital")Promise.all([loadHospitalLookups(),loadHospital()]);
+ if(page==="medications")Promise.all([loadMedications(),loadHospitalLookups(),loadHospital()]);
+ if(page==="vaccinations")Promise.all([loadHospitalLookups(),loadVaccinations()]);
  if(page==="manufacturing")loadManufacturing();
  if(page==="employees")loadUsers();
  if(page==="settings")loadFarmSettings();
@@ -815,7 +911,7 @@ async function enter(u){
  $("currentUserName").textContent=data.full_name||data.username||u.email;
  $("farmTitle").textContent=(f?.company_name||"")+" — "+(f?.name||"");
  $("setCompany").value=f?.company_name||"";$("setFarm").value=f?.name||"";$("setFcr").value=f?.fcr_limit??7;$("setMort").value=f?.mortality_limit_pct??2;
- $("login").classList.add("hidden");$("app").style.display="flex";setDates();await loadDashboardFilterOptions();await loadDashboard();await refreshDashboardAnalytics();
+ $("login").classList.add("hidden");$("app").style.display="flex";setDates();await loadDashboardFilterOptions();await loadDashboard();await refreshDashboardAnalytics();await loadDashboardHospital();
 }
 async function logout(){await db.auth.signOut();location.reload()}
 async function loadDashboard(){
@@ -825,6 +921,126 @@ async function loadDashboard(){
  $("kAlive").textContent=alive;
  const note=$("dashNote");
  if(note){note.textContent="يتم حساب المؤشرات التفصيلية من الفلاتر أدناه.";note.className="msg ok";}
+}
+
+async function loadHospitalLookups(){
+  const [{data:barns},{data:animals},{data:cases}]=await Promise.all([
+    db.from("barns").select("id,name").eq("farm_id",farmId).eq("active",true).order("name"),
+    db.from("animals").select("id,tag,barn_id,status").eq("farm_id",farmId).in("status",["alive"]).order("tag"),
+    db.from("hospital_cases").select("id,animal_id,entry_date,status,animals(tag,barn_id,barns(name))").eq("farm_id",farmId).in("status",["active","followup"]).order("entry_date",{ascending:false})
+  ]);
+  $("hBarn").innerHTML='<option value="">كل العنابر</option>'+(barns||[]).map(x=>`<option value="${x.id}">${x.name}</option>`).join("");
+  $("hAnimal").innerHTML=(animals||[]).map(x=>`<option value="${x.id}">${x.tag}</option>`).join("");
+  $("vacAnimal").innerHTML=(animals||[]).map(x=>`<option value="${x.id}">${x.tag}</option>`).join("");
+  $("hTempCase").innerHTML=(cases||[]).map(x=>`<option value="${x.id}">${x.animals?.tag||"-"}</option>`).join("");
+  $("medIssueCase").innerHTML=(cases||[]).map(x=>`<option value="${x.id}">${x.animals?.tag||"-"}</option>`).join("");
+}
+async function loadHospitalAnimals(){
+  const barn=$("hBarn").value;
+  let q=db.from("animals").select("id,tag").eq("farm_id",farmId).eq("status","alive").order("tag");
+  if(barn)q=q.eq("barn_id",barn);
+  const {data}=await q;
+  $("hAnimal").innerHTML=(data||[]).map(x=>`<option value="${x.id}">${x.tag}</option>`).join("");
+}
+async function saveHospitalCase(){
+  const animal_id=$("hAnimal").value, entry_date=$("hEntryDate").value||today(), status=$("hStatus").value;
+  if(!animal_id)return toast("اختر العجل");
+  const payload={farm_id:farmId,animal_id,entry_date,status,diagnosis:$("hDiagnosis").value.trim(),treatment_plan:$("hTreatment").value.trim()};
+  const {data,error}=await db.from("hospital_cases").insert(payload).select("id").single();
+  if(error)return toast(error.message);
+  const t=num($("hTemp").value);
+  if(t){
+    const {error:te}=await db.from("hospital_temperature_logs").insert({farm_id:farmId,hospital_case_id:data.id,recorded_at:new Date().toISOString(),temperature_c:t,notes:"درجة الحرارة عند الدخول"});
+    if(te)return toast(te.message);
+  }
+  $("hDiagnosis").value="";$("hTreatment").value="";$("hTemp").value="";
+  await loadHospital();await loadDashboardHospital();
+  toast("تم إدخال العجل للمستشفى");
+}
+async function loadHospital(){
+  const {data,error}=await db.from("hospital_cases").select("id,entry_date,status,diagnosis,treatment_plan,animal_id,animals(tag,barn_id,barns(name)),hospital_temperature_logs(temperature_c,recorded_at)").eq("farm_id",farmId).order("entry_date",{ascending:false});
+  if(error){$("hospitalRows").innerHTML=`<tr><td colspan="7">${error.message}</td></tr>`;return}
+  const rows=data||[];
+  const latestTemp=c=>((c.hospital_temperature_logs||[]).sort((a,b)=>String(b.recorded_at).localeCompare(String(a.recorded_at)))[0]?.temperature_c);
+  $("hospitalRows").innerHTML=rows.map(c=>`<tr><td>${c.animals?.tag||"-"}</td><td>${c.animals?.barns?.name||"-"}</td><td>${c.entry_date}</td><td>${hospitalStatus(c.status)}</td><td>${latestTemp(c)??"-"}</td><td>${c.diagnosis||"-"}</td><td><button class="btn btn-light btn-small" onclick="closeHospitalCase('${c.id}')">${c.status==="discharged"?"مغلق":"إغلاق"}</button></td></tr>`).join("")||'<tr><td colspan="7">لا توجد حالات</td></tr>';
+  $("hTempCase").innerHTML=rows.filter(c=>["active","followup"].includes(c.status)).map(c=>`<option value="${c.id}">${c.animals?.tag||"-"}</option>`).join("");
+  $("medIssueCase").innerHTML=$("hTempCase").innerHTML;
+}
+function hospitalStatus(s){return ({active:"تحت العلاج",followup:"تحت المتابعة",recovered:"تماثل للشفاء",discharged:"خرج"})[s]||s}
+async function closeHospitalCase(id){
+  const {error}=await db.from("hospital_cases").update({status:"discharged",discharge_date:today()}).eq("id",id).eq("farm_id",farmId);
+  if(error)return toast(error.message);await loadHospital();await loadDashboardHospital();toast("تم إغلاق حالة المستشفى");
+}
+async function saveHospitalTemp(){
+  const cid=$("hTempCase").value, at=$("hTempAt").value||new Date().toISOString(), temp=num($("hTempValue").value);
+  if(!cid||!temp)return toast("أدخل الحالة ودرجة الحرارة");
+  const {error}=await db.from("hospital_temperature_logs").insert({farm_id:farmId,hospital_case_id:cid,recorded_at:new Date(at).toISOString(),temperature_c:temp,notes:$("hTempNotes").value.trim()});
+  if(error)return toast(error.message);await loadHospital();await loadDashboardHospital();toast("تم تسجيل الحرارة");
+}
+async function loadDashboardHospital(){
+  const {data:cases}=await db.from("hospital_cases").select("id,status").eq("farm_id",farmId).in("status",["active","followup"]);
+  const caseIds=(cases||[]).map(x=>x.id);
+  let temps=[];
+  if(caseIds.length){
+    const {data}=await db.from("hospital_temperature_logs").select("temperature_c,recorded_at,hospital_case_id").eq("farm_id",farmId).in("hospital_case_id",caseIds).order("recorded_at",{ascending:false});
+    temps=data||[];
+  }
+  const latestBy={};temps.forEach(t=>{if(!latestBy[t.hospital_case_id])latestBy[t.hospital_case_id]=t});
+  const vals=Object.values(latestBy).map(x=>num(x.temperature_c)).filter(x=>x>0);
+  if($("kHospital"))$("kHospital").textContent=(cases||[]).length;
+  if($("kHospitalTemp"))$("kHospitalTemp").textContent=vals.length?avg(vals).toFixed(1)+" °C":"-";
+  if($("kHospitalFollow"))$("kHospitalFollow").textContent=(cases||[]).filter(x=>x.status==="followup").length;
+  const todayStr=today(),soon=new Date(Date.now()+1000*60*60*24*30).toISOString().slice(0,10);
+  const {data:lots}=await db.from("medication_lots").select("id,expiry_date,qty_remaining").eq("farm_id",farmId).gt("qty_remaining",0);
+  const exp=(lots||[]).filter(x=>x.expiry_date<=soon).length;
+  if($("kMedExpiry"))$("kMedExpiry").textContent=exp;
+}
+async function saveMedication(){
+  const code=$("medCode").value.trim(),name=$("medName").value.trim();
+  if(!code||!name)return toast("أدخل كود واسم الدواء");
+  const {error}=await db.from("medications").insert({farm_id:farmId,code,name,unit:$("medUnit").value.trim(),strength:$("medStrength").value.trim(),notes:$("medNotes").value.trim()});
+  if(error)return toast(error.message);
+  $("medCode").value="";$("medName").value="";await loadMedications();toast("تم إضافة الدواء");
+}
+async function loadMedications(){
+  const {data}=await db.from("medications").select("id,code,name,unit,strength,active").eq("farm_id",farmId).eq("active",true).order("name");
+  const opts=(data||[]).map(x=>`<option value="${x.id}">${x.name} — ${x.code}</option>`).join("");
+  $("medReceiptItem").innerHTML=opts;$("medIssueLot").innerHTML="";
+  const {data:lots}=await db.from("medication_lots").select("id,medication_id,lot_no,expiry_date,received_date,qty_received,qty_remaining,unit_cost,supplier_name").eq("farm_id",farmId).order("expiry_date");
+  const todayStr=today(),soon=new Date(Date.now()+1000*60*60*24*30).toISOString().slice(0,10);
+  $("medStockRows").innerHTML=(lots||[]).map(l=>{
+    const status=l.qty_remaining<=0?"نفد":l.expiry_date<todayStr?"منتهي":l.expiry_date<=soon?"قريب الانتهاء":"سليم";
+    return `<tr><td>${(data||[]).find(m=>m.id===l.medication_id)?.name||"-"}</td><td>${l.lot_no||"-"}</td><td>${l.received_date}</td><td>${l.expiry_date}</td><td>${l.qty_remaining}</td><td>${l.unit_cost}</td><td>${status}</td></tr>`;
+  }).join("")||'<tr><td colspan="7">لا توجد دفعات دواء</td></tr>';
+  $("medIssueLot").innerHTML=(lots||[]).filter(l=>num(l.qty_remaining)>0 && l.expiry_date>=todayStr).map(l=>`<option value="${l.id}">${(data||[]).find(m=>m.id===l.medication_id)?.name||"-"} — ${l.lot_no||"-"} — صلاحية ${l.expiry_date} — متبقي ${l.qty_remaining}</option>`).join("");
+}
+async function receiveMedication(){
+  const medication_id=$("medReceiptItem").value, qty=num($("medReceiptQty").value), expiry=$("medExpiryDate").value, receiptDate=$("medReceiptDate").value||today();
+  if(!medication_id||qty<=0||!expiry)return toast("أكمل بيانات الاستلام");
+  const {data,error}=await db.from("medication_lots").insert({farm_id:farmId,medication_id,lot_no:$("medLot").value.trim(),received_date:receiptDate,expiry_date:expiry,qty_received:qty,qty_remaining:qty,unit_cost:num($("medUnitCost").value),supplier_name:$("medSupplier").value.trim(),notes:"استلام دواء"}).select("id").single();
+  if(error)return toast(error.message);
+  const {error:me}=await db.from("medication_movements").insert({farm_id:farmId,medication_lot_id:data.id,movement_type:"receipt",qty,unit_cost:num($("medUnitCost").value),movement_date:receiptDate,notes:"استلام دواء"});
+  if(me)return toast(me.message);
+  await loadMedications();await loadDashboardHospital();toast("تم تسجيل استلام الدواء");
+}
+async function issueMedication(){
+  const lot=$("medIssueLot").value, cid=$("medIssueCase").value, qty=num($("medIssueQty").value), date=$("medIssueDate").value||today();
+  if(!lot||!cid||qty<=0)return toast("أكمل بيانات صرف الدواء");
+  const {error}=await db.rpc("issue_medication_to_hospital_case",{p_lot_id:lot,p_hospital_case_id:cid,p_qty:qty,p_issue_date:date,p_notes:$("medIssueNotes").value.trim()});
+  if(error)return toast(error.message);
+  $("medIssueQty").value="";$("medIssueNotes").value="";await loadMedications();toast("تم صرف الدواء للحالة");
+}
+async function saveVaccination(){
+  const animal_id=$("vacAnimal").value,name=$("vacName").value.trim(),date=$("vacDate").value||today();
+  if(!animal_id||!name)return toast("أدخل العجل واسم التحصين");
+  const {error}=await db.from("vaccinations").insert({farm_id:farmId,animal_id,vaccine_name:name,dose:$("vacDose").value.trim(),vaccination_date:date,lot_no:$("vacLot").value.trim(),next_due_date:$("vacNextDate").value||null,administered_by:$("vacBy").value.trim(),notes:$("vacNotes").value.trim()});
+  if(error)return toast(error.message);
+  $("vacName").value="";$("vacDose").value="";$("vacLot").value="";$("vacNextDate").value="";$("vacBy").value="";$("vacNotes").value="";
+  await loadVaccinations();toast("تم تسجيل التحصين");
+}
+async function loadVaccinations(){
+  const {data,error}=await db.from("vaccinations").select("vaccination_date,vaccine_name,dose,lot_no,next_due_date,administered_by,notes,animals(tag)").eq("farm_id",farmId).order("vaccination_date",{ascending:false}).limit(1000);
+  $("vacRows").innerHTML=error?`<tr><td colspan="7">${error.message}</td></tr>`:(data||[]).map(x=>`<tr><td>${x.animals?.tag||"-"}</td><td>${x.vaccine_name}</td><td>${x.dose||"-"}</td><td>${x.vaccination_date}</td><td>${x.lot_no||"-"}</td><td>${x.next_due_date||"-"}</td><td>${x.administered_by||"-"}</td></tr>`).join("")||'<tr><td colspan="7">لا توجد تحصينات</td></tr>';
 }
 async function loadBoats(){
  const {data,error}=await db.from("boats").select("id,name,arrival_date").eq("farm_id",farmId).order("arrival_date",{ascending:false});
