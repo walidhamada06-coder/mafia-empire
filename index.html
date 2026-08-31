@@ -259,7 +259,9 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 <div class="kpi"><div class="kpi-icon" style="background:#16a085"><i class="fa-solid fa-check"></i></div><div><small>الرصيد الحي</small><b id="kAlive">0</b></div></div>
 <div class="kpi"><div class="kpi-icon" style="background:#2980b9"><i class="fa-solid fa-scale-balanced"></i></div><div><small>متوسط الوزن الحالي</small><b id="kAvgWeight">-</b></div></div>
 <div class="kpi"><div class="kpi-icon" style="background:#27ae60"><i class="fa-solid fa-arrow-trend-up"></i></div><div><small>ADG متوسط</small><b id="kAdg">-</b></div></div>
-<div class="kpi"><div class="kpi-icon" style="background:#8e44ad"><i class="fa-solid fa-chart-line"></i></div><div><small>FCR</small><b id="kFcr">-</b></div></div>
+<div class="kpi"><div class="kpi-icon" style="background:#8e44ad"><i class="fa-solid fa-chart-line"></i></div><div><small>FCR As-Fed</small><b id="kFcr">-</b></div></div>
+<div class="kpi"><div class="kpi-icon" style="background:#6c5ce7"><i class="fa-solid fa-scale-balanced"></i></div><div><small>FCR DMI</small><b id="kFcrDmi">-</b></div></div>
+<div class="kpi"><div class="kpi-icon" style="background:#00a884"><i class="fa-solid fa-bowl-food"></i></div><div><small>DMI / رأس / يوم</small><b id="kDmiHeadDay">-</b></div></div>
 <div class="kpi"><div class="kpi-icon" style="background:#f39c12"><i class="fa-solid fa-wheat-awn"></i></div><div><small>العلف المصروف كجم</small><b id="kFeed">0</b></div></div>
 <div class="kpi"><div class="kpi-icon" style="background:#c0392b"><i class="fa-solid fa-skull"></i></div><div><small>النفوق %</small><b id="kMortality">0%</b></div></div>
 <div class="kpi"><div class="kpi-icon" style="background:#34495e"><i class="fa-solid fa-weight-hanging"></i></div><div><small>إجمالي الزيادة الحية كجم</small><b id="kGain">0</b></div></div>
@@ -1216,16 +1218,44 @@ async function buildGroupAnalytics(filters){
  if(!shipmentIds.length)
    return {groups:[],heads:[],feedMoves:[],deaths:[],statusCounts:{alive:0,sold:0,dead:0}};
 
- const [{data:bw},{data:deathRows},{data:feedIssues},{data:feedLines}]=await Promise.all([
-   db.from("batch_weights").select("shipment_id,total_weight_kg,head_count,average_weight_kg,weight_date")
+ const [{data:bw},{data:deathRows},{data:feedIssues}]=await Promise.all([
+   db.from("batch_weights")
+     .select("shipment_id,total_weight_kg,head_count,average_weight_kg,weight_date")
      .eq("farm_id",farmId).in("shipment_id",shipmentIds).order("weight_date"),
-   db.from("animal_deaths").select("animal_id,death_date,animals(shipment_id)")
+   db.from("animal_deaths")
+     .select("animal_id,death_date,animals(shipment_id)")
      .eq("farm_id",farmId).in("animals.shipment_id",shipmentIds),
-   db.from("feed_issues").select("id,shipment_id,barn_id,issue_date,total_qty_kg,average_protein_pct")
-     .eq("farm_id",farmId).in("shipment_id",shipmentIds),
-   db.from("feed_issue_lines").select("feed_issue_id,stock_id,qty_kg,protein_pct,unit_cost")
-     .in("feed_issue_id",(await db.from("feed_issues").select("id").eq("farm_id",farmId).in("shipment_id",shipmentIds)).data?.map(x=>x.id)||[])
+   db.from("feed_issues")
+     .select("id,shipment_id,barn_id,issue_date,total_qty_kg,average_protein_pct")
+     .eq("farm_id",farmId).in("shipment_id",shipmentIds)
  ]);
+
+ const issueIds=(feedIssues||[]).map(x=>x.id);
+ let feedLines=[];
+ if(issueIds.length){
+   const {data}=await db.from("feed_issue_lines")
+     .select("feed_issue_id,stock_id,qty_kg,protein_pct,unit_cost")
+     .in("feed_issue_id",issueIds);
+   feedLines=data||[];
+ }
+
+ // Sold weights are part of cohort output when available.
+ let saleRows=[];
+ {
+   const {data}=await db.from("sale_animals")
+     .select("sale_id,animal_id,sold_weight_kg,sales(farm_id,sale_date),animals(shipment_id)")
+     .eq("animals.shipment_id",shipmentIds);
+   saleRows=data||[];
+ }
+
+ // Death weights are optional in the schema; use whichever conventional weight field exists.
+ let deathWeightByShipment={};
+ (deathRows||[]).forEach(d=>{
+   const a=d||{};
+   const w=num(a.weight_kg??a.death_weight_kg??a.body_weight_kg??a.current_weight_kg??0);
+   const sid=a.animals?.shipment_id;
+   if(sid) deathWeightByShipment[sid]=(deathWeightByShipment[sid]||0)+Math.max(0,w);
+ });
 
  const inRange=d=>!d||((!filters.from||d>=filters.from)&&(!filters.to||d<=filters.to));
  const deaths=(deathRows||[]).filter(d=>inRange(d.death_date));
@@ -1237,18 +1267,26 @@ async function buildGroupAnalytics(filters){
    statusCounts[status]=count||0;
  }));
 
- // Load feed item DM% once. These are editable reference values used only for DMI/FCR.
- const feedStockIds=[...new Set((feedLines||[]).map(x=>x.stock_id).filter(Boolean))];
+ // Reference dry matter by stock id; fall back gracefully when the DM column is unavailable.
+ const feedStockIds=[...new Set(feedLines.map(x=>x.stock_id).filter(Boolean))];
  let dmByStock={};
  if(feedStockIds.length){
-   const {data:stocks}=await db.from("stock").select("id,feed_item_id").in("id",feedStockIds);
-   const itemIds=[...new Set((stocks||[]).map(x=>x.feed_item_id).filter(Boolean))];
+   const {data:stocks}=await db.from("stock").select("id,feed_item_id,name").in("id",feedStockIds);
+   const stocksList=stocks||[];
+   const itemIds=[...new Set(stocksList.map(x=>x.feed_item_id).filter(Boolean))];
+   let items=[];
    if(itemIds.length){
-     const {data:items}=await db.from("feed_items").select("id,name,dry_matter_pct").in("id",itemIds);
-     const itemDM={};
-     (items||[]).forEach(x=>itemDM[x.id]=num(x.dry_matter_pct)||defaultDryMatter(x.name));
-     (stocks||[]).forEach(s=>dmByStock[s.id]=itemDM[s.feed_item_id]||90);
+     const q=await db.from("feed_items").select("id,name,dry_matter_pct").in("id",itemIds);
+     if(q.error){
+       const fallback=await db.from("feed_items").select("id,name").in("id",itemIds);
+       items=fallback.data||[];
+     }else{
+       items=q.data||[];
+     }
    }
+   const itemDM={};
+   items.forEach(x=>itemDM[x.id]=num(x.dry_matter_pct)||defaultDryMatter(x.name));
+   stocksList.forEach(x=>dmByStock[x.id]=itemDM[x.feed_item_id]||defaultDryMatter(x.name)||90);
  }
 
  const groups=scoped.map(s=>{
@@ -1265,8 +1303,9 @@ async function buildGroupAnalytics(filters){
    }
 
    const last=weights.length?weights[weights.length-1]:null;
-   let firstW=0,lastW=0,days=0,gain=0,adg=null;
+   const currentLiveWeight=last?num(last.total_weight_kg):(last?num(last.average_weight_kg)*num(last.head_count):0);
 
+   let firstW=0,lastW=0,days=0,gain=0,adg=null;
    if(last){
      firstW=baselineW;
      lastW=num(last.average_weight_kg);
@@ -1276,30 +1315,42 @@ async function buildGroupAnalytics(filters){
    }
 
    const groupIssues=(feedIssues||[]).filter(f=>f.shipment_id===s.id&&inRange(f.issue_date));
-   const issueIds=new Set(groupIssues.map(f=>f.id));
-   const groupLines=(feedLines||[]).filter(l=>issueIds.has(l.feed_issue_id));
+   const issueIdsSet=new Set(groupIssues.map(f=>f.id));
+   const groupLines=feedLines.filter(l=>issueIdsSet.has(l.feed_issue_id));
+   const asFed=groupLines.length
+     ?groupLines.reduce((z,l)=>z+num(l.qty_kg),0)
+     :groupIssues.reduce((z,f)=>z+num(f.total_qty_kg),0);
+   const dmi=groupLines.length
+     ?groupLines.reduce((z,l)=>z+num(l.qty_kg)*(num(dmByStock[l.stock_id])||90)/100,0)
+     :asFed*0.90;
 
-   let asFed=groupLines.reduce((z,l)=>z+num(l.qty_kg),0);
-   let dmi=groupLines.reduce((z,l)=>z+num(l.qty_kg)*(num(dmByStock[l.stock_id])||90)/100,0);
+   const soldForGroup=(saleRows||[]).filter(x=>x.animals?.shipment_id===s.id && (!x.sales?.sale_date||inRange(x.sales.sale_date)));
+   const soldWeight=soldForGroup.reduce((z,x)=>z+Math.max(0,num(x.sold_weight_kg)),0);
+   const deadWeight=deathWeightByShipment[s.id]||0;
 
-   // Fallback to issue total if line rows are not returned, retaining previous behavior.
-   if(!groupLines.length) asFed=groupIssues.reduce((z,f)=>z+num(f.total_qty_kg),0);
-   if(!groupLines.length) dmi=asFed*0.90;
+   const initialTotal=num(s.total_initial_weight_kg);
+   // Cohort output weight: current live + recorded sold weights + recorded death weights.
+   // If a death weight is unavailable, we do not invent one.
+   const knownOutputWeight=(last?num(last.total_weight_kg):0)+soldWeight+deadWeight;
+   const cohortGain=Math.max(0,knownOutputWeight-initialTotal);
 
-   const groupDeaths=deaths.filter(d=>d.animals?.shipment_id===s.id).length;
+   const fcrAsFed=(cohortGain>0&&asFed>0)?asFed/cohortGain:null;
+   const fcrDmi=(cohortGain>0&&dmi>0)?dmi/cohortGain:null;
+
    const headCount=num(s.head_count);
-   const totalGainKg=Math.max(0,gain*headCount);
-   const fcrAsFed=(totalGainKg>0&&asFed>0)?asFed/totalGainKg:null;
-   const fcrDmi=(totalGainKg>0&&dmi>0)?dmi/totalGainKg:null;
-   const mort=headCount?groupDeaths/headCount*100:0;
+   const mort=headCount?deaths.filter(d=>d.animals?.shipment_id===s.id).length/headCount*100:0;
    const dmiPerHeadDay=(headCount>0&&days>0)?dmi/(headCount*days):null;
 
    return {
      id:s.id,code:s.code,boat:s.boats?.name||"-",count:headCount,
-     firstW,lastW,gain,days,adg,feed:asFed,dmi,fcr:fcrAsFed,fcrDmi,
-     dmiPerHeadDay,mortality:mort,totalGainKg,initialAvg:baselineW,initialDate:baselineDate
+     firstW,lastW,gain,days,adg,
+     feed:asFed,dmi,fcr:fcrAsFed,fcrDmi,dmiPerHeadDay,
+     mortality:mort,totalGainKg:cohortGain,initialAvg:baselineW,initialDate:baselineDate,
+     currentLiveWeight:knownOutputWeight>0?num(last?.total_weight_kg):0,
+     soldWeight,deadWeight,cohortGain
    };
  });
+
  return {groups,heads:[],feedMoves:[],deaths,statusCounts};
 }
 function defaultDryMatter(name){
@@ -1339,20 +1390,26 @@ async function refreshDashboardAnalytics(){
  const f=selectedFilters("dash");
  const {groups,statusCounts}=await buildGroupAnalytics(f);
  const alive=statusCounts.alive,sold=statusCounts.sold,dead=statusCounts.dead;
+
  const totalHeads=groups.reduce((s,g)=>s+g.count,0);
- const totalGain=groups.reduce((s,g)=>s+Math.max(0,num(g.totalGainKg)),0);
  const totalFeed=groups.reduce((s,g)=>s+num(g.feed),0);
  const totalDmi=groups.reduce((s,g)=>s+num(g.dmi),0);
+ const totalGain=groups.reduce((s,g)=>s+num(g.cohortGain),0);
 
  const validA=groups.filter(g=>g.adg!==null);
- const weightedAdg=validA.length?validA.reduce((s,g)=>s+g.adg*g.count,0)/validA.reduce((s,g)=>s+g.count,0):null;
+ const weightedAdg=validA.length
+   ?validA.reduce((s,g)=>s+g.adg*g.count,0)/validA.reduce((s,g)=>s+g.count,0)
+   :null;
+
  const overallFcr=totalGain>0&&totalFeed>0?totalFeed/totalGain:null;
  const overallFcrDmi=totalGain>0&&totalDmi>0?totalDmi/totalGain:null;
- const totalDays=groups.reduce((s,g)=>s+(g.days>0?g.days*g.count:0),0);
- const dmiHeadDay=(totalHeads>0&&totalDays>0)?totalDmi/totalDays:null;
 
- const currentWeights=groups.filter(g=>g.lastW>0);
- const avgCurrent=currentWeights.length?currentWeights.reduce((s,g)=>s+g.lastW*g.count,0)/Math.max(1,currentWeights.reduce((s,g)=>s+g.count,0)):null;
+ const totalPersonDays=groups.reduce((s,g)=>s+(g.days>0?g.days*g.count:0),0);
+ const dmiHeadDay=(totalPersonDays>0)?totalDmi/totalPersonDays:null;
+
+ const currentWeightSum=groups.reduce((s,g)=>s+(g.lastW>0?g.lastW*g.count:0),0);
+ const currentHeadSum=groups.reduce((s,g)=>s+(g.lastW>0?g.count:0),0);
+ const avgCurrent=currentHeadSum?currentWeightSum/currentHeadSum:null;
 
  $("kTotal").textContent=totalHeads||0;
  $("kAlive").textContent=alive||0;
@@ -1365,7 +1422,9 @@ async function refreshDashboardAnalytics(){
  $("kMortality").textContent=(totalHeads?((dead/totalHeads)*100):0).toFixed(2)+"%";
  $("kGain").textContent=totalGain.toFixed(0);
  $("dashNote").className="msg ok";
- $("dashNote").textContent=(f.shipment!=="all"?"تحليل مجموعة محددة":"تحليل المزرعة")+(f.boat!=="all"?" — مركب محدد":"")+"؛ ADG من وزن الاستلام حتى آخر وزن فعلي. FCR As-Fed وFCR DMI معروضين منفصلين.";
+ $("dashNote").textContent=(f.shipment!=="all"?"تحليل مجموعة محددة":"تحليل المزرعة")+
+   (f.boat!=="all"?" — مركب محدد":"")+
+   "؛ ADG من وزن الاستلام حتى آخر وزن فعلي. FCR As-Fed وFCR DMI مبنيان على زيادة الكتلة الحيوية المعروفة (حي + مباع + نافق بوزن مسجل).";
  drawDashboardCharts(groups,alive,sold,dead);renderDashGroups(groups);
 }
 function resetDashboardFilters(){["dashBoat","dashShipment"].forEach(id=>{$(id).value="all"});["dashFrom","dashTo"].forEach(id=>$(id).value="");refreshDashboardAnalytics()}
@@ -1376,29 +1435,26 @@ async function refreshAdvancedAnalytics(){
  const fl=num($("anFcrLimit").value)||7, ml=num($("anMortLimit").value)||2;
 
  const totalHeads=groups.reduce((s,g)=>s+g.count,0);
- const totalGain=groups.reduce((s,g)=>s+Math.max(0,num(g.totalGainKg)),0);
  const totalFeed=groups.reduce((s,g)=>s+num(g.feed),0);
+ const totalDmi=groups.reduce((s,g)=>s+num(g.dmi),0);
+ const totalGain=groups.reduce((s,g)=>s+num(g.cohortGain),0);
+
  const validA=groups.filter(g=>g.adg!==null);
- const weightedAdg=validA.length
-   ? validA.reduce((s,g)=>s+g.adg*g.count,0)/validA.reduce((s,g)=>s+g.count,0)
-   : null;
+ const weightedAdg=validA.length?validA.reduce((s,g)=>s+g.adg*g.count,0)/validA.reduce((s,g)=>s+g.count,0):null;
  const overallFcr=totalGain>0&&totalFeed>0?totalFeed/totalGain:null;
+ const overallFcrDmi=totalGain>0&&totalDmi>0?totalDmi/totalGain:null;
 
  $("aAdg").textContent=weightedAdg===null?"-":weightedAdg.toFixed(3);
  $("aFcr").textContent=overallFcr===null?"-":overallFcr.toFixed(2);
  $("aFeed").textContent=totalFeed.toLocaleString();
  $("aGain").textContent=totalGain.toFixed(0);
  $("aMortality").textContent=(totalHeads?((statusCounts.dead/totalHeads)*100):0).toFixed(2)+"%";
- $("aFeedCost").textContent="-";
+ $("aFeedCost").textContent=overallFcrDmi===null?"-":overallFcrDmi.toFixed(2)+" DMI";
 
- const alerts=groups.some(g=>(g.fcr!==null&&g.fcr>fl)||g.mortality>ml);
+ const alerts=groups.some(g=>(g.fcrDmi!==null&&g.fcrDmi>fl)||g.mortality>ml);
  $("anAlert").className=alerts?"msg err":"msg ok";
- $("anAlert").textContent=alerts
-   ?"يوجد مجموعات تحتاج متابعة حسب حدود FCR أو النفوق المحددة."
-   :"الأداء داخل الحدود المحددة.";
-
- drawAdvancedCharts(groups);
- renderAdvancedGroups(groups);
+ $("anAlert").textContent=alerts?"يوجد مجموعات تحتاج متابعة حسب FCR DMI أو النفوق المحدد.":"الأداء داخل الحدود المحددة.";
+ drawAdvancedCharts(groups);renderAdvancedGroups(groups);
 }
 function resetAnalyticsFilters(){["anBoat","anBatch"].forEach(id=>{$(id).value="all"});["anFrom","anTo"].forEach(id=>$(id).value="");refreshAdvancedAnalytics()}
 
