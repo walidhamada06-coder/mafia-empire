@@ -1833,8 +1833,18 @@ async function refreshDashboardAnalytics(){
  const {groups,statusCounts}=await buildGroupAnalytics(f);
  const alive=statusCounts.alive,sold=statusCounts.sold,dead=statusCounts.dead;
 
+ let farmFeedTotal=0;
+ {
+   let q=db.from("feed_issues").select("total_qty_kg,issue_date,shipment_id").eq("farm_id",farmId);
+   if(f.from) q=q.gte("issue_date",f.from);
+   if(f.to) q=q.lte("issue_date",f.to);
+   if(f.shipment!=="all") q=q.eq("shipment_id",f.shipment);
+   const {data}=await q;
+   farmFeedTotal=(data||[]).reduce((s,r)=>s+num(r.total_qty_kg),0);
+ }
+
  const totalHeads=groups.reduce((s,g)=>s+g.count,0);
- const totalFeed=groups.reduce((s,g)=>s+num(g.feed),0);
+ const totalFeed=farmFeedTotal;
  const totalDmi=groups.reduce((s,g)=>s+num(g.dmi),0);
  const totalGain=groups.reduce((s,g)=>s+num(g.cohortGain),0);
 
@@ -1876,8 +1886,18 @@ async function refreshAdvancedAnalytics(){
  const {groups,statusCounts}=await buildGroupAnalytics(f);
  const fl=num($("anFcrLimit").value)||7, ml=num($("anMortLimit").value)||2;
 
+ let farmFeedTotal=0;
+ {
+   let q=db.from("feed_issues").select("total_qty_kg,issue_date,shipment_id").eq("farm_id",farmId);
+   if(f.from) q=q.gte("issue_date",f.from);
+   if(f.to) q=q.lte("issue_date",f.to);
+   if(f.shipment!=="all") q=q.eq("shipment_id",f.shipment);
+   const {data}=await q;
+   farmFeedTotal=(data||[]).reduce((s,r)=>s+num(r.total_qty_kg),0);
+ }
+
  const totalHeads=groups.reduce((s,g)=>s+g.count,0);
- const totalFeed=groups.reduce((s,g)=>s+num(g.feed),0);
+ const totalFeed=farmFeedTotal;
  const totalDmi=groups.reduce((s,g)=>s+num(g.dmi),0);
  const totalGain=groups.reduce((s,g)=>s+num(g.cohortGain),0);
 
