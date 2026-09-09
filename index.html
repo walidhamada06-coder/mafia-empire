@@ -1326,11 +1326,46 @@ async function addWarehouse(){
  $("whCode").value="";$("whName").value="";$("whNotes").value="";
  await loadWarehousesPage(); await loadWarehouses(); toast("تم إنشاء المستودع");
 }
-async function loadStockOptions(){const {data}=await db.from("v_inventory_status").select("id,warehouse_id,name,qty_kg,protein_pct,cost_per_kg").eq("farm_id",farmId);const o=(data||[]).map(x=>`<option value="${x.id}" data-wh="${x.warehouse_id}">${x.name} — ${x.qty_kg} كجم</option>`).join("");["bfStock","fStock"].forEach(id=>{if($(id))$(id).innerHTML='<option value="">اختر الصنف</option>'+o})}
+async function loadStockOptions(){
+  const {data,error}=await db.from("v_inventory_status")
+    .select("*")
+    .eq("farm_id",farmId)
+    .order("item_name");
+  if(error){
+    const msg="تعذر تحميل أصناف المخزون: "+error.message;
+    ["bfStock","fStock"].forEach(id=>{if($(id))$(id).innerHTML='<option value="">'+msg+'</option>'});
+    console.error(error);
+    return;
+  }
+  const rows=data||[];
+  const o=rows.map(x=>{
+    const name=x.item_name||x.stock_name||x.name||x.feed_item_name||"-";
+    const qty=x.qty_kg??x.quantity_kg??0;
+    return `<option value="${x.id}" data-wh="${x.warehouse_id||""}">${name} — ${num(qty).toLocaleString()} كجم</option>`;
+  }).join("");
+  ["bfStock","fStock"].forEach(id=>{
+    if($(id))$(id).innerHTML='<option value="">اختر الصنف</option>'+o;
+  });
+
+  // ربط اختيار المخزن بالأصناف الخاصة به فقط
+  [["bfWarehouse","bfStock"],["fWarehouse","fStock"]].forEach(([whId,stockId])=>{
+    const wh=$(whId), sel=$(stockId);
+    if(!wh||!sel||wh.dataset.stockFilterBound==="1")return;
+    wh.dataset.stockFilterBound="1";
+    wh.addEventListener("change",()=>{
+      [...sel.options].forEach(op=>{
+        if(!op.value)return;
+        op.hidden=!!wh.value && op.dataset.wh!==wh.value;
+      });
+      if(sel.selectedOptions[0]?.hidden)sel.value="";
+    });
+  });
+}
 async function issueGroupFeed(){await issueStock("bfWarehouse","bfStock","bfQty","bfBarn","bfShipment","bfDate","bfMsg","group")}
 async function issueIndividualFeed(){await issueStock("fWarehouse","fStock","fQty","fBarn",null,"fDate","fMsg","barn")}
 async function issueStock(whId,stockId,qtyId,barnId,shipId,dateId,msgId,type){
  const warehouse=$(whId).value,stock=$(stockId).value,qty=num($(qtyId).value),date=$(dateId).value||today();if(!warehouse||!stock||!qty)return message(msgId,"أكمل بيانات الصرف.",true);
+ const selected=$(stockId).selectedOptions[0]; if(selected?.dataset?.wh && selected.dataset.wh!==warehouse)return message(msgId,"الصنف المختار لا يتبع المخزن المحدد.",true);
  const {data,error}=await db.rpc("issue_stock",{p_stock_id:stock,p_warehouse_id:warehouse,p_qty_kg:qty,p_reference_type:"feed_issue",p_movement_date:date,p_notes:$(barnId).value?("إلى: "+$(barnId).selectedOptions[0].text):null});
  if(error)return message(msgId,error.message,true);message(msgId,"تم الصرف وتحديث الرصيد. رقم الحركة: "+data);await loadInventory();
 }
