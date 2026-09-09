@@ -352,10 +352,14 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 
 <section id="batchFeed" class="view">
 <div class="card"><h2>صرف علف للمجموعات</h2><div class="form"><div class="formgrid"><div class="field"><label>المخزن</label><select id="bfWarehouse"></select></div><div class="field"><label>الصنف</label><select id="bfStock"></select></div><div class="field"><label>الكمية كجم</label><input id="bfQty" type="number"></div><div class="field"><label>المجموعة / الشحنة</label><select id="bfShipment"></select></div><div class="field"><label>العنبر</label><select id="bfBarn"></select></div><div class="field"><label>التاريخ</label><input id="bfDate" type="date"></div></div><button class="btn btn-primary" onclick="issueGroupFeed()">حفظ إذن الصرف</button><div id="bfMsg"></div></div></div>
+<div class="card"><h2>سجل أذونات صرف المجموعات</h2><div style="overflow:auto"><table class="table"><thead><tr><th>الإذن</th><th>التاريخ</th><th>المجموعة</th><th>العنبر</th><th>الكمية</th><th>الصنف</th><th>فتح</th></tr></thead><tbody id="batchFeedHistoryRows"></tbody></table></div></div>
 </section>
 
 <section id="feed" class="view">
-<div class="card"><h2>صرف العلف للأفراد</h2><div class="form"><div class="formgrid"><div class="field"><label>المخزن</label><select id="fWarehouse"></select></div><div class="field"><label>الصنف</label><select id="fStock"></select></div><div class="field"><label>الكمية الإجمالية</label><input id="fQty" type="number"></div><div class="field"><label>العنبر</label><select id="fBarn"></select></div><div class="field"><label>التاريخ</label><input id="fDate" type="date"></div></div><p class="muted" style="margin:8px 0">يتم خصم الصرف فعليًا من المخزون وتسجيل حركة صرف على السيرفر. التوزيع الفردي التفصيلي على كل رأس سنفعّله في الوظيفة التالية.</p><button class="btn btn-primary" onclick="issueIndividualFeed()">حفظ الصرف</button><div id="fMsg"></div></div></div>
+<div class="card"><h2>صرف العلف للأفراد</h2><div class="form"><div class="formgrid"><div class="field"><label>المخزن</label><select id="fWarehouse"></select></div><div class="field"><label>الصنف</label><select id="fStock"></select></div><div class="field"><label>الكمية الإجمالية</label><input id="fQty" type="number"></div><div class="field"><label>العنبر</label><select id="fBarn"></select></div><div class="field"><label>التاريخ</label><input id="fDate" type="date"></div></div><p class="muted" style="margin:8px 0">يتم خصم الصرف فعليًا من المخزون وتسجيله كإذن صرف. التوزيع الفردي التفصيلي على كل رأس يمكن إضافته لاحقًا.</p><button class="btn btn-primary" onclick="issueIndividualFeed()">حفظ إذن الصرف</button><div id="fMsg"></div></div></div>
+<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><h2 style="margin:0">سجل صرف العلف اليومي</h2><div class="muted">كل إذن صرف يظهر هنا ويمكن فتحه لعرض التفاصيل والكمية والصنف والتاريخ.</div></div><button class="btn" onclick="loadFeedIssueRegister()">تحديث السجل</button></div>
+<div class="form" style="margin-top:12px"><div class="formgrid"><div class="field"><label>من تاريخ</label><input id="feedRegFrom" type="date"></div><div class="field"><label>إلى تاريخ</label><input id="feedRegTo" type="date"></div></div><button class="btn" onclick="loadFeedIssueRegister()">بحث</button></div>
+<div style="overflow:auto;margin-top:12px"><table class="table"><thead><tr><th>إذن الصرف</th><th>التاريخ</th><th>النوع</th><th>الصنف</th><th>الكمية كجم</th><th>المجموعة</th><th>العنبر</th><th>التفاصيل</th></tr></thead><tbody id="feedIssueRegisterRows"></tbody></table></div></div>
 </section>
 
 <section id="batchWeights" class="view">
@@ -1196,7 +1200,7 @@ function openInvoicePrintWindow(title,inv,isPurchase){
  let bodyRows=isPurchase?rows.map(x=>`<tr><td>${x.description||"-"}</td><td>${x.qty||0}</td><td>${num(x.unit_cost).toLocaleString()}</td><td>${num(x.total_amount).toLocaleString()}</td></tr>`).join(""):rows.map(x=>`<tr><td>${x.animals?.tag||"-"}</td><td>${x.sold_weight_kg||0}</td><td>${num(x.price_per_kg).toLocaleString()}</td><td>${num(x.amount).toLocaleString()}</td></tr>`).join("");
  const htmlPrint=`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>${title}</title><style>
  body{font-family:Segoe UI,Tahoma,Arial;padding:25px;color:#263746}h1{text-align:center}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{border:1px solid #ddd;padding:10px}th{background:#263746;color:#fff}.total{text-align:left;font-size:18px;font-weight:800;margin-top:20px}@media print{@page{size:A4;margin:12mm}}
- </style></head><body><h1>${title}</h1><div>رقم الفاتورة: ${inv.invoice_no}</div><div>التاريخ: ${inv.invoice_date||inv.sale_date}</div>${supplierOrCustomer?`<div>الطرف: ${supplierOrCustomer}</div>`:""}<table><thead><tr>${isPurchase?"<th>الصنف</th>":"<th>العجل</th>"}<th>الكمية/الوزن</th><th>السعر</th><th>الإجمالي</th></tr></thead><tbody>${bodyRows}</tbody></table><div class="total">الإجمالي: ${num(inv.total_amount).toLocaleString()}</div><script>window.onload=()=>setTimeout(()=>window.print(),300)<\/script></body></html>`;
+ </style></head><body><h1>${title}</h1><div>رقم الفاتورة: ${inv.invoice_no}</div><div>التاريخ: ${inv.invoice_date||inv.sale_date}</div>${supplierOrCustomer?`<div>الطرف: ${supplierOrCustomer}</div>`:""}<table><thead><tr>${isPurchase?"<th>الصنف</th>":"<th>العجل</th>"}<th>الكمية/الوزن</th><th>السعر</th><th>الإجمالي</th></tr></thead><tbody>${bodyRows}</tbody></table><div class="total">الإجمالي: ${num(inv.total_amount).toLocaleString()}</div><script>window.onload=()=>setTimeout(()=>window.print(),300)<\/script><script>document.addEventListener("DOMContentLoaded",()=>{setTimeout(()=>{if(typeof loadFeedIssueRegister==="function")loadFeedIssueRegister()},1200)});</script></body></html>`;
  const w=window.open("","_blank","width=900,height=700");if(!w)return toast("اسمح بالنوافذ المنبثقة");w.document.write(htmlPrint);w.document.close();
 }
 
@@ -1340,7 +1344,7 @@ async function loadStockOptions(){
   const o=rows.map(x=>{
     const name=x.item_name||x.stock_name||x.name||x.feed_item_name||"-";
     const qty=x.qty_kg??x.quantity_kg??0;
-    return `<option value="${x.id}" data-wh="${x.warehouse_id||""}">${name} — ${num(qty).toLocaleString()} كجم</option>`;
+    return `<option value="${x.id}" data-wh="${x.warehouse_id||""}" data-cost="${x.cost_per_kg||x.unit_cost||0}" data-protein="${x.protein_pct||0}">${name} — ${num(qty).toLocaleString()} كجم</option>`;
   }).join("");
   ["bfStock","fStock"].forEach(id=>{
     if($(id))$(id).innerHTML='<option value="">اختر الصنف</option>'+o;
@@ -1361,12 +1365,59 @@ async function loadStockOptions(){
   });
 }
 async function issueGroupFeed(){const w=$("bfWarehouse").value,s=$("bfStock").value,q=num($("bfQty").value),b=$("bfBarn").value||null,sh=$("bfShipment").value||null,d=$("bfDate").value||today();if(!w||!s||q<=0)return message("bfMsg","أكمل بيانات الصرف.",true);const {data,error}=await db.rpc("create_group_feed_issue",{p_warehouse_id:w,p_stock_id:s,p_shipment_id:sh,p_barn_id:b,p_qty_kg:q,p_issue_date:d,p_created_by:user.id});if(error)return message("bfMsg",error.message,true);message("bfMsg","تم الصرف وتسجيل إذن المجموعة رقم "+data);$("bfQty").value="";await Promise.all([loadInventory(),refreshDashboardAnalytics(),loadDashboard()])}
-async function issueIndividualFeed(){await issueStock("fWarehouse","fStock","fQty","fBarn",null,"fDate","fMsg","barn")}
+async function issueIndividualFeed(){
+ const wh=$("fWarehouse").value, stock=$("fStock").value, qty=num($("fQty").value), date=$("fDate").value||today(), barn=$("fBarn").value||null;
+ if(!wh||!stock||qty<=0)return message("fMsg","أكمل بيانات الصرف.",true);
+ const selected=$("fStock").selectedOptions[0]; if(selected?.dataset?.wh && selected.dataset.wh!==wh)return message("fMsg","الصنف المختار لا يتبع المخزن المحدد.",true);
+ const {data,error}=await db.rpc("issue_stock",{p_stock_id:stock,p_warehouse_id:wh,p_qty_kg:qty,p_reference_type:"feed_issue",p_movement_date:date,p_notes:barn?("إلى: "+$("fBarn").selectedOptions[0].text):null});
+ if(error)return message("fMsg",error.message,true);
+ const issueNo="FEED-"+date.replaceAll("-","")+"-"+Date.now().toString().slice(-6);
+ const {data:issue,error:issueErr}=await db.from("feed_issues").insert({farm_id:farmId,issue_no:issueNo,issue_date:date,issue_type:"barn",barn_id:barn,total_qty_kg:qty,created_by:user.id}).select("id").single();
+ if(issueErr)return message("fMsg","تم خصم المخزون لكن تعذر إنشاء سجل إذن الصرف: "+issueErr.message,true);
+ const unitCost=num(selected?.dataset?.cost||0);
+ const {error:lineErr}=await db.from("feed_issue_lines").insert({feed_issue_id:issue.id,stock_id:stock,qty_kg:qty,protein_pct:num(selected?.dataset?.protein||0),unit_cost:unitCost});
+ if(lineErr)return message("fMsg","تم إنشاء الإذن لكن تعذر حفظ بند الصرف: "+lineErr.message,true);
+ message("fMsg","تم إنشاء إذن الصرف رقم "+issueNo); $("fQty").value=""; await Promise.all([loadInventory(),refreshDashboardAnalytics(),loadDashboard(),loadFeedIssueRegister()]);
+}
 async function issueStock(whId,stockId,qtyId,barnId,shipId,dateId,msgId,type){
  const warehouse=$(whId).value,stock=$(stockId).value,qty=num($(qtyId).value),date=$(dateId).value||today();if(!warehouse||!stock||!qty)return message(msgId,"أكمل بيانات الصرف.",true);
  const selected=$(stockId).selectedOptions[0]; if(selected?.dataset?.wh && selected.dataset.wh!==warehouse)return message(msgId,"الصنف المختار لا يتبع المخزن المحدد.",true);
  const {data,error}=await db.rpc("issue_stock",{p_stock_id:stock,p_warehouse_id:warehouse,p_qty_kg:qty,p_reference_type:"feed_issue",p_movement_date:date,p_notes:$(barnId).value?("إلى: "+$(barnId).selectedOptions[0].text):null});
  if(error)return message(msgId,error.message,true);message(msgId,"تم الصرف وتحديث الرصيد. رقم الحركة: "+data);await loadInventory();
+}
+async function loadFeedIssueRegister(){
+ const from=$("feedRegFrom")?.value||"", to=$("feedRegTo")?.value||"";
+ let q=db.from("feed_issues").select("id,issue_no,issue_date,issue_type,total_qty_kg,shipment_id,barn_id,shipments(code),barns(name)").eq("farm_id",farmId).order("issue_date",{ascending:false}).order("created_at",{ascending:false}).limit(2000);
+ if(from)q=q.gte("issue_date",from); if(to)q=q.lte("issue_date",to);
+ const {data,error}=await q;
+ if(error){$("feedIssueRegisterRows").innerHTML=`<tr><td colspan="8">${error.message}</td></tr>`;return}
+ const issues=data||[];
+ const ids=issues.map(x=>x.id); let lines=[]; if(ids.length){const r=await db.from("feed_issue_lines").select("feed_issue_id,stock_id,qty_kg,protein_pct,unit_cost,stock:stock_id(feed_item_id,name,feed_item:feed_item_id(name))").in("feed_issue_id",ids); lines=r.data||[];}
+ const grouped={}; for(const l of lines){(grouped[l.feed_issue_id]??=[]).push(l)}
+ const typeLabel={individual:"فردي",group:"مجموعة",barn:"عنبر"};
+ const rows=issues.map(x=>{const ls=grouped[x.id]||[];const names=ls.map(l=>l.stock?.feed_item?.name||l.stock?.name||"-").join("، ")||"-";return `<tr><td><b>${x.issue_no||x.id.slice(0,8)}</b></td><td>${x.issue_date||"-"}</td><td>${typeLabel[x.issue_type]||x.issue_type||"-"}</td><td>${names}</td><td>${num(x.total_qty_kg).toLocaleString()}</td><td>${x.shipments?.code||"-"}</td><td>${x.barns?.name||"-"}</td><td><button class="btn btn-sm" onclick="openFeedIssueDetails('${x.id}')">فتح الإذن</button></td></tr>`}).join("");
+ $("feedIssueRegisterRows").innerHTML=rows||`<tr><td colspan="8" style="text-align:center">لا توجد أذونات صرف.</td></tr>`;
+ // same data for group page
+ if($("batchFeedHistoryRows")){
+   $("batchFeedHistoryRows").innerHTML=issues.filter(x=>x.issue_type==="group").map(x=>{const ls=grouped[x.id]||[];const n=ls.map(l=>l.stock?.feed_item?.name||l.stock?.name||"-").join("، ");return `<tr><td>${x.issue_no||"-"}</td><td>${x.issue_date||"-"}</td><td>${x.shipments?.code||"-"}</td><td>${x.barns?.name||"-"}</td><td>${num(x.total_qty_kg).toLocaleString()} كجم</td><td>${n||"-"}</td><td><button class="btn btn-sm" onclick="openFeedIssueDetails('${x.id}')">فتح</button></td></tr>`}).join("")||`<tr><td colspan="7" style="text-align:center">لا توجد أذونات مجموعات.</td></tr>`;
+ }
+}
+async function openFeedIssueDetails(issueId){
+ const [{data:issue,error},{data:lines}]=await Promise.all([
+  db.from("feed_issues").select("id,issue_no,issue_date,issue_type,total_qty_kg,average_protein_pct,notes,shipment_id,barn_id,shipments(code),barns(name),created_at").eq("id",issueId).eq("farm_id",farmId).single(),
+  db.from("feed_issue_lines").select("qty_kg,protein_pct,unit_cost,stock:stock_id(name,feed_item:feed_item_id(name))").eq("feed_issue_id",issueId)
+ ]);
+ if(error)return toast(error.message);
+ const typeLabel={individual:"فردي",group:"مجموعة",barn:"عنبر"};
+ const lineRows=(lines||[]).map(l=>`<tr><td>${l.stock?.feed_item?.name||l.stock?.name||"-"}</td><td>${num(l.qty_kg).toLocaleString()} كجم</td><td>${num(l.protein_pct)}%</td><td>${num(l.unit_cost).toLocaleString()}</td></tr>`).join("")||`<tr><td colspan="4">لا توجد بنود.</td></tr>`;
+ const html=`<div class="modal-backdrop" onclick="if(event.target===this)this.remove()"><div class="modal" style="max-width:800px"><div style="display:flex;justify-content:space-between;align-items:center"><h2>إذن صرف العلف ${issue.issue_no||""}</h2><button class="btn" onclick="this.closest('.modal-backdrop').remove()">إغلاق</button></div><div class="grid3"><div><b>التاريخ</b><div>${issue.issue_date||"-"}</div></div><div><b>النوع</b><div>${typeLabel[issue.issue_type]||issue.issue_type||"-"}</div></div><div><b>الكمية الإجمالية</b><div>${num(issue.total_qty_kg).toLocaleString()} كجم</div></div><div><b>المجموعة</b><div>${issue.shipments?.code||"-"}</div></div><div><b>العنبر</b><div>${issue.barns?.name||"-"}</div></div><div><b>متوسط البروتين</b><div>${num(issue.average_protein_pct)}%</div></div></div><h3 style="margin-top:18px">أصناف العلف المنصرفة</h3><div style="overflow:auto"><table class="table"><thead><tr><th>الصنف</th><th>الكمية</th><th>بروتين</th><th>تكلفة/كجم</th></tr></thead><tbody>${lineRows}</tbody></table></div><div style="margin-top:14px"><button class="btn btn-primary" onclick="printFeedIssue('${issue.id}')">طباعة الإذن</button></div></div></div>`;
+ document.body.insertAdjacentHTML("beforeend",html);
+}
+async function printFeedIssue(issueId){
+ const [{data:issue},{data:lines}]=await Promise.all([db.from("feed_issues").select("id,issue_no,issue_date,issue_type,total_qty_kg,shipments(code),barns(name)").eq("id",issueId).single(),db.from("feed_issue_lines").select("qty_kg,stock:stock_id(name,feed_item:feed_item_id(name))").eq("feed_issue_id",issueId)]);
+ if(!issue)return toast("الإذن غير موجود");
+ const w=window.open("","_blank"); if(!w)return toast("اسمح بالنوافذ المنبثقة للطباعة");
+ w.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>${issue.issue_no}</title><style>body{font-family:Arial;padding:30px}h1{margin-bottom:4px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:20px 0}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:10px;text-align:right}th{background:#f5f5f5}</style></head><body><h1>إذن صرف علف</h1><div>رقم الإذن: <b>${issue.issue_no}</b></div><div class="meta"><div>التاريخ: ${issue.issue_date||"-"}</div><div>المجموعة: ${issue.shipments?.code||"-"}</div><div>العنبر: ${issue.barns?.name||"-"}</div></div><table><thead><tr><th>الصنف</th><th>الكمية كجم</th></tr></thead><tbody>${(lines||[]).map(l=>`<tr><td>${l.stock?.feed_item?.name||l.stock?.name||"-"}</td><td>${num(l.qty_kg).toLocaleString()}</td></tr>`).join("")}</tbody></table><script>window.print();</script><script>document.addEventListener("DOMContentLoaded",()=>{setTimeout(()=>{if(typeof loadFeedIssueRegister==="function")loadFeedIssueRegister()},1200)});</script></body></html>`);w.document.close();
 }
 async function loadWeightAnimals(){await loadHeads()}
 async function recordWeight(){
@@ -1922,4 +1973,4 @@ function resetAnalyticsFilters(){["anBoat","anBatch"].forEach(id=>{$(id).value="
 
 (async()=>{const {data}=await db.auth.getSession();if(data.session)await enter(data.session.user)})();
 </script>
-</body></html>
+<script>document.addEventListener("DOMContentLoaded",()=>{setTimeout(()=>{if(typeof loadFeedIssueRegister==="function")loadFeedIssueRegister()},1200)});</script></body></html>
