@@ -222,6 +222,7 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
     <div class="item" data-page="settings"><i class="fa-solid fa-gear"></i> الإعدادات</div>
 
     <div class="head">التقارير</div>
+    <div class="item" data-page="financial"><i class="fa-solid fa-chart-pie"></i> المركز المالي والتحليلي</div>
     <div class="item" data-page="batchReport"><i class="fa-solid fa-chart-line"></i> تقرير أداء المجموعات</div>
     <div class="item" data-page="fcrReport"><i class="fa-solid fa-magnifying-glass-chart"></i> التقرير الشامل للأفراد</div>
   </div>
@@ -618,7 +619,7 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 <div class="card"><h2>📒 كشف حساب المورد</h2>
 <div class="form"><div class="formgrid">
 <div class="field"><label>المورد</label><select id="supplierLedgerId"></select></div>
-<div class="field"><label>من</label><input id="supplierLedgerFrom","supplierLedgerTo","cashDate","purDate","purReceiptDate" type="date"></div>
+<div class="field"><label>من</label><input id="supplierLedgerFrom" type="date"></div>
 <div class="field"><label>إلى</label><input id="supplierLedgerTo" type="date"></div>
 </div><button class="btn btn-blue" onclick="refreshSupplierLedger()">عرض الكشف</button></div></div>
 <div class="card"><h3>💳 تسجيل دفعة للمورد</h3><div class="form"><div class="formgrid">
@@ -736,6 +737,61 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 </div>
 </section>
 
+<section id="financial" class="view">
+  <div class="card">
+    <h2>📊 المركز المالي والتحليلي</h2>
+    <p class="muted">لوحة موحدة للمبيعات والتحصيل والمشتريات والمدفوعات والمصروفات وتكلفة العلف وحركة الخزنة. كل الأرقام تُقرأ من سجلات المزرعة الحالية.</p>
+    <div class="form" style="margin-top:12px">
+      <div class="formgrid">
+        <div class="field"><label>الفترة السريعة</label><select id="finPeriod" onchange="applyFinancialPreset()"><option value="month">الشهر الحالي</option><option value="30">آخر 30 يومًا</option><option value="90">آخر 90 يومًا</option><option value="year">من بداية السنة</option><option value="all">كل الفترات</option><option value="custom">فترة مخصصة</option></select></div>
+        <div class="field"><label>من تاريخ</label><input id="finFrom" type="date"></div>
+        <div class="field"><label>إلى تاريخ</label><input id="finTo" type="date"></div>
+        <div class="field"><label>تصفية جداول الأرصدة فقط</label><select id="finParty"><option value="all">كل العملاء والموردين</option><option value="customer">العملاء فقط</option><option value="supplier">الموردون فقط</option></select></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+        <button class="btn btn-primary" onclick="refreshFinancialCenter()"><i class="fa-solid fa-filter"></i> تطبيق التحليل</button>
+        <button class="btn btn-light" onclick="resetFinancialCenter()"><i class="fa-solid fa-rotate-left"></i> إعادة ضبط</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid kpis">
+    <div class="kpi"><div class="kpi-icon" style="background:#16a085"><i class="fa-solid fa-file-invoice-dollar"></i></div><div><small>إجمالي فواتير المبيعات</small><b id="finSales">0</b></div></div>
+    <div class="kpi"><div class="kpi-icon" style="background:#2980b9"><i class="fa-solid fa-hand-holding-dollar"></i></div><div><small>تحصيلات العملاء</small><b id="finCollections">0</b></div></div>
+    <div class="kpi"><div class="kpi-icon" style="background:#c0392b"><i class="fa-solid fa-user-clock"></i></div><div><small>صافي أرصدة العملاء</small><b id="finReceivables">0</b></div></div>
+    <div class="kpi"><div class="kpi-icon" style="background:#8e44ad"><i class="fa-solid fa-cart-shopping"></i></div><div><small>فواتير المشتريات</small><b id="finPurchases">0</b></div></div>
+    <div class="kpi"><div class="kpi-icon" style="background:#27ae60"><i class="fa-solid fa-money-bill-transfer"></i></div><div><small>مدفوعات الموردين</small><b id="finSupplierPayments">0</b></div></div>
+    <div class="kpi"><div class="kpi-icon" style="background:#e67e22"><i class="fa-solid fa-truck-field"></i></div><div><small>صافي أرصدة الموردين</small><b id="finPayables">0</b></div></div>
+    <div class="kpi"><div class="kpi-icon" style="background:#b7791f"><i class="fa-solid fa-wheat-awn"></i></div><div><small>تكلفة العلف المصروف</small><b id="finFeedCost">0</b></div></div>
+    <div class="kpi"><div class="kpi-icon" style="background:#6c5ce7"><i class="fa-solid fa-pills"></i></div><div><small>تكلفة الأدوية المصروفة</small><b id="finMedicationCost">0</b></div></div>
+    <div class="kpi"><div class="kpi-icon" style="background:#34495e"><i class="fa-solid fa-receipt"></i></div><div><small>المصروفات التشغيلية المسجلة</small><b id="finExpenses">0</b></div></div>
+  </div>
+
+  <div class="grid kpis" style="margin-top:12px">
+    <div class="kpi"><div><small>رصيد الخزنة الحالي</small><b id="finCashBalance">0</b></div></div>
+    <div class="kpi"><div><small>صافي حركة الخزنة بالفترة</small><b id="finCashNet">0</b></div></div>
+    <div class="kpi"><div><small>قيمة مخزون الأعلاف</small><b id="finInventoryValue">0</b></div></div>
+    <div class="kpi"><div><small>هامش بعد العلف والمصروفات</small><b id="finContribution">0</b></div></div>
+  </div>
+  <div id="finReportNote" class="msg" style="margin:14px 0">اختر الفترة واضغط تطبيق التحليل.</div>
+  <div class="fcr-method-note" style="margin-bottom:14px">تنبيه محاسبي: «الهامش بعد العلف والمصروفات» مؤشر تشغيلي مبدئي، وليس صافي ربح محاسبي؛ لأنه لا يخصم تكلفة شراء/استيراد العجول أو الرواتب غير المسجلة كمصروفات أو أي بنود غير مدخلة في النظام. أرصدة العملاء والموردين محسوبة على مستوى حساب الطرف، وليست توزيعًا للدفعات على كل فاتورة.</div>
+
+  <div class="split">
+    <div class="chart"><h3>اتجاه الأداء الشهري</h3><canvas id="finTrendChart" height="240"></canvas></div>
+    <div class="chart"><h3>توزيع المصروفات المسجلة</h3><canvas id="finExpenseChart" height="240"></canvas></div>
+  </div>
+
+  <div class="split" style="margin-top:15px">
+    <div class="card"><h3>أرصدة العملاء المدينة</h3><div class="tablewrap"><table class="table"><thead><tr><th>العميل</th><th>الفواتير</th><th>الدفعات</th><th>الرصيد</th></tr></thead><tbody id="finCustomerRows"></tbody></table></div></div>
+    <div class="card"><h3>أرصدة الموردين الدائنة</h3><div class="tablewrap"><table class="table"><thead><tr><th>المورد</th><th>الفواتير</th><th>الدفعات</th><th>الرصيد</th></tr></thead><tbody id="finSupplierRows"></tbody></table></div></div>
+  </div>
+  <div class="split" style="margin-top:15px">
+    <div class="card"><h3>المصروفات حسب التصنيف</h3><div class="tablewrap"><table class="table"><thead><tr><th>التصنيف</th><th>عدد الحركات</th><th>الإجمالي</th></tr></thead><tbody id="finExpenseRows"></tbody></table></div></div>
+    <div class="card"><h3>تكلفة العلف حسب المجموعة</h3><div class="tablewrap"><table class="table"><thead><tr><th>المجموعة</th><th>الكمية كجم</th><th>التكلفة</th><th>عدد الأذون</th></tr></thead><tbody id="finFeedRows"></tbody></table></div></div>
+  </div>
+  <div class="card" style="margin-top:15px"><h3>ملخص الخزنة للفترة</h3><div class="tablewrap"><table class="table"><thead><tr><th>رصيد أول الفترة</th><th>إجمالي القبض</th><th>إجمالي الصرف</th><th>صافي الحركة</th><th>رصيد آخر الفترة</th></tr></thead><tbody id="finCashSummaryRows"></tbody></table></div></div>
+</section>
+
 <section id="batchReport" class="view"><div class="card"><h2>تقرير أداء المجموعات</h2><div class="toolbar"><button class="btn btn-blue" onclick="refreshBatchReport()"><i class="fa-solid fa-rotate"></i> تحديث</button><button class="btn btn-light" onclick="exportTable('batchReportTable','تقرير_المجموعات')"><i class="fa-solid fa-file-excel"></i> تصدير</button></div><table class="table" id="batchReportTable"><thead><tr><th>الشحنة</th><th>العدد</th><th>أول متوسط</th><th>آخر متوسط</th><th>الزيادة</th><th>ADG</th></tr></thead><tbody id="batchReportRows"></tbody></table></div></section>
 
 <section id="fcrReport" class="view"><div class="card"><h2>التقرير الشامل للأفراد</h2><div class="toolbar"><button class="btn btn-blue" onclick="refreshFcrReport()"><i class="fa-solid fa-rotate"></i> تحديث</button><button class="btn btn-light" onclick="exportTable('fcrTable','تقرير_FCR_الأفراد')"><i class="fa-solid fa-file-excel"></i> تصدير</button></div><table class="table" id="fcrTable"><thead><tr><th>الحيوان</th><th>الشحنة</th><th>أول وزن</th><th>آخر وزن</th><th>الزيادة</th><th>ADG</th></tr></thead><tbody id="fcrRows"></tbody></table></div></section>
@@ -747,7 +803,7 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 const SUPABASE_URL="https://vhbhbzcywtmtwtpqvnhw.supabase.co";
 const SUPABASE_KEY="sb_publishable_LXRs70nbUvJljFiRyCT2UA_-hZDkuf3";
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let farmId=null,user=null,profile=null,statusChart=null,stockChart=null,weightCompareChart=null,adgChart=null,fcrChart=null,feedTrendChart=null,mortalityChart=null,scatterFcrAdg=null,analyticsWeightChart=null;
+let farmId=null,user=null,profile=null,statusChart=null,stockChart=null,weightCompareChart=null,adgChart=null,fcrChart=null,feedTrendChart=null,mortalityChart=null,scatterFcrAdg=null,analyticsWeightChart=null,finTrendChart=null,finExpenseChart=null;
 
 const $=id=>document.getElementById(id);
 const today=()=>new Date().toISOString().slice(0,10);
@@ -903,8 +959,8 @@ async function exportPageToExcel(page){
     }
 
     // Embed dashboard chart images into the workbook. ExcelJS supports native images.
-    const chartIds=['statusChart','weightCompareChart','adgChart','fcrChart','feedTrendChart','mortalityChart','scatterFcrAdg','analyticsWeightChart'];
-    const chartNames=['حالة القطيع','الوزن الابتدائي والنهائي','ADG حسب المجموعة','FCR حسب المجموعة','اتجاه العلف','النفوق %','FCR مقابل ADG','تطور الوزن'];
+    const chartIds=['statusChart','weightCompareChart','adgChart','fcrChart','feedTrendChart','mortalityChart','scatterFcrAdg','analyticsWeightChart','finTrendChart','finExpenseChart'];
+    const chartNames=['حالة القطيع','الوزن الابتدائي والنهائي','ADG حسب المجموعة','FCR حسب المجموعة','اتجاه العلف','النفوق %','FCR مقابل ADG','تطور الوزن','اتجاه الأداء المالي الشهري','توزيع المصروفات'];
     let imageCol=10, imageRow=3;
     for(let i=0;i<chartIds.length;i++){
       const canvas=$(chartIds[i]); if(!canvas || !canvas.toDataURL) continue;
@@ -982,6 +1038,7 @@ async function refreshPage(page){
  if(page==="settings")loadFarmSettings();
  if(page==="batchReport")refreshBatchReport();
  if(page==="fcrReport")refreshFcrReport();
+ if(page==="financial")refreshFinancialCenter();
 }
 
 async function login(){
@@ -998,6 +1055,7 @@ async function enter(u){
  if(!data.active)return message("loginMsg","المستخدم موقوف.",true);
  profile=data;farmId=data.farm_id;
  if(!farmId)return message("loginMsg","الحساب غير مربوط بمزرعة.",true);
+ if($("finPeriod")&&!$("finFrom").value){$("finPeriod").value="month";const d=today();$("finFrom").value=d.slice(0,7)+"-01";$("finTo").value=d;}
  const {data:f}=await db.from("farms").select("name,company_name,fcr_limit,mortality_limit_pct").eq("id",farmId).single();
  $("currentUserName").textContent=data.full_name||data.username||u.email;
  $("farmTitle").textContent=(f?.company_name||"")+" — "+(f?.name||"");
@@ -1166,7 +1224,7 @@ async function refreshSupplierLedger(){
  const sid=$("supplierLedgerId").value;if(!sid)return;
  let pq=db.from("supplier_invoices").select("invoice_date,invoice_no,total_amount,notes").eq("farm_id",farmId).eq("supplier_id",sid).order("invoice_date");
  let payq=db.from("supplier_payments").select("payment_date,amount,reference,notes,payment_method").eq("farm_id",farmId).eq("supplier_id",sid).order("payment_date");
- if($("supplierLedgerFrom","supplierLedgerTo","cashDate","purDate","purReceiptDate").value){pq=pq.gte("invoice_date",$("supplierLedgerFrom","supplierLedgerTo","cashDate","purDate","purReceiptDate").value);payq=payq.gte("payment_date",$("supplierLedgerFrom","supplierLedgerTo","cashDate","purDate","purReceiptDate").value)}
+ if($("supplierLedgerFrom")?.value){pq=pq.gte("invoice_date",$("supplierLedgerFrom").value);payq=payq.gte("payment_date",$("supplierLedgerFrom").value)}
  if($("supplierLedgerTo").value){pq=pq.lte("invoice_date",$("supplierLedgerTo").value);payq=payq.lte("payment_date",$("supplierLedgerTo").value)}
  const [{data:inv=[],error:ie},{data:pays=[],error:pe}]=await Promise.all([pq,payq]);if(ie||pe)return toast((ie||pe).message);
  const totalInv=inv.reduce((s,x)=>s+num(x.total_amount),0),totalPay=pays.reduce((s,x)=>s+num(x.amount),0);
@@ -1174,12 +1232,167 @@ async function refreshSupplierLedger(){
  const rows=[...inv.map(x=>({date:x.invoice_date,type:"فاتورة شراء",ref:x.invoice_no,debit:num(x.total_amount),credit:0,note:x.notes||"شراء"})),...pays.map(x=>({date:x.payment_date,type:"دفعة",ref:x.reference||x.payment_method||"-",debit:0,credit:num(x.amount),note:x.notes||"دفعة"}))].sort((a,b)=>a.date.localeCompare(b.date));
  let run=0;$("supplierLedgerRows").innerHTML=rows.map(r=>{run+=r.debit-r.credit;return `<tr><td>${r.date}</td><td>${r.type}</td><td>${r.ref}</td><td>${r.debit.toLocaleString()}</td><td>${r.credit.toLocaleString()}</td><td>${run.toLocaleString()}</td><td>${r.note}</td></tr>`}).join("")||'<tr><td colspan="7">لا توجد حركة</td></tr>';
 }
+// Paginate farm-scoped reads so analytical reports do not silently stop at the API's first page.
+async function fetchAllFarmRows(table,columns,orderField="id",maxRows=50000){
+ const pageSize=1000,rows=[];let truncated=false;
+ for(let offset=0;offset<maxRows;offset+=pageSize){
+  let q=db.from(table).select(columns).eq("farm_id",farmId);
+  if(orderField)q=q.order(orderField,{ascending:true});
+  if(columns.split(",").some(x=>x.trim()==="id"))q=q.order("id",{ascending:true});
+  const {data,error}=await q.range(offset,Math.min(offset+pageSize-1,maxRows-1));
+  if(error)throw error;
+  const batch=data||[];rows.push(...batch);
+  if(batch.length<pageSize)return {rows,truncated:false};
+ }
+ truncated=true;return {rows,truncated};
+}
+function finMoney(v){return num(v).toLocaleString("en-US",{minimumFractionDigits:0,maximumFractionDigits:2})+" ج";}
+function finDateInRange(d,from,to){return (!from||d>=from)&&(!to||d<=to);}
+function finMonth(d){return String(d||"").slice(0,7)||"غير محدد";}
+function finEscape(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function applyFinancialPreset(){
+ const p=$("finPeriod").value,end=today();let start="";
+ if(p==="month")start=`${end.slice(0,7)}-01`;
+ else if(p==="30"||p==="90"){const d=new Date();d.setDate(d.getDate()-(Number(p)-1));start=d.toISOString().slice(0,10)}
+ else if(p==="year")start=`${end.slice(0,4)}-01-01`;
+ else if(p==="all"){start=""}
+ if(p!=="custom"){$("finFrom").value=start;$ ("finTo").value=end;}
+ if(farmId&&$("financial")?.classList.contains("active"))refreshFinancialCenter();
+}
+function resetFinancialCenter(){
+ $("finPeriod").value="month";$("finParty").value="all";applyFinancialPreset();
+}
+function destroyFinancialCharts(){if(finTrendChart){finTrendChart.destroy();finTrendChart=null;}if(finExpenseChart){finExpenseChart.destroy();finExpenseChart=null;}}
+async function refreshFinancialCenter(){
+ if(!farmId)return;
+ const note=$("finReportNote");if(note){note.className="msg";note.textContent="جاري تجميع البيانات المالية من سجلات المزرعة...";}
+ try{
+  const [salesR,customerPaysR,supInvR,supplierPaysR,expensesR,vehicleExpR,medicationMovementsR,treasuryR,stockR,feedIssuesR,customersR,suppliersR,shipmentsR]=await Promise.all([
+   fetchAllFarmRows("sales","id,invoice_no,customer_id,sale_date,total_amount","sale_date"),
+   fetchAllFarmRows("customer_payments","id,customer_id,payment_date,amount,payment_method","payment_date"),
+   fetchAllFarmRows("supplier_invoices","id,supplier_id,invoice_no,invoice_date,total_amount","invoice_date"),
+   fetchAllFarmRows("supplier_payments","id,supplier_id,payment_date,amount,payment_method","payment_date"),
+   fetchAllFarmRows("expenses","id,expense_date,amount,category,name","expense_date"),
+   fetchAllFarmRows("vehicle_expenses","id,expense_date,amount,expense_type,vehicle_id","expense_date"),
+   fetchAllFarmRows("medication_movements","id,movement_date,movement_type,qty,unit_cost","movement_date"),
+   fetchAllFarmRows("treasury_transactions","id,movement_date,movement_type,amount,category,source_type,source_id,reference","movement_date"),
+   fetchAllFarmRows("stock","id,qty_kg,cost_per_kg,feed_item_id,name,warehouse_id","id"),
+   fetchAllFarmRows("feed_issues","id,issue_date,total_qty_kg,shipment_id,barn_id,feed_issue_lines(qty_kg,unit_cost)","issue_date"),
+   fetchAllFarmRows("customers","id,name","name"),
+   fetchAllFarmRows("suppliers","id,name","name"),
+   fetchAllFarmRows("shipments","id,code","code")
+  ]);
+  const truncated=[salesR,customerPaysR,supInvR,supplierPaysR,expensesR,vehicleExpR,medicationMovementsR,treasuryR,stockR,feedIssuesR,customersR,suppliersR,shipmentsR].some(x=>x.truncated);
+  const sales=salesR.rows,customerPays=customerPaysR.rows,supInv=supInvR.rows,supplierPays=supplierPaysR.rows,expenses=expensesR.rows,vehicleExp=vehicleExpR.rows,medicationMovements=medicationMovementsR.rows,treasury=treasuryR.rows,stock=stockR.rows,feedIssues=feedIssuesR.rows;
+  const customerMap=Object.fromEntries(customersR.rows.map(x=>[x.id,x.name]));
+  const supplierMap=Object.fromEntries(suppliersR.rows.map(x=>[x.id,x.name]));
+  const shipmentMap=Object.fromEntries(shipmentsR.rows.map(x=>[x.id,x.code]));
+  const from=$("finFrom").value,to=$("finTo").value,party=$("finParty").value;
+  const inPeriod=(rows,dateKey)=>rows.filter(x=>finDateInRange(x[dateKey],from,to));
+  const psales=inPeriod(sales,"sale_date"),ppays=inPeriod(customerPays,"payment_date"),ppurchases=inPeriod(supInv,"invoice_date"),psupplierPays=inPeriod(supplierPays,"payment_date"),pexpenses=inPeriod(expenses,"expense_date"),pvehicle=inPeriod(vehicleExp,"expense_date"),pmedication=inPeriod(medicationMovements,"movement_date").filter(x=>x.movement_type==="issue"),pcash=inPeriod(treasury,"movement_date"),pfeed=inPeriod(feedIssues,"issue_date");
+
+  // Period totals
+  const salesTotal=psales.reduce((a,x)=>a+num(x.total_amount),0);
+  const collectionTotal=ppays.reduce((a,x)=>a+num(x.amount),0);
+  const purchasesTotal=ppurchases.reduce((a,x)=>a+num(x.total_amount),0);
+  const supplierPaymentTotal=psupplierPays.reduce((a,x)=>a+num(x.amount),0);
+  const generalExpenseTotal=pexpenses.reduce((a,x)=>a+num(x.amount),0);
+  const vehicleExpenseTotal=pvehicle.reduce((a,x)=>a+num(x.amount),0);
+  const medicationCost=pmedication.reduce((a,x)=>a+num(x.qty)*num(x.unit_cost),0);
+  const operatingExpenses=generalExpenseTotal+vehicleExpenseTotal+medicationCost;
+  const feedQty=pfeed.reduce((a,x)=>a+num(x.total_qty_kg),0);
+  let feedCost=0,feedLineQty=0,missingCostIssues=0;
+  const feedCostByShipment={};
+  pfeed.forEach(issue=>{
+   const lines=issue.feed_issue_lines||[];
+   if(!lines.length){if(num(issue.total_qty_kg)>0)missingCostIssues++;return;}
+   let issueQty=0,issueCost=0;
+   lines.forEach(line=>{const q=num(line.qty_kg),c=num(line.unit_cost);issueQty+=q;issueCost+=q*c;});
+   feedLineQty+=issueQty;feedCost+=issueCost;
+   const key=issue.shipment_id||"غير مربوط بمجموعة";
+   if(!feedCostByShipment[key])feedCostByShipment[key]={qty:0,cost:0,issues:0};
+   feedCostByShipment[key].qty+=issueQty;feedCostByShipment[key].cost+=issueCost;feedCostByShipment[key].issues++;
+  });
+  const partyFilter=(kind)=>party==="all"||party===kind;
+
+  // All-time account balances are account-level balances; the system does not allocate receipts to individual invoices.
+  const customerTotals={};
+  sales.filter(x=>x.customer_id).forEach(x=>{const a=customerTotals[x.customer_id]||(customerTotals[x.customer_id]={invoice:0,payment:0});a.invoice+=num(x.total_amount)});
+  customerPays.forEach(x=>{const a=customerTotals[x.customer_id]||(customerTotals[x.customer_id]={invoice:0,payment:0});a.payment+=num(x.amount)});
+  const supplierTotals={};
+  supInv.forEach(x=>{const a=supplierTotals[x.supplier_id]||(supplierTotals[x.supplier_id]={invoice:0,payment:0});a.invoice+=num(x.total_amount)});
+  supplierPays.forEach(x=>{const a=supplierTotals[x.supplier_id]||(supplierTotals[x.supplier_id]={invoice:0,payment:0});a.payment+=num(x.amount)});
+  const receivables=Object.values(customerTotals).reduce((a,x)=>a+x.invoice-x.payment,0);
+  const payables=Object.values(supplierTotals).reduce((a,x)=>a+x.invoice-x.payment,0);
+
+  const cashIn=pcash.filter(x=>x.movement_type==="in").reduce((a,x)=>a+num(x.amount),0);
+  const cashOut=pcash.filter(x=>x.movement_type==="out").reduce((a,x)=>a+num(x.amount),0);
+  const cashBefore=treasury.filter(x=>from&&x.movement_date<from).reduce((a,x)=>a+(x.movement_type==="in"?num(x.amount):-num(x.amount)),0);
+  const cashBalance=treasury.reduce((a,x)=>a+(x.movement_type==="in"?num(x.amount):-num(x.amount)),0);
+  const cashNet=cashIn-cashOut,cashClosing=cashBefore+cashNet;
+  const inventoryValue=stock.reduce((a,x)=>a+num(x.qty_kg)*num(x.cost_per_kg),0);
+  const contribution=salesTotal-feedCost-operatingExpenses;
+
+  $("finSales").textContent=finMoney(salesTotal);
+  $("finCollections").textContent=finMoney(collectionTotal);
+  $("finReceivables").textContent=finMoney(partyFilter("customer")?receivables:0);
+  $("finPurchases").textContent=finMoney(purchasesTotal);
+  $("finSupplierPayments").textContent=finMoney(supplierPaymentTotal);
+  $("finPayables").textContent=finMoney(partyFilter("supplier")?payables:0);
+  $("finFeedCost").textContent=finMoney(feedCost);
+  $("finMedicationCost").textContent=finMoney(medicationCost);
+  $("finExpenses").textContent=finMoney(operatingExpenses);
+  $("finCashBalance").textContent=finMoney(cashBalance);
+  $("finCashNet").textContent=finMoney(cashNet);
+  $("finInventoryValue").textContent=finMoney(inventoryValue);
+  $("finContribution").textContent=finMoney(contribution);
+  $("finCashSummaryRows").innerHTML=`<tr><td>${finMoney(cashBefore)}</td><td>${finMoney(cashIn)}</td><td>${finMoney(cashOut)}</td><td>${finMoney(cashNet)}</td><td>${finMoney(cashClosing)}</td></tr>`;
+
+  const customerRows=Object.entries(customerTotals).map(([id,x])=>({name:customerMap[id]||"عميل غير معروف",invoice:x.invoice,payment:x.payment,balance:x.invoice-x.payment})).filter(x=>x.balance>0.009).sort((a,b)=>b.balance-a.balance).slice(0,20);
+  $("finCustomerRows").innerHTML=partyFilter("customer")?(customerRows.map(x=>`<tr><td>${finEscape(x.name)}</td><td>${finMoney(x.invoice)}</td><td>${finMoney(x.payment)}</td><td class="${x.balance>0?"bad":"ok"}">${finMoney(x.balance)}</td></tr>`).join("")||'<tr><td colspan="4">لا توجد أرصدة مدينة</td></tr>'):'<tr><td colspan="4">اختر العملاء من فلتر الطرف</td></tr>';
+  const supplierRows=Object.entries(supplierTotals).map(([id,x])=>({name:supplierMap[id]||"مورد غير معروف",invoice:x.invoice,payment:x.payment,balance:x.invoice-x.payment})).filter(x=>x.balance>0.009).sort((a,b)=>b.balance-a.balance).slice(0,20);
+  $("finSupplierRows").innerHTML=partyFilter("supplier")?(supplierRows.map(x=>`<tr><td>${finEscape(x.name)}</td><td>${finMoney(x.invoice)}</td><td>${finMoney(x.payment)}</td><td class="${x.balance>0?"warn":"ok"}">${finMoney(x.balance)}</td></tr>`).join("")||'<tr><td colspan="4">لا توجد أرصدة دائنة</td></tr>'):'<tr><td colspan="4">اختر الموردين من فلتر الطرف</td></tr>';
+
+  const expenseCats={};
+  pexpenses.forEach(x=>{const k=x.category||x.name||"غير مصنف";expenseCats[k]=(expenseCats[k]||{count:0,total:0});expenseCats[k].count++;expenseCats[k].total+=num(x.amount)});
+  pvehicle.forEach(x=>{const k="أسطول — "+(x.expense_type||"مصروف مركبة");expenseCats[k]=(expenseCats[k]||{count:0,total:0});expenseCats[k].count++;expenseCats[k].total+=num(x.amount)});
+  if(medicationCost>0){expenseCats["صرف أدوية للحالات البيطرية"]={count:pmedication.length,total:medicationCost};}
+  const expenseList=Object.entries(expenseCats).map(([name,x])=>({name,...x})).sort((a,b)=>b.total-a.total);
+  $("finExpenseRows").innerHTML=expenseList.map(x=>`<tr><td>${finEscape(x.name)}</td><td>${x.count}</td><td>${finMoney(x.total)}</td></tr>`).join("")||'<tr><td colspan="3">لا توجد مصروفات مسجلة بالفترة</td></tr>';
+  const feedList=Object.entries(feedCostByShipment).map(([id,x])=>({name:shipmentMap[id]||(id==="غير مربوط بمجموعة"?id:"مجموعة غير معروفة"),...x})).sort((a,b)=>b.cost-a.cost);
+  $("finFeedRows").innerHTML=feedList.map(x=>`<tr><td>${finEscape(x.name)}</td><td>${x.qty.toLocaleString("en-US",{maximumFractionDigits:2})}</td><td>${finMoney(x.cost)}</td><td>${x.issues}</td></tr>`).join("")||'<tr><td colspan="4">لا توجد تفاصيل تكلفة علف بالفترة</td></tr>';
+
+  // Monthly trends use transaction dates and compare accrual invoices with cash collections.
+  const monthKeys=new Set();
+  [psales,ppays,ppurchases,pexpenses,pvehicle,pmedication,pfeed].forEach(arr=>arr.forEach(x=>monthKeys.add(finMonth(x.sale_date||x.payment_date||x.invoice_date||x.expense_date||x.issue_date))));
+  const months=[...monthKeys].filter(x=>x!=="غير محدد").sort();
+  const byMonth=(arr,dateKey,valueKey,fn)=>{const m={};arr.forEach(x=>{const k=finMonth(x[dateKey]);if(k!=="غير محدد")m[k]=(m[k]||0)+(fn?fn(x):num(x[valueKey]))});return months.map(k=>m[k]||0)};
+  destroyFinancialCharts();
+  if(typeof Chart!=="undefined"){
+   finTrendChart=new Chart($("finTrendChart"),{type:"line",data:{labels:months,datasets:[
+    {label:"المبيعات",data:byMonth(psales,"sale_date","total_amount"),borderColor:"#16a085",backgroundColor:"#16a08522",tension:.25,fill:false},
+    {label:"تحصيل العملاء",data:byMonth(ppays,"payment_date","amount"),borderColor:"#2980b9",tension:.25,fill:false},
+    {label:"المشتريات",data:byMonth(ppurchases,"invoice_date","total_amount"),borderColor:"#8e44ad",tension:.25,fill:false},
+    {label:"العلف المصروف (تكلفة)",data:byMonth(pfeed,"issue_date",null,x=>(x.feed_issue_lines||[]).reduce((z,l)=>z+num(l.qty_kg)*num(l.unit_cost),0)),borderColor:"#d68910",tension:.25,fill:false},
+    {label:"المصروفات التشغيلية",data:months.map(k=>{let v=0;pexpenses.filter(x=>finMonth(x.expense_date)===k).forEach(x=>v+=num(x.amount));pvehicle.filter(x=>finMonth(x.expense_date)===k).forEach(x=>v+=num(x.amount));pmedication.filter(x=>finMonth(x.movement_date)===k).forEach(x=>v+=num(x.qty)*num(x.unit_cost));return v}),borderColor:"#c0392b",tension:.25,fill:false}
+   ]},options:{responsive:true,maintainAspectRatio:true,interaction:{mode:"index",intersect:false},plugins:{legend:{position:"bottom"}}}});
+   finExpenseChart=new Chart($("finExpenseChart"),{type:"doughnut",data:{labels:expenseList.map(x=>x.name),datasets:[{data:expenseList.map(x=>x.total),backgroundColor:["#16a085","#2980b9","#8e44ad","#e67e22","#c0392b","#34495e","#27ae60","#7f8c8d"]}]},options:{responsive:true,plugins:{legend:{position:"bottom"}}}});
+  }
+  const notes=[];
+  if(truncated)notes.push("بعض الجداول تجاوزت حد 50,000 سجل؛ راجع التقرير على فترات أصغر لضمان اكتمال الأرقام.");
+  if(missingCostIssues)notes.push(`${missingCostIssues} إذن صرف ليس له تفاصيل تكلفة في feed_issue_lines؛ كميته لا تدخل في تكلفة العلف المحسوبة.`);
+  if(!from)notes.push("حركة الخزنة محسوبة من بداية السجلات المتاحة؛ لا يوجد رصيد افتتاحي مستقل في النظام ما لم تكن سجلته كحركة قبض.");
+  if(note){note.className="msg "+(truncated||missingCostIssues?"warn":"ok");note.textContent=`تم تحديث التقرير للفترة ${from||"من البداية"} إلى ${to||"حتى الآن"}. المبيعات: ${psales.length} فاتورة، المشتريات: ${ppurchases.length} فاتورة، أذون العلف: ${pfeed.length}. `+notes.join(" ");}
+ }catch(e){console.error(e);if(note){note.className="msg err";note.textContent="تعذر تحميل المركز المالي: "+(e.message||e);}}
+}
+
 async function loadTreasury(){
- const {data,error}=await db.from("treasury_transactions").select("movement_date,movement_type,amount,category,reference,description").eq("farm_id",farmId).order("movement_date",{ascending:false});
- if(error){$("cashRows").innerHTML=`<tr><td colspan="6">${error.message}</td></tr>`;return}
- let tin=0,tout=0;(data||[]).forEach(x=>x.movement_type==="in"?tin+=num(x.amount):tout+=num(x.amount));
- $("cashIn").textContent=tin.toLocaleString();$("cashOut").textContent=tout.toLocaleString();$("cashBalance").textContent=(tin-tout).toLocaleString();
- $("cashRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.movement_date}</td><td>${x.movement_type==="in"?"قبض":"صرف"}</td><td>${num(x.amount).toLocaleString()}</td><td>${x.category||"-"}</td><td>${x.reference||"-"}</td><td>${x.description||"-"}</td></tr>`).join("")||'<tr><td colspan="6">لا توجد حركات</td></tr>';
+ try{
+  const {rows:data}=await fetchAllFarmRows("treasury_transactions","id,movement_date,movement_type,amount,category,reference,description,source_type,source_id","movement_date");
+  let tin=0,tout=0;data.forEach(x=>x.movement_type==="in"?tin+=num(x.amount):tout+=num(x.amount));
+  $("cashIn").textContent=tin.toLocaleString();$("cashOut").textContent=tout.toLocaleString();$("cashBalance").textContent=(tin-tout).toLocaleString();
+  $("cashRows").innerHTML=data.slice().reverse().slice(0,500).map(x=>`<tr><td>${x.movement_date}</td><td>${x.movement_type==="in"?"قبض":"صرف"}</td><td>${num(x.amount).toLocaleString()}</td><td>${x.category||"-"}</td><td>${x.reference||"-"}</td><td>${x.description||((x.source_type&&x.source_id)?`${x.source_type} — ${x.source_id}`:"-")}</td></tr>`).join("")||'<tr><td colspan="6">لا توجد حركات</td></tr>';
+ }catch(error){$("cashRows").innerHTML=`<tr><td colspan="6">${error.message}</td></tr>`;}
 }
 async function saveTreasuryTransaction(){
  const amount=num($("cashAmount").value);if(amount<=0)return toast("أدخل مبلغًا صحيحًا");
