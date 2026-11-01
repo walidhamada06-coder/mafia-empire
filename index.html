@@ -378,7 +378,7 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
   <p class="muted">اختر العنبر، ثم حدد العجول. يمكنك إدخال <b>وزن البيع الفعلي</b> لكل رأس، ولا يشترط أن يكون هو وزن آخر تسجيل على النظام.</p>
   <div class="form">
     <div class="formgrid">
-      <div class="field"><label>رقم الفاتورة <span class="muted">(تلقائي)</span></label><input id="saleInvoiceNo" placeholder="سيتم توليده تلقائيًا" readonly></div>
+      <div class="field"><label>رقم الفاتورة <span class="muted">(تلقائي)</span></label><input id="saleInvoiceNo" placeholder="يُولد عند حفظ الفاتورة" readonly></div>
       <div class="field"><label>العميل</label><select id="saleCustomer"></select></div>
       <div class="field"><label>العنبر</label><select id="saleBarn" onchange="loadSaleAnimals()"></select></div>
       <div class="field"><label>تاريخ البيع</label><input id="saleDate" type="date"></div>
@@ -1467,7 +1467,33 @@ function toggleSaleAnimals(s){document.querySelectorAll(".sale-animal-cb").forEa
 function renderSaleWeights(){const selected=[...document.querySelectorAll(".sale-animal-cb:checked")];$("saleWeightsEditor").innerHTML=selected.map(cb=>`<div class="formgrid" style="grid-template-columns:1fr 1fr;gap:8px;margin-top:6px"><div class="field"><label>وزن البيع الفعلي — ${cb.closest("label").querySelector("b")?.innerText||"الرأس"}</label><input class="sale-weight-input" data-id="${cb.value}" type="number" min="0.001" step="0.001" value="${cb.dataset.saleWeight||cb.dataset.default||0}" oninput="updateSalePreview()"></div><div class="field"><label>سعر الكيلو لهذه الرأس (اختياري)</label><input class="sale-price-input" data-id="${cb.value}" type="number" min="0" step="0.01" value="${cb.dataset.salePrice||$("salePriceKg").value||0}" oninput="updateSalePreview()"></div></div>`).join("")}
 function updateSalePreview(){const selected=[...document.querySelectorAll(".sale-animal-cb:checked")];let wt=0,total=0;selected.forEach(cb=>{const w=num(document.querySelector(`.sale-weight-input[data-id="${cb.value}"]`)?.value)||0;const p=num(document.querySelector(`.sale-price-input[data-id="${cb.value}"]`)?.value)||num($("salePriceKg").value);wt+=w;total+=w*p});$("salePreview").textContent=`المحدد: ${selected.length} رأس | الوزن الفعلي: ${wt.toFixed(3)} كجم | الإجمالي: ${total.toLocaleString()}`}
 async function sellSelectedAnimals(){
- const ids=[...document.querySelectorAll(".sale-animal-cb:checked")];const barn=$("saleBarn").value;if(!barn||!ids.length)return message("saleMsg","أكمل بيانات البيع وحدد الرؤوس.",true);const lines=ids.map(cb=>({animal_id:cb.value,sold_weight_kg:num(document.querySelector(`.sale-weight-input[data-id="${cb.value}"]`)?.value),price_per_kg:num(document.querySelector(`.sale-price-input[data-id="${cb.value}"]`)?.value)||num($("salePriceKg").value)}));if(lines.some(x=>x.sold_weight_kg<=0))return message("saleMsg","أدخل وزن البيع الفعلي لكل رأس.",true);const editId=$("saleInvoiceNo").dataset.editId||null;let invoice=$("saleInvoiceNo").value.trim();if(!editId){const {data:next,error:ne}=await db.rpc("next_sales_invoice_no");if(ne)return message("saleMsg",ne.message,true);invoice=next;$("saleInvoiceNo").value=invoice}const payload=editId?{p_sale_id:editId,p_customer_id:$("saleCustomer").value||null,p_barn_id:barn,p_sale_date:$("saleDate").value||today(),p_lines:lines,p_price_per_kg:num($("salePriceKg").value),p_notes:$("saleNotes").value.trim()||null}:{p_invoice_no:invoice,p_customer_id:$("saleCustomer").value||null,p_barn_id:barn,p_sale_date:$("saleDate").value||today(),p_lines:lines,p_price_per_kg:num($("salePriceKg").value),p_notes:$("saleNotes").value.trim()||null};const {error}=await db.rpc(editId?"update_sale_invoice":"sell_animals_batch",payload);if(error)return message("saleMsg",error.message,true);message("saleMsg",editId?"تم تعديل الفاتورة بنجاح.":`تم تنفيذ البيع بنجاح برقم ${invoice}.`);$("saleInvoiceNo").value="";delete $("saleInvoiceNo").dataset.editId;$("salePriceKg").value="";$("saleNotes").value="";await Promise.all([loadSaleAnimals(),loadSales(),loadDashboard()])}
+ const ids=[...document.querySelectorAll(".sale-animal-cb:checked")];
+ const barn=$("saleBarn").value;
+ if(!barn||!ids.length)return message("saleMsg","أكمل بيانات البيع وحدد الرؤوس.",true);
+ const lines=ids.map(cb=>({
+   animal_id:cb.value,
+   sold_weight_kg:num(document.querySelector(`.sale-weight-input[data-id="${cb.value}"]`)?.value),
+   price_per_kg:num(document.querySelector(`.sale-price-input[data-id="${cb.value}"]`)?.value)||num($("salePriceKg").value)
+ }));
+ if(lines.some(x=>x.sold_weight_kg<=0))return message("saleMsg","أدخل وزن البيع الفعلي لكل رأس.",true);
+ const editId=$("saleInvoiceNo").dataset.editId||null;
+ const payload=editId
+   ?{p_sale_id:editId,p_customer_id:$("saleCustomer").value||null,p_barn_id:barn,p_sale_date:$("saleDate").value||today(),p_lines:lines,p_price_per_kg:num($("salePriceKg").value),p_notes:$("saleNotes").value.trim()||null}
+   :{p_invoice_no:null,p_customer_id:$("saleCustomer").value||null,p_barn_id:barn,p_sale_date:$("saleDate").value||today(),p_lines:lines,p_price_per_kg:num($("salePriceKg").value),p_notes:$("saleNotes").value.trim()||null};
+ const {data:saleId,error}=await db.rpc(editId?"update_sale_invoice":"sell_animals_batch",payload);
+ if(error)return message("saleMsg",error.message,true);
+ let savedInvoice=$("saleInvoiceNo").value.trim();
+ if(!editId&&saleId){
+   const {data:savedSale,error:readError}=await db.from("sales").select("invoice_no").eq("id",saleId).eq("farm_id",farmId).single();
+   if(!readError&&savedSale?.invoice_no)savedInvoice=savedSale.invoice_no;
+ }
+ message("saleMsg",editId?"تم تعديل الفاتورة بنجاح.":`تم تنفيذ البيع بنجاح. رقم الفاتورة: ${savedInvoice||"تم توليده تلقائيًا"}.`);
+ $("saleInvoiceNo").value="";
+ delete $("saleInvoiceNo").dataset.editId;
+ $("salePriceKg").value="";
+ $("saleNotes").value="";
+ await Promise.all([loadSaleAnimals(),loadSales(),loadDashboard()]);
+}
 async function loadSales(){const {data,error}=await db.from("sales").select("id,invoice_no,sale_date,total_amount,customer_id,customers(name),sale_animals(animal_id,sold_weight_kg,price_per_kg,amount,animals(tag,barn_id))").eq("farm_id",farmId).order("sale_date",{ascending:false}).limit(500);if(error){$("salesRows").innerHTML=`<tr><td colspan="7">${error.message}</td></tr>`;return}const {data:b}=await db.from("barns").select("id,name").eq("farm_id",farmId);const bm=Object.fromEntries((b||[]).map(x=>[x.id,x.name]));$("salesRows").innerHTML=(data||[]).map(s=>{const l=s.sale_animals||[];const barn=[...new Set(l.map(x=>bm[x.animals?.barn_id]).filter(Boolean))].join("، ");return `<tr><td>${s.invoice_no}</td><td>${s.customers?.name||"-"}</td><td>${barn||"-"}</td><td>${l.length}</td><td>${num(s.total_amount).toLocaleString()}</td><td>${s.sale_date}</td><td><button class="btn btn-light btn-small" onclick="editSale('${s.id}')">تعديل</button> <button class="btn btn-danger btn-small" onclick="deleteSale('${s.id}')">حذف</button></td><td><button class="btn btn-light btn-small" onclick="printSaleInvoice('${s.id}')"><i class="fa-solid fa-print"></i></button></td></tr>`}).join("")||'<tr><td colspan="7">لا توجد مبيعات</td></tr>'}
 async function editSale(id){const {data,error}=await db.from("sales").select("id,invoice_no,customer_id,sale_date,notes,sale_animals(animal_id,sold_weight_kg,price_per_kg,animals(barn_id))").eq("id",id).eq("farm_id",farmId).single();if(error)return toast(error.message);$("saleInvoiceNo").value=data.invoice_no||"";$("saleInvoiceNo").dataset.editId=data.id;$("saleCustomer").value=data.customer_id||"";$("saleDate").value=data.sale_date||today();$("saleNotes").value=data.notes||"";const barn=data.sale_animals?.[0]?.animals?.barn_id||"";$("saleBarn").value=barn;await loadSaleAnimals();data.sale_animals?.forEach(line=>{const cb=document.querySelector(`.sale-animal-cb[value="${line.animal_id}"]`);if(cb){cb.checked=true;cb.dataset.saleWeight=line.sold_weight_kg;cb.dataset.salePrice=line.price_per_kg}});renderSaleWeights();data.sale_animals?.forEach(line=>{const w=document.querySelector(`.sale-weight-input[data-id="${line.animal_id}"]`);const pr=document.querySelector(`.sale-price-input[data-id="${line.animal_id}"]`);if(w)w.value=line.sold_weight_kg;if(pr)pr.value=line.price_per_kg});updateSalePreview();openPage("sales");toast("تم تحميل الفاتورة للتعديل")}
 async function deleteSale(id){if(!confirm("حذف الفاتورة وإرجاع العجول للرصيد الحي؟"))return;const {error}=await db.rpc("delete_sale_invoice",{p_sale_id:id});if(error)return toast(error.message);await Promise.all([loadSales(),loadDashboard()]);toast("تم حذف الفاتورة وإرجاع الرؤوس")}
