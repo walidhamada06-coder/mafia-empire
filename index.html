@@ -159,6 +159,12 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 .chart{height:310px;min-height:310px;position:relative;overflow:hidden}
 .chart canvas{display:block!important;width:100%!important;height:245px!important;max-height:245px!important}
 @media(max-width:900px){.chart{height:285px;min-height:285px}.chart canvas{height:220px!important;max-height:220px!important}}
+/* V42: public SaaS onboarding and tenant billing */
+.login-card.signup-mode{width:min(720px,96vw);max-height:95dvh;overflow:auto;text-align:right}
+.signup-plan-note{border:1px solid #dfe8e5;background:#f7fbf9;border-radius:8px;padding:10px;font-size:12px;line-height:1.8}
+.public-step-note{font-size:12px;line-height:1.8;color:#62727a}
+#tenantPaymentInstructions{white-space:pre-wrap;line-height:1.9}
+@media(max-width:700px){.login-card.signup-mode{padding:18px;max-height:96dvh}.login-card.signup-mode .formgrid{grid-template-columns:1fr!important}}
 /* V41: platform SaaS control center */
 .platform-hero{background:linear-gradient(135deg,#243746,#176b5b);color:#fff;border-radius:12px;padding:18px;margin-bottom:14px}
 .platform-hero p{color:#dcece7;font-size:13px;margin-top:6px;line-height:1.7}
@@ -184,7 +190,7 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
   <div class="login-card">
     <img id="loginLogo" src="" alt="Logo" style="display:none;width:76px;height:76px;object-fit:contain;margin:0 auto 10px;background:#fff;border-radius:12px"><div id="loginLogoFallback" style="text-align:center;font-size:34px;color:#16a085;margin-bottom:10px"><i class="fa-solid fa-tractor"></i></div>
     <h1>الإدارة الشاملة للمزرعة</h1>
-    <div class="brand2">شركة اجرو جرين للاستيراد والتصدير — مزرعة شمال التحرير</div>
+    <div class="brand2">منصة Agro Green لإدارة المزارع وشركات التسمين</div>
     <div id="loginCredentialsGroup">
       <div class="input"><label>البريد الإلكتروني</label><input id="email" type="email" placeholder="البريد المسجل في Supabase" autocomplete="username"></div>
       <div class="input"><label>كلمة المرور</label><input id="password" type="password" autocomplete="current-password"></div>
@@ -198,6 +204,36 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
       <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="completeFirstLoginPassword()">حفظ كلمة المرور والدخول</button>
     </div>
     <div id="loginMsg"></div>
+    <div id="loginSignupActions" style="margin-top:14px;border-top:1px solid #e8edef;padding-top:12px;text-align:center">
+      <div class="muted" style="margin-bottom:8px">ليس لديك حساب؟ ابدأ تجربة مجانية لمدة 14 يومًا.</div>
+      <button class="btn btn-blue" style="width:100%;justify-content:center" onclick="showPublicSignup()"><i class="fa-solid fa-store"></i> إنشاء حساب ومزرعة جديدة</button>
+    </div>
+    <div id="publicSignupView" class="hidden" style="margin-top:12px;text-align:right">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <h2 style="font-size:19px;color:var(--primary)">ابدأ مزرعتك على Agro Green</h2>
+        <span class="badge ok">14 يومًا مجانًا</span>
+      </div>
+      <p class="muted" style="line-height:1.7;margin-bottom:12px">أنشئ حساب مدير المزرعة واختر الباقة. كل عميل يحصل على مزرعة مستقلة وبيانات منفصلة، وتبدأ التجربة المجانية لمدة 14 يومًا بعد تأكيد البريد.</p>
+      <div class="form" style="padding:12px">
+        <div class="formgrid" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+          <div class="field"><label>اسمك بالكامل *</label><input id="pubFullName" autocomplete="name" maxlength="120" placeholder="اسم مدير المزرعة"></div>
+          <div class="field"><label>رقم الهاتف</label><input id="pubPhone" autocomplete="tel" maxlength="30" placeholder="01xxxxxxxxx"></div>
+          <div class="field"><label>اسم الشركة / المؤسسة *</label><input id="pubCompanyName" maxlength="150" placeholder="اسم الشركة"></div>
+          <div class="field"><label>اسم المزرعة *</label><input id="pubFarmName" maxlength="150" placeholder="اسم المزرعة"></div>
+          <div class="field" style="grid-column:1/-1"><label>البريد الإلكتروني *</label><input id="pubEmail" type="email" autocomplete="email" maxlength="254" placeholder="name@example.com"></div>
+          <div class="field"><label>كلمة المرور *</label><input id="pubPassword" type="password" minlength="10" autocomplete="new-password" placeholder="10 أحرف على الأقل"></div>
+          <div class="field"><label>تأكيد كلمة المرور *</label><input id="pubPasswordConfirm" type="password" minlength="10" autocomplete="new-password"></div>
+          <div class="field" style="grid-column:1/-1"><label>الباقة المطلوبة *</label><select id="pubPlan" onchange="renderPublicPlanSelection()"><option value="">جاري تحميل الباقات...</option></select><div id="pubPlanSummary" class="muted" style="margin-top:6px"></div></div>
+          <div class="field"><label>طريقة الدفع (اختياري أثناء التجربة)</label><select id="pubPaymentMethod" onchange="renderPublicPaymentInstructions()"><option value="instapay">إنستاباي</option><option value="bank">تحويل بنكي</option></select></div>
+          <div class="field"><label>كود الإحالة (اختياري)</label><input id="pubReferralCode" maxlength="40" placeholder="REF-CODE"></div>
+          <div class="field" style="grid-column:1/-1"><label>رقم مرجع التحويل (اختياري)</label><input id="pubPaymentReference" maxlength="120" placeholder="رقم العملية إن كنت دفعت بالفعل"></div>
+        </div>
+        <div id="pubPaymentInstructions" class="msg" style="margin-top:10px"></div>
+        <button id="pubSignupButton" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:10px" onclick="submitPublicSignup()"><i class="fa-solid fa-user-plus"></i> إنشاء حساب وبدء التجربة المجانية</button>
+        <div id="publicSignupMsg" style="margin-top:10px"></div>
+      </div>
+      <button class="btn btn-light" style="width:100%;justify-content:center;margin-top:10px" onclick="showLoginView()"><i class="fa-solid fa-arrow-right-to-bracket"></i> العودة لتسجيل الدخول</button>
+    </div>
   </div>
 </section>
 
@@ -248,6 +284,9 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 
     <div class="head">إدارة المنصة</div>
     <div class="item" data-page="platformControl" style="display:none"><i class="fa-solid fa-gauge-high"></i> لوحة تحكم مالك المنصة</div>
+
+    <div class="head">اشتراك المنصة</div>
+    <div class="item" data-page="tenantSubscription"><i class="fa-solid fa-credit-card"></i> اشتراكي وطرق الدفع</div>
 
     <div class="head">الإدارة والتحكم</div>
     <div class="item" data-page="employees"><i class="fa-solid fa-user-shield"></i> الموظفون والصلاحيات</div>
@@ -1035,6 +1074,36 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
   </div>
 </section>
 
+<section id="tenantSubscription" class="view">
+  <div class="card">
+    <h2><i class="fa-solid fa-credit-card"></i> اشتراكي وطرق الدفع</h2>
+    <p class="muted">تابع باقة مزرعتك وفترة التجربة، وأرسل بيانات التحويل ليتمكن مالك المنصة من مراجعتها وتأكيد التحصيل يدويًا.</p>
+    <div class="grid kpis" style="margin-top:12px">
+      <div class="kpi"><div><small>الباقة الحالية</small><b id="tenantPlanName">-</b></div></div>
+      <div class="kpi"><div><small>حالة الاشتراك</small><b id="tenantPlanStatus">-</b></div></div>
+      <div class="kpi"><div><small>ينتهي في</small><b id="tenantPlanEnd">-</b></div></div>
+      <div class="kpi"><div><small>المبلغ المستحق</small><b id="tenantPlanPrice">-</b></div></div>
+    </div>
+    <div id="tenantSubscriptionMsg" class="msg" style="margin-top:12px"></div>
+  </div>
+  <div class="split">
+    <div class="card">
+      <h3>إرسال طلب دفع / تجديد</h3>
+      <div class="form"><div class="formgrid">
+        <div class="field"><label>طريقة الدفع</label><select id="tenantPaymentMethod"><option value="instapay">إنستاباي</option><option value="bank">تحويل بنكي</option></select></div>
+        <div class="field"><label>رقم مرجع التحويل</label><input id="tenantPaymentReference" maxlength="120" placeholder="رقم العملية / الإيصال"></div>
+        <div class="field" style="grid-column:1/-1"><label>ملاحظات إضافية</label><textarea id="tenantPaymentNotes" rows="3"></textarea></div>
+      </div><button class="btn btn-primary" onclick="requestTenantSubscriptionPayment()">إرسال طلب الدفع للمراجعة</button><div id="tenantPaymentRequestMsg"></div></div>
+      <div id="tenantLatestPayment" class="msg" style="margin-top:12px"></div>
+    </div>
+    <div class="card">
+      <h3>بيانات التحويل المعتمدة</h3>
+      <div id="tenantPaymentInstructions" class="form" style="line-height:1.9">جاري تحميل بيانات الدفع...</div>
+      <p class="muted" style="margin-top:9px">لا يتم تفعيل الاشتراك المدفوع بمجرد إرسال المرجع. التفعيل يتم فقط بعد مراجعة التحويل وتأكيد التحصيل من إدارة المنصة.</p>
+    </div>
+  </div>
+</section>
+
 <section id="platformControl" class="view">
   <div class="platform-hero">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><i class="fa-solid fa-gauge-high" style="font-size:26px"></i><div><h2 style="margin:0">لوحة تحكم مالك المنصة</h2><div style="font-size:12px;color:#c8e3da;margin-top:4px">العملاء والاشتراكات والأسعار والإحالات والعمولات والتحكم في وحدات النظام</div></div></div>
@@ -1107,10 +1176,25 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
         <div class="field"><label>عمولة الشريك %</label><input id="platformPartnerRate" type="number" min="0" max="100" step="0.1" value="10"></div>
         <div class="field" style="display:flex;align-items:end"><label style="display:flex;gap:8px;align-items:center"><input id="platformPartnerActive" type="checkbox" checked style="width:17px"> شريك نشط</label></div>
       </div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" onclick="savePlatformPartner()">حفظ الشريك</button><button class="btn btn-light" onclick="resetPlatformPartnerForm()">جديد</button></div><div id="platformPartnerMsg"></div></div>
-      <div class="tablewrap" style="margin-top:12px"><table class="table"><thead><tr><th>الشريك</th><th>الكود</th><th>العمولة</th><th>الحالة</th><th>تعديل</th></tr></thead><tbody id="platformPartnersRows"></tbody></table></div>
+      <div class="tablewrap" style="margin-top:12px"><table class="table"><thead><tr><th>الشريك</th><th>الكود</th><th>رابط الإحالة</th><th>العمولة</th><th>الحالة</th><th>تعديل</th></tr></thead><tbody id="platformPartnersRows"></tbody></table></div>
       <h4 style="margin:15px 0 8px">سجل العمولات</h4>
       <div class="tablewrap"><table class="table"><thead><tr><th>الشريك</th><th>العميل</th><th>الأساس</th><th>النسبة</th><th>العمولة</th><th>الحالة</th><th>الإجراء</th></tr></thead><tbody id="platformCommissionsRows"></tbody></table></div>
     </div>
+  </div>
+
+  <div class="card platform-panel" style="margin-top:14px">
+    <h3><i class="fa-solid fa-building-columns"></i> بيانات الدفع التي تظهر للعملاء</h3>
+    <p class="muted">هذه البيانات تظهر في صفحة التسجيل العامة وصفحة اشتراك العميل. تأكد من مراجعة الحسابات قبل نشر رابط الإعلان.</p>
+    <div class="form"><div class="formgrid">
+      <div class="field"><label style="display:flex;gap:8px;align-items:center"><input id="payInstapayEnabled" type="checkbox" style="width:17px"> تفعيل إنستاباي</label></div>
+      <div class="field"><label>عنوان / رقم إنستاباي</label><input id="payInstapayHandle" maxlength="120" placeholder="instapay@bank أو رقم الهاتف"></div>
+      <div class="field"><label style="display:flex;gap:8px;align-items:center"><input id="payBankEnabled" type="checkbox" style="width:17px"> تفعيل التحويل البنكي</label></div>
+      <div class="field"><label>اسم البنك</label><input id="payBankName" maxlength="120"></div>
+      <div class="field"><label>اسم صاحب الحساب</label><input id="payBankAccountName" maxlength="160"></div>
+      <div class="field"><label>رقم الحساب / IBAN</label><input id="payBankAccountNumber" maxlength="120"></div>
+      <div class="field"><label>هاتف الدعم</label><input id="paySupportPhone" maxlength="40"></div>
+      <div class="field"><label>تعليمات الدفع للعميل</label><textarea id="payPublicInstructions" rows="3" maxlength="1000"></textarea></div>
+    </div><button class="btn btn-primary" onclick="savePlatformPaymentSettings()">حفظ بيانات الدفع العامة</button><div id="platformPaymentSettingsMsg"></div></div>
   </div>
 
   <div class="card platform-panel" style="margin-top:14px">
@@ -1126,7 +1210,7 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 <button id="mobileFab" class="mobile-fab" onclick="toggleMobileMenu()" aria-label="فتح القائمة"><i class="fa-solid fa-bars"></i></button><div id="toast" class="toast"></div>
 
 <script>
-const APP_VERSION="V41";
+const APP_VERSION="V42";
 const SUPABASE_URL="https://vhbhbzcywtmtwtpqvnhw.supabase.co";
 const SUPABASE_KEY="sb_publishable_LXRs70nbUvJljFiRyCT2UA_-hZDkuf3";
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
@@ -1338,6 +1422,7 @@ const PAGE_FEATURE_MAP={
 };
 function canAccessPage(page){
  if(page==="platformControl")return isPlatformAdmin===true;
+ if(page==="tenantSubscription")return ["admin","manager"].includes(profile?.role);
  const r=profile?.role||"employee",allowed=ROLE_PAGE_ACCESS[r];
  const roleAllowed=allowed===null||Array.isArray(allowed)&&allowed.includes(page);
  if(!roleAllowed)return false;
@@ -1399,6 +1484,7 @@ async function refreshPage(page){
  if(page==="accounting")loadAccountingPage();
  if(page==="accountingApprovals")loadAccountingApprovals();
  if(page==="platformControl")loadPlatformControl();
+ if(page==="tenantSubscription")loadMySubscriptionBilling();
 }
 
 async function login(){
@@ -1406,7 +1492,16 @@ async function login(){
  if(!email||!password)return message("loginMsg","أدخل البريد وكلمة المرور",true);
  const {data,error}=await db.auth.signInWithPassword({email,password});
  if(error)return message("loginMsg",error.message,true);
- await enter(user=data.user);
+ user=data.user;
+ if(user?.user_metadata?.signup_mode==="self_service"&&user?.user_metadata?.tenant_provisioned!==true){
+   const {data:provisioned,error:provisionError}=await db.functions.invoke("complete-registration",{body:{}});
+   if(provisionError){
+     const detail=await readableFunctionError(provisionError);
+     return message("loginMsg","تم تسجيل الدخول لكن لم يكتمل إنشاء المزرعة: "+detail,true);
+   }
+   console.info("Self-service tenant status:",provisioned);
+ }
+ await enter(user);
 }
 async function enter(u){
  user=u;
@@ -2232,6 +2327,135 @@ async function loadUsers(){
 
 
 
+// ======================= V42 PUBLIC SIGNUP / SAAS ONBOARDING =======================
+let publicSignupCatalog=null;
+function showPublicSignup(){
+  document.querySelector('.login-card')?.classList.add('signup-mode');
+  $('loginCredentialsGroup').classList.add('hidden');
+  $('loginSignupActions').classList.add('hidden');
+  $('forcePasswordChange').classList.add('hidden');
+  $('publicSignupView').classList.remove('hidden');
+  $('loginMsg').textContent='';
+  const ref=new URLSearchParams(location.search).get('ref');
+  if(ref&&!$('pubReferralCode').value)$('pubReferralCode').value=ref.toUpperCase();
+  if(!publicSignupCatalog)loadPublicSignupCatalog();
+}
+function showLoginView(){
+  document.querySelector('.login-card')?.classList.remove('signup-mode');
+  $('publicSignupView').classList.add('hidden');
+  $('loginCredentialsGroup').classList.remove('hidden');
+  $('loginSignupActions').classList.remove('hidden');
+  $('publicSignupMsg').textContent='';
+}
+async function readableFunctionError(err){
+  let detail=err?.message||'تعذر تنفيذ الطلب';
+  try{const r=err?.context;if(r&&typeof r.clone==='function'){const body=await r.clone().json();detail=body.error||body.message||detail;}}catch{}
+  return detail;
+}
+async function loadPublicSignupCatalog(){
+  $('pubPlan').innerHTML='<option value="">جاري تحميل الباقات...</option>';
+  const {data,error}=await db.rpc('get_public_subscription_catalog');
+  if(error){$('pubPlan').innerHTML='<option value="">تعذر تحميل الباقات</option>';message('publicSignupMsg','تعذر تحميل الباقات: '+error.message,true);return;}
+  publicSignupCatalog=data||{};
+  const plans=publicSignupCatalog.plans||[];
+  $('pubPlan').innerHTML='<option value="">اختر الباقة</option>'+plans.map(p=>`<option value="${escapeHtml(p.plan_code)}">${escapeHtml(p.plan_name)} — ${p.price>0?platformMoney(p.price,p.currency):'السعر عند التواصل'} (${p.billing_cycle==='monthly'?'شهري':p.billing_cycle==='annual'?'سنوي':'مدى الحياة'})</option>`).join('');
+  const pay=publicSignupCatalog.payment||{},methods=[];if(pay.instapay_enabled)methods.push('<option value="instapay">إنستاباي</option>');if(pay.bank_enabled)methods.push('<option value="bank">تحويل بنكي</option>');
+  $('pubPaymentMethod').innerHTML=methods.join('')||'<option value="bank">تحديد طريقة الدفع لاحقًا</option>';
+  if(plans.length===1)$('pubPlan').value=plans[0].plan_code;
+  renderPublicPlanSelection();renderPublicPaymentInstructions();
+}
+function renderPublicPlanSelection(){
+  const p=(publicSignupCatalog?.plans||[]).find(x=>x.plan_code===$('pubPlan').value);
+  if(!p){$('pubPlanSummary').textContent='اختر الباقة لعرض السعر والحدود.';return;}
+  $('pubPlanSummary').textContent=`${p.price>0?platformMoney(p.price,p.currency):'السعر غير محدد بعد'} — ${p.max_users?`حتى ${p.max_users} مستخدم`: 'عدد مستخدمين مفتوح حسب الاتفاق'} — ${p.max_animals?`حتى ${p.max_animals} رأس`: 'عدد رؤوس حسب الاتفاق'} — تجربة مجانية 14 يومًا.`;
+}
+function renderPublicPaymentInstructions(){
+  const p=publicSignupCatalog?.payment||{};const method=$('pubPaymentMethod').value;let lines=[];
+  if(method==='instapay'){
+    if(!p.instapay_enabled)lines.push('إنستاباي غير متاح حاليًا. اختر التحويل البنكي أو تواصل مع الإدارة.');
+    else lines.push(`إنستاباي: ${p.instapay_handle||'سيتم إظهار بيانات الدفع بعد تواصل الإدارة'}`);
+  }else{
+    if(!p.bank_enabled)lines.push('التحويل البنكي غير متاح حاليًا. اختر إنستاباي أو تواصل مع الإدارة.');
+    else lines.push(`البنك: ${p.bank_name||'-'}`,`اسم الحساب: ${p.bank_account_name||'-'}`,`رقم الحساب / IBAN: ${p.bank_account_number||'-'}`);
+  }
+  if(p.instructions)lines.push(`تعليمات: ${p.instructions}`);
+  if(p.support_phone)lines.push(`الدعم: ${p.support_phone}`);
+  lines.push('لا يلزم الدفع لبدء التجربة. تفعيل الاشتراك المدفوع يتم بعد مراجعة التحويل يدويًا.');
+  $('pubPaymentInstructions').textContent=lines.join('\n');
+}
+async function completeSelfServiceRegistration(){
+  const {data,error}=await db.functions.invoke('complete-registration',{body:{}});
+  if(error)throw new Error(await readableFunctionError(error));
+  return data;
+}
+async function submitPublicSignup(){
+  const fullName=$('pubFullName').value.trim(),company=$('pubCompanyName').value.trim(),farm=$('pubFarmName').value.trim();
+  const email=$('pubEmail').value.trim().toLowerCase(),phone=$('pubPhone').value.trim(),password=$('pubPassword').value,confirmPassword=$('pubPasswordConfirm').value;
+  const planCode=$('pubPlan').value,referral=$('pubReferralCode').value.trim().toUpperCase(),method=$('pubPaymentMethod').value,reference=$('pubPaymentReference').value.trim();
+  if(fullName.length<3||company.length<2||farm.length<2||!email||!planCode)return message('publicSignupMsg','أكمل الاسم واسم الشركة والمزرعة والبريد الإلكتروني والباقة.',true);
+  if(password.length<10)return message('publicSignupMsg','كلمة المرور يجب ألا تقل عن 10 أحرف.',true);
+  if(password!==confirmPassword)return message('publicSignupMsg','تأكيد كلمة المرور غير مطابق.',true);
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return message('publicSignupMsg','البريد الإلكتروني غير صحيح.',true);
+  const plan=(publicSignupCatalog?.plans||[]).find(x=>x.plan_code===planCode);
+  if(!plan)return message('publicSignupMsg','الباقة المحددة لم تعد متاحة. حدّث الصفحة وحاول مرة أخرى.',true);
+  const btn=$('pubSignupButton');btn.disabled=true;btn.textContent='جاري إنشاء حساب الدخول...';
+  try{
+    const {data,error}=await db.auth.signUp({
+      email,password,
+      options:{emailRedirectTo:window.location.origin,data:{
+        signup_mode:'self_service',full_name:fullName,company_name:company,farm_name:farm,phone,
+        plan_code:planCode,referral_code:referral,payment_method:method,payment_reference:reference
+      }}
+    });
+    if(error)throw new Error(error.message);
+    if(!data.user)throw new Error('لم يرجع نظام الدخول مستخدمًا جديدًا. حاول مرة أخرى.');
+    if(Array.isArray(data.user.identities)&&data.user.identities.length===0)throw new Error('هذا البريد الإلكتروني مسجل بالفعل. ارجع لتسجيل الدخول أو استخدم استعادة كلمة المرور.');
+    $('email').value=email;
+    if(data.session){
+      const provision=await completeSelfServiceRegistration();
+      message('publicSignupMsg',`تم إنشاء المزرعة وبدء تجربة 14 يومًا حتى ${provision.trial_ends_on||'نهاية الفترة التجريبية'}. جاري فتح النظام...`);
+      await enter(data.user);
+      return;
+    }
+    message('publicSignupMsg','تم إنشاء طلب التسجيل. افتح بريدك الإلكتروني واضغط رابط التأكيد، ثم ارجع إلى هذه الصفحة وسجّل الدخول بنفس البريد وكلمة المرور. سيتم إنشاء المزرعة تلقائيًا وبدء التجربة لمدة 14 يومًا بعد التأكيد.');
+    $('pubSignupButton').disabled=true;
+  }catch(e){message('publicSignupMsg',e.message||'تعذر إكمال التسجيل',true);}
+  finally{if($('publicSignupButton').disabled&&$('publicSignupMsg').className.includes('err')){$('publicSignupButton').disabled=false;$('publicSignupButton').innerHTML='<i class="fa-solid fa-user-plus"></i> إنشاء حساب وبدء التجربة المجانية';}else if(!$('publicSignupButton').disabled)$('publicSignupButton').innerHTML='<i class="fa-solid fa-user-plus"></i> إنشاء حساب وبدء التجربة المجانية';}
+}
+
+// ======================= V42 TENANT BILLING PORTAL =======================
+let tenantBillingCache=null;
+function tenantStatusLabel(s){return ({trial:'تجريبي',active:'نشط',expired:'منتهي',past_due:'متأخر السداد',suspended:'موقوف',cancelled:'ملغي',legacy_unassigned:'بدون اشتراك محدد'})[s]||s||'-'}
+async function loadMySubscriptionBilling(){
+  const {data,error}=await db.rpc('get_my_billing_summary');
+  if(error){$('tenantSubscriptionMsg').className='msg err';$('tenantSubscriptionMsg').textContent=error.message;return;}
+  tenantBillingCache=data||{};const s=data.subscription||null,p=data.payment||{},last=data.latest_payment||null;
+  $('tenantPlanName').textContent=s?.plan_name||'غير محددة';$('tenantPlanStatus').textContent=tenantStatusLabel(s?.status);
+  $('tenantPlanEnd').textContent=s?.ends_on||'مدى الحياة / غير محدد';$('tenantPlanPrice').textContent=s?platformMoney(s.price,s.currency):'-';
+  $('tenantSubscriptionMsg').className='msg '+(s?.status==='expired'?'warn':'ok');
+  $('tenantSubscriptionMsg').textContent=s?.status==='trial'?`فترتك التجريبية متاحة حتى ${s.ends_on}. المتبقي ${Math.max(0,Number(s.days_remaining)||0)} يومًا.`:s?.status==='active'?'اشتراك مزرعتك نشط. يمكنك إرسال طلب التجديد قبل موعد الانتهاء.':s?'حالة الاشتراك: '+tenantStatusLabel(s.status):'لا يوجد اشتراك مربوط بهذه المزرعة. تواصل مع مالك المنصة.';
+  const lines=[];
+  if(p.instapay_enabled)lines.push(`إنستاباي: ${p.instapay_handle||'يرجى التواصل مع الدعم'}`);
+  if(p.bank_enabled)lines.push(`البنك: ${p.bank_name||'-'}\nاسم الحساب: ${p.bank_account_name||'-'}\nرقم الحساب / IBAN: ${p.bank_account_number||'-'}`);
+  if(p.instructions)lines.push(`تعليمات: ${p.instructions}`);if(p.support_phone)lines.push(`الدعم: ${p.support_phone}`);
+  $('tenantPaymentInstructions').textContent=lines.join('\n\n')||'لم يتم ضبط بيانات الدفع بعد. تواصل مع إدارة المنصة.';
+  $('tenantPaymentMethod').innerHTML=(p.instapay_enabled?'<option value="instapay">إنستاباي</option>':'')+(p.bank_enabled?'<option value="bank">تحويل بنكي</option>':'')||'<option value="bank">تحويل بنكي (لم يضبط بعد)</option>';
+  $('tenantLatestPayment').className='msg '+(last?.payment_status==='pending'?'warn':'ok');
+  $('tenantLatestPayment').textContent=last?`آخر طلب دفع: ${platformMoney(last.amount,last.currency)} — ${last.payment_method==='instapay'?'إنستاباي':'تحويل بنكي'} — الحالة: ${last.payment_status==='pending'?'قيد المراجعة':last.payment_status==='paid'?'تم التحصيل':last.payment_status}`:'لم يتم إرسال طلب دفع حتى الآن.';
+}
+async function requestTenantSubscriptionPayment(){
+  const ref=$('tenantPaymentReference').value.trim(),notes=$('tenantPaymentNotes').value.trim();
+  const {data,error}=await db.rpc('request_my_subscription_payment',{p_payment_method:$('tenantPaymentMethod').value,p_payment_reference:ref||null,p_notes:notes||null});
+  if(error)return message('tenantPaymentRequestMsg',error.message,true);
+  message('tenantPaymentRequestMsg','تم إرسال طلب الدفع. سيظهر لدى إدارة المنصة لتأكيد التحصيل بعد المراجعة. رقم الطلب: '+data);
+  $('tenantPaymentReference').value='';await loadMySubscriptionBilling();
+}
+
+// Direct marketing URL: https://agrogreen-farm.vercel.app/?signup=1
+// Referral URL: https://agrogreen-farm.vercel.app/?signup=1&ref=PARTNER_CODE
+if(new URLSearchParams(location.search).get('signup')==='1')showPublicSignup();
+else void loadPublicSignupCatalog();
+
 // ======================= V41 PLATFORM / SAAS CONTROL CENTER =======================
 const PLATFORM_FEATURE_LABELS={dashboard:"لوحة المؤشرات",animal_management:"إدارة الماشية والشحنات",feed_management:"التغذية وأذون الصرف",inventory:"المخزون والمشتريات",manufacturing:"تصنيع الأعلاف",veterinary:"البيطرة والتحصينات",sales:"المبيعات والعملاء",suppliers:"الموردون",accounting:"المحاسبة العامة",treasury:"الخزينة والعهد",analytics:"التقارير والتحليلات",employee_management:"الموظفون والصلاحيات",fleet:"إدارة الأسطول",multi_warehouse:"تعدد المستودعات",custom_settings:"إعدادات المزرعة"};
 function platformMoney(v,currency="EGP"){return `${num(v).toLocaleString("en-US",{maximumFractionDigits:2})} ${currency==="EGP"?"ج.م":escapeHtml(currency)}`}
@@ -2266,15 +2490,32 @@ function renderPlatformControl(){
  const oldSub=$("platformPaymentSub").value;$("platformPaymentSub").innerHTML='<option value="">اختر اشتراكًا</option>'+subs.filter(x=>["active","trial","past_due"].includes(x.status)).map(x=>`<option value="${x.id}">${escapeHtml(x.farm_name)} — ${escapeHtml(x.plan_name)} (${x.status})</option>`).join("");if(oldSub)$("platformPaymentSub").value=oldSub;
  $("platformSubsRows").innerHTML=subs.map(x=>`<tr><td>${escapeHtml(x.farm_name)}<div class="muted">${escapeHtml(x.company_name||"")}</div></td><td>${escapeHtml(x.plan_name)}</td><td>${escapeHtml(x.status)}</td><td>${escapeHtml(x.starts_on||"-")}</td><td>${escapeHtml(x.ends_on||"مدى الحياة")}</td><td>${platformMoney(x.price_locked,x.currency)}</td></tr>`).join("")||'<tr><td colspan="6">لا توجد اشتراكات مسجلة</td></tr>';
  $("platformPaymentsRows").innerHTML=payments.map(x=>{const action=x.payment_status==="pending"?`<button class="btn btn-primary" onclick="confirmPlatformPayment('${x.id}')">تأكيد التحصيل</button>`:x.payment_status==="paid"?'<span class="muted">تم التأكيد</span>':'-';return `<tr><td>${escapeHtml((x.paid_at||x.created_at||"").slice(0,10))}</td><td>${escapeHtml(x.farm_name||"")}</td><td>${platformMoney(x.amount,x.currency)}</td><td>${escapeHtml(x.payment_method)}</td><td>${escapeHtml(x.payment_status)}</td><td>${escapeHtml(x.payment_reference||"-")}</td><td>${action}</td></tr>`}).join("")||'<tr><td colspan="7">لا توجد دفعات حتى الآن</td></tr>';
- $("platformPartnersRows").innerHTML=partners.map(p=>`<tr><td>${escapeHtml(p.partner_name)}</td><td dir="ltr">${escapeHtml(p.referral_code)}</td><td>${num(p.commission_rate).toFixed(2)}%</td><td>${p.active?'<span class="badge ok">نشط</span>':'<span class="badge bad">موقوف</span>'}</td><td><button class="btn btn-light" onclick="editPlatformPartner('${p.id}')">تعديل</button></td></tr>`).join("")||'<tr><td colspan="5">لم يتم تعريف شركاء إحالة</td></tr>';
+ $("platformPartnersRows").innerHTML=partners.map(p=>{const url=location.origin+'/?signup=1&ref='+encodeURIComponent(p.referral_code);return `<tr><td>${escapeHtml(p.partner_name)}</td><td dir="ltr">${escapeHtml(p.referral_code)}</td><td><button class="btn btn-light" data-ref-code="${escapeHtml(p.referral_code)}" onclick="copyReferralLink(this.dataset.refCode)">نسخ الرابط</button></td><td>${num(p.commission_rate).toFixed(2)}%</td><td>${p.active?'<span class="badge ok">نشط</span>':'<span class="badge bad">موقوف</span>'}</td><td><button class="btn btn-light" onclick="editPlatformPartner('${p.id}')">تعديل</button></td></tr>`}).join("")||'<tr><td colspan="6">لم يتم تعريف شركاء إحالة</td></tr>';
  $("platformCommissionsRows").innerHTML=commissions.map(c=>{const action=c.status==="pending"?`<button class="btn btn-primary" onclick="changePlatformCommission('${c.id}','approved')">اعتماد</button>`:c.status==="approved"?`<button class="btn btn-warn" onclick="changePlatformCommission('${c.id}','paid')">تسجيل الصرف</button>`:"-";return `<tr><td>${escapeHtml(c.partner_name)}</td><td>${escapeHtml(c.farm_name)}</td><td>${platformMoney(c.base_amount)}</td><td>${num(c.commission_rate).toFixed(2)}%</td><td>${platformMoney(c.commission_amount)}</td><td>${escapeHtml(c.status)}</td><td>${action}</td></tr>`}).join("")||'<tr><td colspan="7">لا توجد عمولات بعد. تُنشأ عند تأكيد تحصيل دفعة اشتراك مرتبطة بكود إحالة.</td></tr>';
  $("platformGlobalFeatures").innerHTML=features.map(f=>`<label class="platform-feature-row"><span><b>${escapeHtml(f.feature_name)}</b><div class="muted">${escapeHtml(f.feature_key)}</div></span><input type="checkbox" ${f.enabled?"checked":""} onchange="setPlatformGlobalFeature('${escapeHtml(f.feature_key)}',this.checked)"></label>`).join("");
  const oldFeatureFarm=$("platformFeatureFarm").value;$("platformFeatureFarm").innerHTML='<option value="">اختر مزرعة</option>'+farms.map(f=>`<option value="${f.id}">${escapeHtml(f.company_name||"")} — ${escapeHtml(f.name)}</option>`).join("");if(oldFeatureFarm)$("platformFeatureFarm").value=oldFeatureFarm;renderFarmFeatureOverrides();
 }
-async function loadPlatformControl(){if(!isPlatformAdmin){toast("لوحة مالك المنصة غير متاحة لهذا الحساب");return;}const {data,error}=await db.rpc("platform_get_control_data");if(error){$("platformControl").insertAdjacentHTML("afterbegin",`<div class="msg err">${escapeHtml(error.message)}</div>`);return;}platformControlCache=data||{};renderPlatformControl();renderPlatformPlanFeatures((platformControlCache.plans||[]).find(x=>x.billing_cycle==="monthly")?.feature_keys||Object.keys(PLATFORM_FEATURE_LABELS));if(!$("platformSubStart").value)$("platformSubStart").value=today()}
+async function loadPlatformControl(){if(!isPlatformAdmin){toast("لوحة مالك المنصة غير متاحة لهذا الحساب");return;}const {data,error}=await db.rpc("platform_get_control_data");if(error){$("platformControl").insertAdjacentHTML("afterbegin",`<div class="msg err">${escapeHtml(error.message)}</div>`);return;}platformControlCache=data||{};renderPlatformControl();renderPlatformPlanFeatures((platformControlCache.plans||[]).find(x=>x.billing_cycle==="monthly")?.feature_keys||Object.keys(PLATFORM_FEATURE_LABELS));if(!$("platformSubStart").value)$("platformSubStart").value=today();await loadPlatformPaymentSettings()}
+async function loadPlatformPaymentSettings(){
+ const {data,error}=await db.rpc('platform_get_payment_settings');if(error){message('platformPaymentSettingsMsg',error.message,true);return;}
+ const s=data||{};$('payInstapayEnabled').checked=!!s.instapay_enabled;$('payInstapayHandle').value=s.instapay_handle||'';
+ $('payBankEnabled').checked=!!s.bank_enabled;$('payBankName').value=s.bank_name||'';$('payBankAccountName').value=s.bank_account_name||'';
+ $('payBankAccountNumber').value=s.bank_account_number||'';$('payPublicInstructions').value=s.public_instructions||'';$('paySupportPhone').value=s.support_phone||'';
+}
+async function savePlatformPaymentSettings(){
+ const {error}=await db.rpc('platform_save_payment_settings',{
+  p_instapay_enabled:$('payInstapayEnabled').checked,p_instapay_handle:$('payInstapayHandle').value.trim()||null,
+  p_bank_enabled:$('payBankEnabled').checked,p_bank_name:$('payBankName').value.trim()||null,
+  p_bank_account_name:$('payBankAccountName').value.trim()||null,p_bank_account_number:$('payBankAccountNumber').value.trim()||null,
+  p_instructions:$('payPublicInstructions').value.trim()||null,p_support_phone:$('paySupportPhone').value.trim()||null
+ });
+ if(error)return message('platformPaymentSettingsMsg',error.message,true);
+ message('platformPaymentSettingsMsg','تم حفظ بيانات الدفع، وستظهر في صفحة التسجيل والاشتراك.');
+}
 async function assignPlatformSubscription(){const farm=$("platformSubFarm").value,planId=$("platformSubPlan").value;if(!farm||!planId)return message("platformSubMsg","اختر العميل والباقة.",true);const plan=(platformControlCache?.plans||[]).find(x=>x.id===planId);const end=plan?.billing_cycle==="lifetime"?null:($("platformSubEnd").value||null);if(plan?.billing_cycle!=="lifetime"&&!end)return message("platformSubMsg","حدد نهاية الاشتراك الشهري أو السنوي.",true);const {error}=await db.rpc("platform_set_subscription",{p_farm_id:farm,p_plan_id:planId,p_status:$("platformSubStatus").value,p_starts_on:$("platformSubStart").value||today(),p_ends_on:end,p_price_locked:$("platformSubPrice").value===""?null:num($("platformSubPrice").value),p_referral_code:$("platformSubReferral").value.trim()||null,p_notes:$("platformSubNotes").value.trim()||null});if(error)return message("platformSubMsg",error.message,true);message("platformSubMsg","تم إنشاء سجل الاشتراك، وتم الاحتفاظ بسجل الاشتراك السابق.");$("platformSubPrice").value="";$("platformSubReferral").value="";$("platformSubNotes").value="";await loadPlatformControl();if(farmId===farm)await loadTenantPlatformContext()}
 async function confirmPlatformPayment(id){if(!confirm("تأكيد استلام هذه الدفعة؟ سيؤدي ذلك إلى احتساب عمولة الإحالة إن كان العميل مرتبطًا بشريك."))return;const {error}=await db.rpc("platform_set_payment_status",{p_payment_id:id,p_payment_status:"paid",p_paid_at:new Date().toISOString()});if(error)return toast(error.message);toast("تم تأكيد التحصيل وتحديث عمولة الإحالة.");await loadPlatformControl()}
 async function recordPlatformPayment(){const sub=$("platformPaymentSub").value,amount=num($("platformPaymentAmount").value);if(!sub||amount<=0)return message("platformPaymentMsg","اختر اشتراكًا وأدخل مبلغًا صحيحًا.",true);const {error}=await db.rpc("platform_add_subscription_payment",{p_subscription_id:sub,p_amount:amount,p_payment_method:$("platformPaymentMethod").value,p_payment_reference:$("platformPaymentReference").value.trim()||null,p_payment_status:$("platformPaymentStatus").value,p_paid_at:$("platformPaymentStatus").value==="paid"?new Date().toISOString():null,p_notes:null});if(error)return message("platformPaymentMsg",error.message,true);message("platformPaymentMsg",$("platformPaymentStatus").value==="paid"?"تم تسجيل التحصيل. إن كان للعميل كود إحالة، أُنشئت عمولة معلقة.":"تم تسجيل الدفعة كمعلقة.");$("platformPaymentAmount").value="";$("platformPaymentReference").value="";await loadPlatformControl()}
+async function copyReferralLink(code){const url=location.origin+'/?signup=1&ref='+encodeURIComponent(code);try{await navigator.clipboard.writeText(url);toast('تم نسخ رابط الإحالة: '+url)}catch{prompt('انسخ رابط الإحالة:',url)}}
 function resetPlatformPartnerForm(){["platformPartnerId","platformPartnerName","platformPartnerCode","platformPartnerEmail","platformPartnerPhone"].forEach(id=>$(id).value="");$("platformPartnerRate").value="10";$("platformPartnerActive").checked=true;$("platformPartnerMsg").textContent=""}
 function editPlatformPartner(id){const p=(platformControlCache?.partners||[]).find(x=>x.id===id);if(!p)return;$("platformPartnerId").value=p.id;$("platformPartnerName").value=p.partner_name;$("platformPartnerCode").value=p.referral_code;$("platformPartnerEmail").value=p.email||"";$("platformPartnerPhone").value=p.phone||"";$("platformPartnerRate").value=p.commission_rate;$("platformPartnerActive").checked=!!p.active;window.scrollTo({top:document.getElementById("platformControl").offsetTop,behavior:"smooth"})}
 async function savePlatformPartner(){const name=$("platformPartnerName").value.trim(),code=$("platformPartnerCode").value.trim().toUpperCase(),rate=num($("platformPartnerRate").value);if(!name||!code)return message("platformPartnerMsg","أدخل اسم الشريك وكود الإحالة.",true);const {error}=await db.rpc("platform_save_referral_partner",{p_partner_id:$("platformPartnerId").value||null,p_partner_name:name,p_email:$("platformPartnerEmail").value.trim()||null,p_phone:$("platformPartnerPhone").value.trim()||null,p_referral_code:code,p_commission_rate:rate,p_active:$("platformPartnerActive").checked,p_notes:null});if(error)return message("platformPartnerMsg",error.message,true);message("platformPartnerMsg","تم حفظ شريك الإحالة.");resetPlatformPartnerForm();await loadPlatformControl()}
@@ -2746,7 +2987,7 @@ async function refreshAdvancedAnalytics(){
 }
 function resetAnalyticsFilters(){["anBoat","anBatch"].forEach(id=>{$(id).value="all"});["anFrom","anTo"].forEach(id=>$(id).value="");refreshAdvancedAnalytics()}
 
-(async()=>{const {data}=await db.auth.getSession();if(data.session)await enter(data.session.user)})();
+(async()=>{const {data}=await db.auth.getSession();if(data.session){try{if(data.session.user?.user_metadata?.signup_mode==="self_service"&&data.session.user?.user_metadata?.tenant_provisioned!==true)await completeSelfServiceRegistration();await enter(data.session.user)}catch(e){message("loginMsg","تعذر إكمال تجهيز الحساب: "+(e.message||e),true)}}})();
 // ======================== V39 ACCOUNTING ========================
 let accountingAccountsCache=[];
 let accountingCostCentersCache=[];
