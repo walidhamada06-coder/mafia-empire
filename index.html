@@ -163,9 +163,18 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
     <img id="loginLogo" src="" alt="Logo" style="display:none;width:76px;height:76px;object-fit:contain;margin:0 auto 10px;background:#fff;border-radius:12px"><div id="loginLogoFallback" style="text-align:center;font-size:34px;color:#16a085;margin-bottom:10px"><i class="fa-solid fa-tractor"></i></div>
     <h1>الإدارة الشاملة للمزرعة</h1>
     <div class="brand2">شركة اجرو جرين للاستيراد والتصدير — مزرعة شمال التحرير</div>
-    <div class="input"><label>البريد الإلكتروني</label><input id="email" type="email" placeholder="البريد المسجل في Supabase"></div>
-    <div class="input"><label>كلمة المرور</label><input id="password" type="password"></div>
-    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="login()">تسجيل الدخول</button>
+    <div id="loginCredentialsGroup">
+      <div class="input"><label>البريد الإلكتروني</label><input id="email" type="email" placeholder="البريد المسجل في Supabase" autocomplete="username"></div>
+      <div class="input"><label>كلمة المرور</label><input id="password" type="password" autocomplete="current-password"></div>
+      <button id="loginSubmit" class="btn btn-primary" style="width:100%;justify-content:center" onclick="login()">تسجيل الدخول</button>
+    </div>
+    <div id="forcePasswordChange" class="hidden" style="margin-top:14px;background:#f7f9fa;border:1px solid #dfe4e7;border-radius:9px;padding:14px">
+      <h3 style="margin-bottom:6px">تغيير كلمة المرور لأول مرة</h3>
+      <p class="muted" style="margin-bottom:10px">هذا حساب جديد. غيّر كلمة المرور المؤقتة قبل الدخول إلى النظام.</p>
+      <div class="input"><label>كلمة المرور الجديدة</label><input id="firstNewPassword" type="password" minlength="10" autocomplete="new-password" placeholder="10 أحرف على الأقل"></div>
+      <div class="input"><label>تأكيد كلمة المرور</label><input id="firstConfirmPassword" type="password" minlength="10" autocomplete="new-password"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="completeFirstLoginPassword()">حفظ كلمة المرور والدخول</button>
+    </div>
     <div id="loginMsg"></div>
   </div>
 </section>
@@ -244,7 +253,7 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
       <div class="meta" id="farmTitle">-</div>
     </div>
   </div>
-  <div class="meta">V39 · متصل بـ Supabase ✅</div>
+  <div class="meta">V40 · إدارة الموظفين وتسجيل الدخول ✅</div>
 </header>
 <div class="mobile-overlay" onclick="closeMobileMenu()"></div>
 <div class="work">
@@ -483,7 +492,41 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 </section>
 <section id="manufacturing" class="view"><div class="card"><h2>🏭 تصنيع العلف — BOM + أمر تصنيع</h2><p class="muted">التصنيع مربوط بالمخزون: وصفة خامات → خصم الخامات من مخزنها → إضافة المنتج النهائي للمخزن بتكلفة فعلية.</p></div><div class="split"><div class="card"><h3>تعريف وصفة BOM</h3><div class="form"><div class="formgrid"><div class="field"><label>المنتج النهائي</label><select id="bomProduct"></select></div><div class="field"><label>حجم الدفعة كجم</label><input id="bomBatchSize" type="number" min="0.001" value="1000"></div><div class="field"><label>فاقد %</label><input id="bomLossPct" type="number" min="0" max="99.99" step="0.01" value="0"></div><div class="field"><label>الإصدار</label><input id="bomVersion" type="number" min="1" value="1"></div></div><div class="card"><div style="display:flex;justify-content:space-between"><b>الخامات</b><button class="btn btn-light" type="button" onclick="addBomLine()">+ إضافة خامة</button></div><div id="bomLines"></div><div id="bomPreview" class="msg ok">أضف خامات.</div></div><button class="btn btn-primary" onclick="saveBom()">حفظ الوصفة</button><div id="bomMsg"></div></div></div><div class="card"><h3>أمر تصنيع</h3><div class="form"><div class="formgrid"><div class="field"><label>رقم الأمر</label><input id="moNo" placeholder="MO-0001"></div><div class="field"><label>الوصفة</label><select id="moBom" onchange="previewManufacturingOrder()"></select></div><div class="field"><label>مخزن الخامات</label><select id="moSourceWarehouse" onchange="previewManufacturingOrder()"></select></div><div class="field"><label>مخزن المنتج</label><select id="moDestinationWarehouse"></select></div><div class="field"><label>الإنتاج كجم</label><input id="moQty" type="number" min="0.001" step="0.001" oninput="previewManufacturingOrder()"></div><div class="field"><label>التاريخ</label><input id="moDate" type="date"></div><div class="field" style="grid-column:1/-1"><label>ملاحظات</label><textarea id="moNotes"></textarea></div></div><div id="moPreview" class="card">اختر الوصفة والكمية.</div><button class="btn btn-light" onclick="saveManufacturingOrder(false)">حفظ مسودة</button> <button class="btn btn-primary" onclick="saveManufacturingOrder(true)">تنفيذ التصنيع</button><div id="moMsg"></div></div></div></div><div class="card"><h3>الوصفات</h3><div class="tablewrap"><table class="table"><thead><tr><th>المنتج</th><th>الإصدار</th><th>الدفعة</th><th>الفاقد</th><th>الخامات</th><th>الحالة</th></tr></thead><tbody id="bomRows"></tbody></table></div></div><div class="card"><h3>أوامر التصنيع</h3><div class="tablewrap"><table class="table"><thead><tr><th>الأمر</th><th>المنتج</th><th>الإنتاج</th><th>تكلفة الخامات</th><th>التاريخ</th><th>الحالة</th></tr></thead><tbody id="moRows"></tbody></table></div></div></section>
 
-<section id="employees" class="view"><div class="card"><h2>الموظفون والصلاحيات</h2><p class="muted">حسابات الدخول الفعلية تُدار من Supabase Authentication، والجدول هنا يحدد الدور والصلاحيات المرتبطة بالمزرعة.</p><div class="card" style="margin:0;background:#f8fafb"><table class="table"><thead><tr><th>المستخدم</th><th>الاسم</th><th>الدور</th><th>الحالة</th><th>المزرعة</th></tr></thead><tbody id="usersRows"></tbody></table></div></div></section>
+<section id="employees" class="view">
+  <div class="card">
+    <h2>الموظفون وتسجيل الدخول</h2>
+    <p class="muted">أنشئ حساب دخول حقيقيًا للموظف، وحدد دوره. النظام يولّد كلمة مرور مؤقتة تظهر لك مرة واحدة، ويُلزم الموظف بتغييرها عند أول دخول.</p>
+    <div id="employeeCreateCard" class="form" style="margin-top:12px">
+      <h3 style="margin-bottom:10px">إنشاء موظف جديد</h3>
+      <div class="formgrid">
+        <div class="field"><label>اسم الموظف بالكامل</label><input id="empFullName" autocomplete="name" placeholder="اسم الموظف"></div>
+        <div class="field"><label>البريد الإلكتروني لتسجيل الدخول</label><input id="empEmail" type="email" autocomplete="email" placeholder="name@example.com"></div>
+        <div class="field"><label>اسم المستخدم</label><input id="empUsername" placeholder="يُقترح تلقائيًا من البريد"></div>
+        <div class="field"><label>رقم الهاتف</label><input id="empPhone" type="tel" placeholder="01xxxxxxxxx"></div>
+        <div class="field"><label>المسمى الوظيفي</label><select id="empJobTitle"><option value="موظف">موظف</option><option value="محاسب">محاسب</option><option value="أمين مخزن">أمين مخزن</option><option value="مشرف عنبر">مشرف عنبر</option><option value="مدير">مدير</option></select></div>
+        <div class="field"><label>دور النظام والصلاحية</label><select id="empRole"><option value="employee">موظف</option><option value="accountant">محاسب</option><option value="warehouse">أمين مخزن</option><option value="barn_supervisor">مشرف عنبر</option><option value="manager">مدير</option></select></div>
+        <div class="field"><label>الراتب (اختياري — جنيه)</label><input id="empSalary" type="number" min="0" step="0.01" value="0"></div>
+      </div>
+      <div class="muted" style="margin:8px 0">لا تضع كلمة مرور هنا. يتم إنشاؤها بأمان من الخادم، ولن يتم تخزينها كنص في قاعدة البيانات.</div>
+      <button id="createEmployeeBtn" class="btn btn-primary" onclick="createEmployeeAccount()"><i class="fa-solid fa-user-plus"></i> إنشاء حساب الموظف</button>
+      <div id="employeeCreateMsg"></div>
+      <div id="employeeCredentialResult" class="hidden" style="margin-top:12px;padding:13px;border:1px solid #e0b84f;background:#fff9e8;border-radius:8px">
+        <b style="display:block;margin-bottom:6px">بيانات الدخول المؤقتة — انسخها وسلّمها للموظف الآن</b>
+        <div id="employeeCredentialText" style="font-family:Consolas,monospace;direction:ltr;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere"></div>
+        <div class="muted" style="margin:8px 0">لن تظهر كلمة المرور مرة أخرى بعد مغادرة هذه الشاشة. سيُطلب من الموظف تغييرها عند أول دخول.</div>
+        <button class="btn btn-dark" onclick="copyEmployeeCredentials()"><i class="fa-solid fa-copy"></i> نسخ بيانات الدخول</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <div><h3 style="margin:0">حسابات الموظفين</h3><div class="muted">تفعيل وتعطيل الحسابات وإعادة تعيين كلمة المرور.</div></div>
+      <button class="btn btn-light" onclick="loadUsers()"><i class="fa-solid fa-rotate"></i> تحديث</button>
+    </div>
+    <div class="tablewrap" style="margin-top:12px"><table class="table"><thead><tr><th>الموظف</th><th>البريد الإلكتروني</th><th>اسم المستخدم</th><th>الدور</th><th>الراتب</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="usersRows"></tbody></table></div>
+    <div id="usersMsg" class="muted" style="margin-top:8px"></div>
+  </div>
+</section>
 
 <section id="customerLedger" class="view">
 <div class="card"><h2>كشف حساب العميل</h2>
@@ -975,7 +1018,7 @@ const APP_VERSION="V39";
 const SUPABASE_URL="https://vhbhbzcywtmtwtpqvnhw.supabase.co";
 const SUPABASE_KEY="sb_publishable_LXRs70nbUvJljFiRyCT2UA_-hZDkuf3";
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let farmId=null,user=null,profile=null,statusChart=null,stockChart=null,weightCompareChart=null,adgChart=null,fcrChart=null,feedTrendChart=null,mortalityChart=null,scatterFcrAdg=null,analyticsWeightChart=null,finTrendChart=null,finExpenseChart=null;
+let farmId=null,user=null,profile=null,employeeCredentialText="",pendingFirstLoginUser=null,statusChart=null,stockChart=null,weightCompareChart=null,adgChart=null,fcrChart=null,feedTrendChart=null,mortalityChart=null,scatterFcrAdg=null,analyticsWeightChart=null,finTrendChart=null,finExpenseChart=null;
 
 const $=id=>document.getElementById(id);
 const today=()=>new Date().toISOString().slice(0,10);
@@ -1167,7 +1210,22 @@ function printPage(page){
   setTimeout(()=>window.print(),120);
 }
 
+const ROLE_PAGE_ACCESS={
+  admin:null,manager:null,
+  accountant:["dashboard","customers","suppliers","supplierLedger","customerLedger","sales","purchases","treasury","custody","accounting","financial","analytics","batchReport","fcrReport"],
+  warehouse:["dashboard","items","batchFeed","feed","inventory","purchases","warehouses","manufacturing"],
+  barn_supervisor:["dashboard","boats","bulk","heads","barns","batchFeed","feed","batchWeights","weights","deaths","hospital","medications","vaccinations","analytics","batchReport","fcrReport"],
+  employee:["dashboard","batchFeed","feed","weights","hospital"]
+};
+function canAccessPage(page){const r=profile?.role||"employee";const allowed=ROLE_PAGE_ACCESS[r];return allowed===null||Array.isArray(allowed)&&allowed.includes(page)}
+function applyRoleAccess(){
+ const canManage=["admin","manager"].includes(profile?.role);
+ document.querySelectorAll('.item[data-page]').forEach(el=>{const p=el.dataset.page;el.style.display=canAccessPage(p)?"":"none";});
+ const employeeLink=document.querySelector('.item[data-page="employees"]');if(employeeLink)employeeLink.style.display=canManage?"":"none";
+ document.querySelectorAll(".menu .head").forEach(head=>{let n=head.nextElementSibling,visible=false;while(n&&!n.classList.contains("head")){if(n.classList.contains("item")&&n.style.display!=="none")visible=true;n=n.nextElementSibling;}head.style.display=visible?"":"none";});
+}
 function openPage(page){
+ if(!canAccessPage(page)){toast("ليس لديك صلاحية لفتح هذه الصفحة.");return;}
  closeMobileMenu();
  document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));
  document.querySelectorAll(".item[data-page]").forEach(x=>x.classList.remove("active"));
@@ -1224,9 +1282,18 @@ async function login(){
 }
 async function enter(u){
  user=u;
- const {data,error}=await db.from("user_profiles").select("id,full_name,username,role,active,farm_id").eq("id",u.id).single();
- if(error||!data)return message("loginMsg","الحساب غير موجود في user_profiles. اربطه بالمزرعة أولًا.",true);
- if(!data.active)return message("loginMsg","المستخدم موقوف.",true);
+ const {data,error}=await db.from("user_profiles").select("id,email,full_name,username,role,active,farm_id,must_change_password").eq("id",u.id).single();
+ if(error||!data){await db.auth.signOut();return message("loginMsg","الحساب غير موجود في user_profiles. راجع ربط الحساب بالمزرعة.",true);}
+ if(!data.active){await db.auth.signOut();return message("loginMsg","هذا الحساب موقوف. راجع مدير النظام.",true);}
+ if(data.must_change_password){
+   pendingFirstLoginUser=u;
+   $("loginCredentialsGroup").classList.add("hidden");
+   $("forcePasswordChange").classList.remove("hidden");
+   message("loginMsg","تم تسجيل الدخول. غيّر كلمة المرور المؤقتة للمتابعة.");
+   return;
+ }
+ pendingFirstLoginUser=null;
+ $("forcePasswordChange").classList.add("hidden");$("loginCredentialsGroup").classList.remove("hidden");
  profile=data;farmId=data.farm_id;
  if(!farmId)return message("loginMsg","الحساب غير مربوط بمزرعة.",true);
  if($("finPeriod")&&!$("finFrom").value){$("finPeriod").value="month";const d=today();$("finFrom").value=d.slice(0,7)+"-01";$("finTo").value=d;}
@@ -1234,9 +1301,22 @@ async function enter(u){
  $("currentUserName").textContent=data.full_name||data.username||u.email;
  $("farmTitle").textContent=(f?.company_name||"")+" — "+(f?.name||"");
  $("setCompany").value=f?.company_name||"";$("setFarm").value=f?.name||"";$("setFcr").value=f?.fcr_limit??7;$("setMort").value=f?.mortality_limit_pct??2;
+ applyRoleAccess();
  $("login").classList.add("hidden");$("app").style.display="flex";setDates();await loadDashboardFilterOptions();await loadDashboard();await refreshDashboardAnalytics();await loadDashboardHospital();await loadSupplierOptions();
 }
 async function logout(){await db.auth.signOut();location.reload()}
+async function completeFirstLoginPassword(){
+ const a=$("firstNewPassword").value,b=$("firstConfirmPassword").value;
+ if(a.length<10)return message("loginMsg","كلمة المرور يجب ألا تقل عن 10 أحرف.",true);
+ if(a!==b)return message("loginMsg","تأكيد كلمة المرور غير مطابق.",true);
+ const {error}=await db.auth.updateUser({password:a});
+ if(error)return message("loginMsg","تعذر تغيير كلمة المرور: "+error.message,true);
+ const {error:rpcError}=await db.rpc("complete_employee_first_login");
+ if(rpcError)return message("loginMsg","تم تغيير كلمة المرور، لكن لم يكتمل تأكيد التفعيل. حاول الضغط مرة أخرى أو تواصل مع المدير. "+rpcError.message,true);
+ $("firstNewPassword").value="";$("firstConfirmPassword").value="";
+ $("forcePasswordChange").classList.add("hidden");$("loginCredentialsGroup").classList.remove("hidden");
+ await enter(pendingFirstLoginUser||user);
+}
 async function loadDashboard(){
  const {data}=await db.from("v_dashboard_summary").select("*").eq("farm_id",farmId).maybeSingle();
  const alive=num(data?.alive_heads), sold=num(data?.sold_heads), dead=num(data?.dead_heads);
@@ -1947,7 +2027,61 @@ async function addStock(){
 async function loadVehicles(){const {data}=await db.from("farm_vehicles").select("vehicle_no,plate_no,driver_name,current_odometer,status,vehicle_type").eq("farm_id",farmId).order("vehicle_no");$("vehiclesRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.vehicle_no} (${x.vehicle_type||"-"})</td><td>${x.plate_no}</td><td>${x.driver_name||"-"}</td><td>${x.current_odometer}</td><td>${x.status}</td></tr>`).join("")}
 async function addVehicle(){const p={farm_id:farmId,vehicle_no:$("vNo").value.trim(),plate_no:$("vPlate").value.trim(),vehicle_type:$("vType").value.trim(),model:$("vModel").value.trim(),driver_name:$("vDriver").value.trim(),driver_phone:$("vPhone").value.trim(),current_odometer:num($("vOdo").value),initial_odometer:num($("vOdo").value),fuel_type:$("vFuel").value};if(!p.vehicle_no||!p.plate_no)return toast("أكمل بيانات السيارة");const {error}=await db.from("farm_vehicles").insert(p);if(error)return toast(error.message);await loadVehicles();toast("تم حفظ السيارة")}
 async function loadManufacturingLookups(){const [{data:items},{data:wh}]=await Promise.all([db.from("feed_items").select("id,code,name,protein_pct,default_cost_per_kg").eq("farm_id",farmId).eq("active",true).order("name"),db.from("warehouses").select("id,name").eq("farm_id",farmId).eq("active",true).eq("warehouse_type","feed").order("name")]);const opts='<option value="">اختر المنتج</option>'+(items||[]).map(x=>`<option value="${x.id}">${x.name} — ${x.code}</option>`).join("");$("bomProduct").innerHTML=opts;$("moSourceWarehouse").innerHTML='<option value="">اختر مخزن الخامات</option>'+(wh||[]).map(x=>`<option value="${x.id}">${x.name}</option>`).join("");$("moDestinationWarehouse").innerHTML='<option value="">اختر مخزن المنتج</option>'+(wh||[]).map(x=>`<option value="${x.id}">${x.name}</option>`).join("");await loadBoms()} async function loadBoms(){const {data,error}=await db.from("manufacturing_boms").select("id,feed_item_id,version,batch_size_kg,loss_pct,active,feed_items(name,code),manufacturing_bom_lines(feed_item_id,qty_kg,feed_items(name,code))").eq("farm_id",farmId).order("version",{ascending:false});if(error){$("bomRows").innerHTML=`<tr><td colspan="6">${error.message}</td></tr>`;return}const active=(data||[]).filter(x=>x.active);$("moBom").innerHTML='<option value="">اختر الوصفة</option>'+active.map(x=>`<option value="${x.id}">${x.feed_items?.name||"-"} — V${x.version}</option>`).join("");$("bomRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.feed_items?.name||"-"}</td><td>V${x.version}</td><td>${x.batch_size_kg}</td><td>${x.loss_pct||0}%</td><td>${(x.manufacturing_bom_lines||[]).map(l=>`${l.feed_items?.name||"-"}: ${l.qty_kg}`).join("، ")||"-"}</td><td>${x.active?"فعالة":"غير فعالة"}</td></tr>`).join("")||'<tr><td colspan="6">لا توجد وصفات</td></tr>';await loadManufacturingOrders()} function addBomLine(){const r=document.createElement("div");r.className="formgrid bom-line";r.style.margin="7px 0";r.innerHTML='<div class="field" style="grid-column:span 3"><label>الخامة</label><select class="bom-item"></select></div><div class="field"><label>كجم/دفعة</label><input class="bom-qty" type="number" min="0.001" step="0.001"></div><div style="display:flex;align-items:end"><button class="btn btn-danger" type="button" onclick="this.closest(\'.bom-line\').remove();updateBomPreview()">حذف</button></div>';$('bomLines').appendChild(r);db.from("feed_items").select("id,code,name").eq("farm_id",farmId).eq("active",true).order("name").then(({data})=>{r.querySelector(".bom-item").innerHTML='<option value="">اختر الخام</option>'+(data||[]).map(x=>`<option value="${x.id}">${x.name} — ${x.code}</option>`).join("");updateBomPreview()})} function updateBomPreview(){const n=[...document.querySelectorAll(".bom-line")].filter(r=>r.querySelector(".bom-item")?.value&&num(r.querySelector(".bom-qty")?.value)>0).length;$("bomPreview").textContent=n?`تمت إضافة ${n} خامة.`:"أضف خامات."} async function saveBom(){const product=$("bomProduct").value,b=num($("bomBatchSize").value),loss=num($("bomLossPct").value),v=parseInt($("bomVersion").value||1),lines=[...document.querySelectorAll(".bom-line")].map(r=>({feed_item_id:r.querySelector(".bom-item")?.value,qty_kg:num(r.querySelector(".bom-qty")?.value)})).filter(x=>x.feed_item_id&&x.qty_kg>0);if(!product||b<=0||!lines.length)return message("bomMsg","اختر المنتج والدفعة وأضف خامات.",true);const {data,error}=await db.rpc("save_manufacturing_bom",{p_feed_item_id:product,p_version:v,p_batch_size_kg:b,p_loss_pct:loss,p_notes:null,p_lines:lines,p_created_by:user.id});if(error)return message("bomMsg",error.message,true);message("bomMsg","تم حفظ الوصفة.");$("bomLines").innerHTML="";addBomLine();await loadBoms()} async function previewManufacturingOrder(){const id=$("moBom").value,wh=$("moSourceWarehouse").value,q=num($("moQty").value);if(!id||q<=0){$("moPreview").textContent="اختر الوصفة والكمية.";return}const {data:bom}=await db.from("manufacturing_boms").select("batch_size_kg,loss_pct,feed_items(name),manufacturing_bom_lines(feed_item_id,qty_kg,feed_items(name))").eq("id",id).single();if(!bom)return;const f=q/(num(bom.batch_size_kg)*(1-num(bom.loss_pct||0)/100));const ids=(bom.manufacturing_bom_lines||[]).map(x=>x.feed_item_id);const {data:st}=wh?await db.from("stock").select("feed_item_id,qty_kg,cost_per_kg").eq("farm_id",farmId).eq("warehouse_id",wh).in("feed_item_id",ids):{data:[]};const sm=Object.fromEntries((st||[]).map(x=>[x.feed_item_id,x]));let cost=0;const rows=(bom.manufacturing_bom_lines||[]).map(l=>{const need=num(l.qty_kg)*f,s=sm[l.feed_item_id],avail=num(s?.qty_kg),uc=num(s?.cost_per_kg),c=need*uc;cost+=c;return `<tr><td>${l.feed_items?.name||"-"}</td><td>${need.toFixed(3)}</td><td>${avail.toFixed(3)}</td><td>${uc.toFixed(4)}</td><td>${c.toFixed(2)}</td></tr>`}).join("");$("moPreview").innerHTML=`<b>${bom.feed_items?.name||"-"}</b> — ${q.toLocaleString()} كجم — تكلفة الخامات ${cost.toLocaleString(undefined,{maximumFractionDigits:2})}<div class="tablewrap"><table class="table"><thead><tr><th>الخامة</th><th>مطلوب</th><th>متاح</th><th>تكلفة</th><th>إجمالي</th></tr></thead><tbody>${rows}</tbody></table></div>`} async function saveManufacturingOrder(exec){const n=$("moNo").value.trim(),bom=$("moBom").value,sw=$("moSourceWarehouse").value,dw=$("moDestinationWarehouse").value,q=num($("moQty").value),d=$("moDate").value||today();if(!n||!bom||!sw||!dw||q<=0)return message("moMsg","أكمل بيانات أمر التصنيع.",true);const {data,error}=await db.rpc("create_manufacturing_order",{p_order_no:n,p_bom_id:bom,p_source_warehouse_id:sw,p_destination_warehouse_id:dw,p_planned_output_kg:q,p_production_date:d,p_notes:$("moNotes").value.trim()||null,p_created_by:user.id,p_execute_immediately:exec});if(error)return message("moMsg",error.message,true);message("moMsg",exec?"تم تنفيذ التصنيع وخصم الخامات وإضافة المنتج النهائي.":"تم حفظ المسودة.");await Promise.all([loadManufacturingOrders(),loadInventory()])} async function loadManufacturingOrders(){const {data,error}=await db.from("manufacturing_orders").select("order_no,feed_item_id,planned_output_kg,actual_output_kg,total_input_cost,production_date,status,feed_items(name,code)").eq("farm_id",farmId).order("production_date",{ascending:false}).limit(500);if(error){$("moRows").innerHTML=`<tr><td colspan="6">${error.message}</td></tr>`;return}$("moRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.order_no}</td><td>${x.feed_items?.name||"-"}</td><td>${x.actual_output_kg??x.planned_output_kg}</td><td>${num(x.total_input_cost).toLocaleString()}</td><td>${x.production_date}</td><td>${x.status}</td></tr>`).join("")||'<tr><td colspan="6">لا توجد أوامر</td></tr>'} async function loadManufacturing(){await loadManufacturingLookups()} 
-async function loadUsers(){const {data}=await db.from("user_profiles").select("username,full_name,role,active,farm_id").eq("farm_id",farmId).order("username");$("usersRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.username||"-"}</td><td>${x.full_name||"-"}</td><td>${x.role}</td><td>${x.active?"فعال":"موقوف"}</td><td>${farmId.slice(0,8)}...</td></tr>`).join("")}
+function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;", "'":"&#39;"}[ch]));}
+const EMPLOYEE_ROLE_LABELS={admin:"مدير النظام",manager:"مدير",accountant:"محاسب",employee:"موظف",warehouse:"أمين مخزن",barn_supervisor:"مشرف عنبر"};
+let lastEmployeeCredentialPayload="";
+function setEmployeeFormAccess(){const ok=["admin","manager"].includes(profile?.role);const card=$("employeeCreateCard");if(card)card.style.display=ok?"":"none";const link=document.querySelector('.item[data-page="employees"]');if(link)link.style.display=ok?"":"none";if(!ok&&$("usersMsg"))$("usersMsg").textContent="صفحة إدارة الحسابات متاحة لمدير النظام ومدير المزرعة فقط.";const managerOpt=$("empRole")?.querySelector('option[value="manager"]');if(managerOpt)managerOpt.disabled=profile?.role!=="admin";}
+async function callEmployeeFunction(payload){const {data,error}=await db.functions.invoke("manage-employee",{body:payload});if(error)throw new Error(error.message||"تعذر الاتصال بخدمة إدارة الموظفين");if(data?.error)throw new Error(data.error);return data;}
+async function createEmployeeAccount(){
+ if(!["admin","manager"].includes(profile?.role))return message("employeeCreateMsg","ليس لديك صلاحية إنشاء حسابات.",true);
+ const full_name=$("empFullName").value.trim(),email=$("empEmail").value.trim().toLowerCase(),username=$("empUsername").value.trim(),phone=$("empPhone").value.trim(),job_title=$("empJobTitle").value,role=$("empRole").value,salary=num($("empSalary").value);
+ if(full_name.length<3)return message("employeeCreateMsg","اكتب اسم الموظف بالكامل.",true);
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return message("employeeCreateMsg","أدخل بريدًا إلكترونيًا صحيحًا.",true);
+ if(salary<0)return message("employeeCreateMsg","الراتب لا يمكن أن يكون بالسالب.",true);
+ const btn=$("createEmployeeBtn");btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> جاري إنشاء الحساب...';
+ try{
+   const result=await callEmployeeFunction({action:"create",full_name,email,username,phone,job_title,role,salary});
+   employeeCredentialText=`الاسم: ${full_name}\nالبريد: ${email}\nكلمة المرور المؤقتة: ${result.temporary_password}\nالدور: ${EMPLOYEE_ROLE_LABELS[role]||role}`;
+   lastEmployeeCredentialPayload=employeeCredentialText;
+   $("employeeCredentialText").textContent=employeeCredentialText;$("employeeCredentialResult").classList.remove("hidden");
+   message("employeeCreateMsg","تم إنشاء حساب الموظف وربطه بالمزرعة. سلّمه كلمة المرور المؤقتة ليغيرها عند أول دخول.");
+   ["empFullName","empEmail","empUsername","empPhone"].forEach(id=>$(id).value="");$("empSalary").value="0";
+   await loadUsers();
+ }catch(e){message("employeeCreateMsg",e.message,true)}
+ finally{btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-user-plus"></i> إنشاء حساب الموظف';}
+}
+async function copyEmployeeCredentials(){if(!lastEmployeeCredentialPayload)return toast("لا توجد بيانات دخول لنسخها.");try{await navigator.clipboard.writeText(lastEmployeeCredentialPayload);toast("تم نسخ بيانات الدخول.")}catch(e){toast("تعذر النسخ التلقائي؛ حدد النص وانسخه يدويًا.")}}
+async function setEmployeeActive(id,active){
+ const msg=active?"تفعيل هذا الحساب؟":"إيقاف هذا الحساب ومنعه من تسجيل الدخول؟";if(!confirm(msg))return;
+ try{await callEmployeeFunction({action:"set_active",user_id:id,active});toast(active?"تم تفعيل الحساب":"تم إيقاف الحساب");await loadUsers()}catch(e){toast(e.message)}
+}
+async function resetEmployeePassword(id){
+ if(!confirm("إنشاء كلمة مرور مؤقتة جديدة لهذا الموظف؟ سيتم إلغاء كلمة المرور الحالية وإلزامه بتغيير الجديدة عند الدخول."))return;
+ try{const result=await callEmployeeFunction({action:"reset_password",user_id:id});employeeCredentialText=`اسم الموظف: ${name}\nكلمة المرور المؤقتة الجديدة: ${result.temporary_password}`;lastEmployeeCredentialPayload=employeeCredentialText;$("employeeCredentialText").textContent=employeeCredentialText;$("employeeCredentialResult").classList.remove("hidden");toast("تم إنشاء كلمة مرور مؤقتة جديدة. انسخها وسلّمها للموظف.");await loadUsers()}catch(e){toast(e.message)}
+}
+async function updateEmployeeRole(id,selectId){const role=$(selectId).value;if(!confirm(`تأكيد تغيير دور هذا الموظف إلى ${EMPLOYEE_ROLE_LABELS[role]||role}؟`))return;try{await callEmployeeFunction({action:"update_role",user_id:id,role});toast("تم تحديث الدور");await loadUsers()}catch(e){toast(e.message)}}
+async function loadUsers(){
+ setEmployeeFormAccess();
+ if(!["admin","manager"].includes(profile?.role))return;
+ const {data,error}=await db.from("user_profiles").select("id,email,username,full_name,role,active,farm_id,phone,must_change_password").eq("farm_id",farmId).order("full_name");
+ if(error){$("usersRows").innerHTML=`<tr><td colspan="7">${escapeHtml(error.message)}</td></tr>`;return}
+ const ids=(data||[]).map(x=>x.id);let employees=[];
+ if(ids.length){const er=await db.from("employees").select("auth_user_id,salary,id").eq("farm_id",farmId).in("auth_user_id",ids);if(!er.error)employees=er.data||[];}
+ const emap=Object.fromEntries(employees.map(x=>[x.auth_user_id,x]));
+ const roleOptions=["employee","accountant","warehouse","barn_supervisor",...(profile?.role==="admin"?["manager"]:[])];
+ $("usersRows").innerHTML=(data||[]).map(x=>{
+   const emp=emap[x.id],name=escapeHtml(x.full_name||x.username||"-");
+   const options=roleOptions.map(r=>`<option value="${r}" ${x.role===r?"selected":""}>${EMPLOYEE_ROLE_LABELS[r]||r}</option>`).join("");
+   const protectedTarget=x.id===user?.id||x.role==="admin"||(profile?.role!=="admin"&&x.role==="manager");
+   const roleCell=!protectedTarget?`<div style="display:flex;gap:4px;align-items:center"><select id="empRole_${x.id}" style="max-width:130px;padding:5px">${options}</select><button class="btn btn-light" style="padding:5px" title="حفظ الدور" onclick="updateEmployeeRole('${x.id}','empRole_${x.id}')"><i class="fa-solid fa-check"></i></button></div>`:escapeHtml(EMPLOYEE_ROLE_LABELS[x.role]||x.role);
+   const active=x.active;
+   const status=active?'<span class="badge ok">فعال</span>':'<span class="badge bad">موقوف</span>';
+   const actions=protectedTarget?'-':`<div style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn ${active?'btn-warn':'btn-primary'}" style="padding:6px 8px" onclick="setEmployeeActive('${x.id}',${!active})">${active?'إيقاف':'تفعيل'}</button><button class="btn btn-light" style="padding:6px 8px" onclick="resetEmployeePassword('${x.id}')">كلمة مرور جديدة</button></div>`;
+   return `<tr><td>${name}${x.must_change_password?'<div class="muted">بانتظار تغيير كلمة المرور</div>':''}</td><td dir="ltr">${escapeHtml(x.email||'-')}</td><td>${escapeHtml(x.username||'-')}</td><td>${roleCell}</td><td>${emp?num(emp.salary).toLocaleString():"-"}</td><td>${status}</td><td>${actions}</td></tr>`;
+ }).join("")||'<tr><td colspan="7">لا توجد حسابات موظفين مرتبطة بهذه المزرعة.</td></tr>';
+ $("usersMsg").textContent=`عدد الحسابات: ${(data||[]).length} — المزرعة: ${farmId.slice(0,8)}…`;
+}
+
 
 const DEFAULT_THEME={
  primary:"#2c3e50",secondary:"#16a085",accent:"#2980b9",
@@ -2004,7 +2138,7 @@ function removeLogo(){ $("setLogoFile").value=""; $("setLogoFile").dataset.logoD
 async function loadLedgerCustomerOptions(){const {data}=await db.from("customers").select("id,name").eq("farm_id",farmId).order("name");$("ledgerCustomer").innerHTML=(data||[]).map(x=>`<option value="${x.id}">${x.name}</option>`).join("")}
 async function addCustomerPayment(){const cid=$("ledgerCustomer").value,amount=num($("paymentAmount").value),date=$("paymentDate").value||today();if(!cid||amount<=0)return message("paymentMsg","اختر العميل وأدخل مبلغًا صحيحًا.",true);const {error}=await db.rpc("record_customer_payment",{p_customer_id:cid,p_amount:amount,p_payment_date:date,p_payment_method:$("paymentMethod").value,p_reference:$("paymentReference").value.trim()||null,p_notes:$("paymentNotes").value.trim()||null});if(error)return message("paymentMsg",error.message,true);message("paymentMsg",$("paymentMethod").value==="cash"?"تم تسجيل الدفعة وإضافتها للخزنة.":"تم تسجيل الدفعة.");$("paymentAmount").value="";$("paymentReference").value="";$("paymentNotes").value="";await Promise.all([refreshCustomerLedger(),loadTreasury()])}
 async function refreshCustomerLedger(){const cid=$("ledgerCustomer").value;if(!cid)return;let sq=db.from("sales").select("id,invoice_no,sale_date,total_amount").eq("farm_id",farmId).eq("customer_id",cid).order("sale_date");if($("ledgerFrom").value)sq=sq.gte("sale_date",$("ledgerFrom").value);if($("ledgerTo").value)sq=sq.lte("sale_date",$("ledgerTo").value);const {data:sales=[]}=await sq;let pq=db.from("customer_payments").select("payment_date,amount,reference,notes,payment_method").eq("farm_id",farmId).eq("customer_id",cid).order("payment_date");if($("ledgerFrom").value)pq=pq.gte("payment_date",$("ledgerFrom").value);if($("ledgerTo").value)pq=pq.lte("payment_date",$("ledgerTo").value);const {data:pays=[],error}=await pq;if(error)return toast(error.message);const rows=[...sales.map(x=>({date:x.sale_date,type:"فاتورة",ref:x.invoice_no,debit:num(x.total_amount),credit:0,note:"بيع عجول"})),...pays.map(x=>({date:x.payment_date,type:"دفعة",ref:x.reference||x.payment_method||"-",debit:0,credit:num(x.amount),note:x.notes||"دفعة"}))].sort((a,b)=>a.date.localeCompare(b.date));let running=0;rows.forEach(r=>running+=r.debit-r.credit);const inv=sales.reduce((s,x)=>s+num(x.total_amount),0),pay=pays.reduce((s,x)=>s+num(x.amount),0);$("ledgerInvoices").textContent=inv.toLocaleString();$("ledgerPayments").textContent=pay.toLocaleString();$("ledgerBalance").textContent=(inv-pay).toLocaleString();running=0;$("ledgerRows").innerHTML=rows.map(r=>{running+=r.debit-r.credit;return `<tr><td>${r.date}</td><td>${r.type}</td><td>${r.ref}</td><td>${r.debit.toLocaleString()}</td><td>${r.credit.toLocaleString()}</td><td>${running.toLocaleString()}</td><td>${r.note}</td></tr>`}).join("")||'<tr><td colspan="7">لا توجد حركة</td></tr>'}
-async function loadEmployeesForCustody(){const {data}=await db.from("employees").select("id,name").eq("farm_id",farmId).eq("active",true).order("name");$("custodyEmployee").innerHTML=(data||[]).map(x=>`<option value="${x.id}">${x.name}</option>`).join("")}
+async function loadEmployeesForCustody(){const {data}=await db.from("v_employee_directory").select("id,name").eq("farm_id",farmId).eq("active",true).order("name");$("custodyEmployee").innerHTML=(data||[]).map(x=>`<option value="${x.id}">${x.name}</option>`).join("")}
 async function saveCustodyTransaction(){const emp=$("custodyEmployee").value,type=$("custodyType").value,amount=num($("custodyAmount").value),date=$("custodyDate").value||today();if(!emp||amount<=0)return message("custodyMsg","اختر موظفًا وأدخل مبلغًا صحيحًا.",true);const {error}=await db.from("employee_custody_transactions").insert({farm_id:farmId,employee_id:emp,transaction_type:type,transaction_date:date,amount,description:$("custodyDescription").value.trim()||null,reference:$("custodyReference").value.trim()||null,created_by:user.id});if(error)return message("custodyMsg",error.message,true);message("custodyMsg","تم حفظ الحركة.");$("custodyAmount").value="";$("custodyDescription").value="";$("custodyReference").value="";await loadCustody()}
 async function loadCustody(){const {data,error}=await db.from("employee_custody_transactions").select("id,employee_id,transaction_type,transaction_date,amount,description,reference,employees(name)").eq("farm_id",farmId).order("transaction_date",{ascending:false});if(error){$("custodyRows").innerHTML=`<tr><td colspan="6">${error.message}</td></tr>`;return}const sum=(t)=> (data||[]).filter(x=>x.transaction_type===t).reduce((s,x)=>s+num(x.amount),0);const issued=sum("issue"),settled=sum("settlement"),exp=sum("expense");$("custodyIssued").textContent=issued.toLocaleString();$("custodySettled").textContent=settled.toLocaleString();$("custodyExpenses").textContent=exp.toLocaleString();$("custodyOpen").textContent=Math.max(0,issued-settled-exp).toLocaleString();const labels={issue:"صرف عهدة",settlement:"تسوية عهدة",expense:"مصروف"};$("custodyRows").innerHTML=(data||[]).map(x=>`<tr><td>${x.transaction_date}</td><td>${x.employees?.name||"-"}</td><td>${labels[x.transaction_type]||x.transaction_type}</td><td>${num(x.amount).toLocaleString()}</td><td>${x.reference||"-"}</td><td>${x.description||"-"}</td></tr>`).join("")||'<tr><td colspan="6">لا توجد حركة</td></tr>'}
 async function loadFarmSettings(){
