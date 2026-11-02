@@ -2031,7 +2031,26 @@ function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;"
 const EMPLOYEE_ROLE_LABELS={admin:"مدير النظام",manager:"مدير",accountant:"محاسب",employee:"موظف",warehouse:"أمين مخزن",barn_supervisor:"مشرف عنبر"};
 let lastEmployeeCredentialPayload="";
 function setEmployeeFormAccess(){const ok=["admin","manager"].includes(profile?.role);const card=$("employeeCreateCard");if(card)card.style.display=ok?"":"none";const link=document.querySelector('.item[data-page="employees"]');if(link)link.style.display=ok?"":"none";if(!ok&&$("usersMsg"))$("usersMsg").textContent="صفحة إدارة الحسابات متاحة لمدير النظام ومدير المزرعة فقط.";const managerOpt=$("empRole")?.querySelector('option[value="manager"]');if(managerOpt)managerOpt.disabled=profile?.role!=="admin";}
-async function callEmployeeFunction(payload){const {data,error}=await db.functions.invoke("manage-employee",{body:payload});if(error)throw new Error(error.message||"تعذر الاتصال بخدمة إدارة الموظفين");if(data?.error)throw new Error(data.error);return data;}
+async function callEmployeeFunction(payload){
+ const {data,error}=await db.functions.invoke("manage-employee",{body:payload});
+ if(error){
+   let detail=error.message||"تعذر الاتصال بخدمة إدارة الموظفين";
+   const response=error.context;
+   try{
+     if(response&&typeof response.clone==="function"){
+       const raw=await response.clone().text();
+       if(raw){
+         try{const body=JSON.parse(raw);detail=body.error||body.message||raw;}
+         catch{detail=raw;}
+       }
+       if(response.status)detail+=` (HTTP ${response.status})`;
+     }
+   }catch{}
+   throw new Error(detail);
+ }
+ if(data?.error)throw new Error(data.error);
+ return data;
+}
 async function createEmployeeAccount(){
  if(!["admin","manager"].includes(profile?.role))return message("employeeCreateMsg","ليس لديك صلاحية إنشاء حسابات.",true);
  const full_name=$("empFullName").value.trim(),email=$("empEmail").value.trim().toLowerCase(),username=$("empUsername").value.trim(),phone=$("empPhone").value.trim(),job_title=$("empJobTitle").value,role=$("empRole").value,salary=num($("empSalary").value);
