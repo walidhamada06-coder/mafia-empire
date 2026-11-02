@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>نظام إدارة المزرعة المتكامل - Agro Green Farm ERP</title>
+<title>Agro Green Farm ERP — V39 Accounting & Cost Control</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -221,6 +221,10 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
     <div class="item" data-page="treasury"><i class="fa-solid fa-vault"></i> خزنة المزرعة</div>
     <div class="item" data-page="settings"><i class="fa-solid fa-gear"></i> الإعدادات</div>
 
+    <div class="head">المحاسبة والرقابة</div>
+    <div class="item" data-page="accounting"><i class="fa-solid fa-book-open"></i> المحاسبة العامة والقيود</div>
+    <div class="item" data-page="accountingApprovals"><i class="fa-solid fa-clipboard-check"></i> اعتماد القيود</div>
+
     <div class="head">التقارير</div>
     <div class="item" data-page="financial"><i class="fa-solid fa-chart-pie"></i> المركز المالي والتحليلي</div>
     <div class="item" data-page="batchReport"><i class="fa-solid fa-chart-line"></i> تقرير أداء المجموعات</div>
@@ -240,7 +244,7 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
       <div class="meta" id="farmTitle">-</div>
     </div>
   </div>
-  <div class="meta">متصل بـ Supabase ✅</div>
+  <div class="meta">V39 · متصل بـ Supabase ✅</div>
 </header>
 <div class="mobile-overlay" onclick="closeMobileMenu()"></div>
 <div class="work">
@@ -641,10 +645,11 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 <section id="treasury" class="view">
 <div class="card"><h2>🏦 خزنة المزرعة</h2>
 <div class="form"><div class="formgrid">
-<div class="field"><label>نوع الحركة</label><select id="cashType"><option value="in">قبض</option><option value="out">صرف</option></select></div>
+<div class="field"><label>نوع الحركة</label><select id="cashType" onchange="setTreasuryCounterDefault()"><option value="in">قبض</option><option value="out">صرف</option></select></div>
 <div class="field"><label>المبلغ</label><input id="cashAmount" type="number" min="0.01" step="0.01"></div>
 <div class="field"><label>التاريخ</label><input id="cashDate" type="date"></div>
-<div class="field"><label>التصنيف</label><input id="cashCategory" placeholder="عميل / مورد / مصروف / أخرى"></div>
+<div class="field"><label>التصنيف</label><input id="cashCategory" placeholder="مصروف / رأس مال / إيراد / أخرى"></div>
+<div class="field"><label>الحساب المقابل</label><select id="cashCounterAccount"><option value="">تحميل الحسابات...</option></select><small class="muted">في القبض يكون الحساب المقابل دائنًا، وفي الصرف يكون مدينًا.</small></div>
 <div class="field"><label>المرجع</label><input id="cashReference"></div>
 <div class="field" style="grid-column:1/-1"><label>البيان</label><textarea id="cashDescription"></textarea></div>
 </div><button class="btn btn-primary" onclick="saveTreasuryTransaction()">حفظ الحركة</button></div></div>
@@ -794,12 +799,179 @@ html,body{height:100%}body{background:var(--bg);overflow:hidden;color:#2c3e50}
 
 <section id="batchReport" class="view"><div class="card"><h2>تقرير أداء المجموعات</h2><div class="toolbar"><button class="btn btn-blue" onclick="refreshBatchReport()"><i class="fa-solid fa-rotate"></i> تحديث</button><button class="btn btn-light" onclick="exportTable('batchReportTable','تقرير_المجموعات')"><i class="fa-solid fa-file-excel"></i> تصدير</button></div><table class="table" id="batchReportTable"><thead><tr><th>الشحنة</th><th>العدد</th><th>أول متوسط</th><th>آخر متوسط</th><th>الزيادة</th><th>ADG</th></tr></thead><tbody id="batchReportRows"></tbody></table></div></section>
 
-<section id="fcrReport" class="view"><div class="card"><h2>التقرير الشامل للأفراد</h2><div class="toolbar"><button class="btn btn-blue" onclick="refreshFcrReport()"><i class="fa-solid fa-rotate"></i> تحديث</button><button class="btn btn-light" onclick="exportTable('fcrTable','تقرير_FCR_الأفراد')"><i class="fa-solid fa-file-excel"></i> تصدير</button></div><table class="table" id="fcrTable"><thead><tr><th>الحيوان</th><th>الشحنة</th><th>أول وزن</th><th>آخر وزن</th><th>الزيادة</th><th>ADG</th></tr></thead><tbody id="fcrRows"></tbody></table></div></section>
+<section id="fcrReport" class="view"><div class="card"><h2>التقرير الشامل للأفراد</h2><div class="toolbar"><button class="btn btn-blue" onclick="refreshFcrReport()"><i class="fa-solid fa-rotate"></i> تحديث</button><button class="btn btn-light" onclick="exportTable('fcrTable','تقرير_FCR_الأفراد')"><i class="fa-solid fa-file-excel"></i> تصدير</button></div><table class="table" id="fcrTable"><thead><tr><th>الحيوان</th><th>الشحنة</th><th>أول وزن</th><th>آخر وزن</th><th>الزيادة</th><th>ADG</th></tr></thead><tbody id="fcrRows"></tbody></table></div>
+</section>
+
+<section id="accounting" class="view">
+  <div class="card">
+    <h2><i class="fa-solid fa-book-open"></i> المحاسبة العامة ومراكز التكلفة — V39</h2>
+    <p class="muted">قيود مزدوجة، دليل حسابات، ميزان مراجعة، دفتر أستاذ، وتحميل تكلفة على المجموعة أو الرأس. القيود الجديدة لا تدخل الأرصدة المحاسبية المُرحّلة إلا بعد اعتماد المدير.</p>
+    <div class="msg warn" style="margin-top:10px">تنبيه محاسبي: بيانات الفواتير والحركات التاريخية لا تُرحّل تلقائيًا؛ يلزم إعداد أرصدة افتتاحية ومراجعتها. القيود الجديدة تظهر أولًا في «اعتماد القيود» ولا تدخل الأستاذ العام إلا بعد اعتماد المدير. ملاحظة رقابية: الاعتماد هنا يخص القيد المحاسبي والترحيل للأستاذ العام. العمليات التشغيلية (مثل صرف العلف واستلام المشتريات) تنفذ عند التسجيل، وتظهر قيودها في انتظار اعتماد المدير. لا تستخدم هذه المرحلة كاعتماد مخزني مسبق للصرف أو الاستلام.</div>
+  </div>
+
+  <div class="grid kpis">
+    <div class="kpi"><div class="kpi-icon" style="background:#2c3e50"><i class="fa-solid fa-book"></i></div><div><small>عدد الحسابات الفعالة</small><b id="accAccountsCount">0</b></div></div>
+    <div class="kpi"><div class="kpi-icon" style="background:#e67e22"><i class="fa-solid fa-hourglass-half"></i></div><div><small>قيود تنتظر الاعتماد</small><b id="accPendingCount">0</b></div></div>
+    <div class="kpi"><div class="kpi-icon" style="background:#16a085"><i class="fa-solid fa-scale-balanced"></i></div><div><small>إجمالي المدين المُرحّل</small><b id="accDebitTotal">0</b></div></div>
+    <div class="kpi"><div class="kpi-icon" style="background:#2980b9"><i class="fa-solid fa-scale-balanced"></i></div><div><small>إجمالي الدائن المُرحّل</small><b id="accCreditTotal">0</b></div></div>
+  </div>
+
+  <div class="split" style="margin-top:14px">
+    <div class="card">
+      <h3>قيد يومية جديد</h3>
+      <div class="form">
+        <div class="formgrid">
+          <div class="field"><label>تاريخ القيد</label><input id="accEntryDate" type="date"></div>
+          <div class="field"><label>نوع القيد</label><select id="accEntryKind"><option value="manual">قيد يومية عادي</option><option value="opening">قيد أرصدة افتتاحية</option></select></div>
+          <div class="field" style="grid-column:span 2"><label>البيان</label><input id="accEntryDescription" placeholder="مثال: إثبات مصروف نقل الشحنة O-16"></div>
+        </div>
+        <div class="tablewrap" style="margin-top:10px">
+          <table class="table" style="min-width:900px">
+            <thead><tr><th>الحساب</th><th>مركز التكلفة</th><th>الطرف (اختياري)</th><th>مدين</th><th>دائن</th><th>البيان</th><th>حذف</th></tr></thead>
+            <tbody id="accJournalLines"></tbody>
+          </table>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center">
+          <button class="btn btn-light" onclick="addAccountingLine()"><i class="fa-solid fa-plus"></i> إضافة سطر</button>
+          <span class="badge" id="accJournalTotals">المدين 0 — الدائن 0</span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+          <button class="btn btn-light" onclick="saveAccountingJournal(false)">حفظ مسودة</button>
+          <button class="btn btn-primary" onclick="saveAccountingJournal(true)"><i class="fa-solid fa-paper-plane"></i> إرسال للاعتماد</button>
+        </div>
+        <div id="accJournalMsg"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>تحميل تكلفة على مجموعة أو رأس</h3>
+      <p class="muted">يمكن تحميل تكلفة مباشرة على مجموعة، أو على رأس محدد، أو توزيعها بالتساوي/حسب الوزن الابتدائي على الرؤوس الموجودة بالمجموعة بتاريخ المصروف.</p>
+      <div class="form">
+        <div class="formgrid">
+          <div class="field"><label>التاريخ</label><input id="costEntryDate" type="date"></div>
+          <div class="field"><label>المبلغ</label><input id="costEntryAmount" type="number" min="0.01" step="0.01"></div>
+          <div class="field"><label>المجموعة / الشحنة</label><select id="costShipment" onchange="loadCostAllocationAnimals()"></select></div>
+          <div class="field"><label>طريقة التوزيع</label><select id="costAllocationMode" onchange="toggleCostAnimal()"><option value="group">تحميل مباشر على المجموعة</option><option value="animal">تحميل مباشر على رأس</option><option value="equal">توزيع بالتساوي على الرؤوس</option><option value="initial_weight">توزيع حسب الوزن الابتدائي</option></select></div>
+          <div class="field" id="costAnimalField" style="display:none"><label>الرأس</label><select id="costAnimal"></select></div>
+          <div class="field"><label>حساب التكلفة</label><select id="costExpenseAccount"></select></div>
+          <div class="field"><label>الحساب الدائن (خزنة/بنك/مورد)</label><select id="costCreditAccount"></select></div>
+          <div class="field" style="grid-column:1/-1"><label>البيان</label><input id="costEntryDescription" placeholder="مثال: نقل وتفريغ المجموعة O-16"></div>
+        </div>
+        <button class="btn btn-primary" onclick="saveCostAllocationJournal()">تسجيل التكلفة وإرسالها للاعتماد</button>
+        <div id="costAllocationMsg"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>تسجيل تكلفة اقتناء الشحنة (شراء الماشية / نقل / جمارك)</h3>
+      <p class="muted">سجّل إجمالي تكلفة اقتناء الشحنة مرة واحدة، ووزّعها على الرؤوس بالتساوي أو حسب الوزن الابتدائي. لا تسجّل نفس المبلغ مرة أخرى كمصروف تشغيلي.</p>
+      <div class="form">
+        <div class="formgrid">
+          <div class="field"><label>الشحنة</label><select id="acqShipment"></select></div>
+          <div class="field"><label>رقم مستند التكلفة</label><input id="acqDocNo" placeholder="ACQ-O16-001"></div>
+          <div class="field"><label>تاريخ التكلفة</label><input id="acqDate" type="date"></div>
+          <div class="field"><label>إجمالي تكلفة الاقتناء</label><input id="acqAmount" type="number" min="0.01" step="0.01"></div>
+          <div class="field"><label>طريقة التوزيع</label><select id="acqAllocation"><option value="initial_weight">حسب الوزن الابتدائي</option><option value="equal">بالتساوي بين الرؤوس</option></select></div>
+          <div class="field"><label>الحساب المقابل (خزنة/بنك/مورد)</label><select id="acqCounterAccount"></select></div>
+          <div class="field"><label>المورد (عند اختيار حساب الموردين)</label><select id="acqSupplier"></select></div>
+          <div class="field" style="grid-column:1/-1"><label>البيان</label><input id="acqDescription" placeholder="تكلفة شراء واستيراد الشحنة والنقل والتفريغ"></div>
+        </div>
+        <button class="btn btn-primary" onclick="saveShipmentAcquisitionCost()">تسجيل تكلفة الاقتناء وإرسالها للاعتماد</button>
+        <div id="acqMsg"></div>
+      </div>
+      <div class="tablewrap" style="margin-top:12px"><table class="table"><thead><tr><th>المستند</th><th>الشحنة</th><th>التاريخ</th><th>الوصف</th><th>القيمة</th><th>طريقة التوزيع</th><th>المورد</th><th>الحالة المحاسبية</th></tr></thead><tbody id="acqCostRows"></tbody></table></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+      <div><h3>دليل الحسابات</h3><p class="muted">تم إنشاء حسابات أساسية لكل مزرعة. الحسابات النظامية مستخدمة في القيود الآلية.</p></div>
+      <span class="badge" id="accRoleBadge">الصلاحية: -</span>
+    </div>
+    <div class="form" id="accAddAccountForm" style="margin:10px 0;display:none">
+      <div class="formgrid">
+        <div class="field"><label>كود الحساب</label><input id="newAccCode"></div>
+        <div class="field"><label>اسم الحساب</label><input id="newAccName"></div>
+        <div class="field"><label>نوع الحساب</label><select id="newAccType"><option value="asset">أصول</option><option value="liability">التزامات</option><option value="equity">حقوق ملكية</option><option value="revenue">إيرادات</option><option value="expense">مصروفات وتكاليف</option></select></div>
+        <div class="field"><label>طبيعة الحساب</label><select id="newAccSide"><option value="debit">مدين</option><option value="credit">دائن</option></select></div>
+        <div class="field"><label>الحساب الرئيسي (اختياري)</label><select id="newAccParent"><option value="">بدون حساب رئيسي</option></select></div>
+        <div class="field"><label>طبيعة الحساب</label><label style="display:flex;align-items:center;gap:8px;font-weight:600"><input id="newAccPostable" type="checkbox" checked style="width:auto"> يقبل الترحيل عليه</label></div>
+      </div>
+      <button class="btn btn-primary" onclick="createAccountingAccount()">إضافة الحساب</button>
+    </div>
+    <div class="tablewrap"><table class="table"><thead><tr><th>الكود</th><th>الحساب</th><th>الحساب الرئيسي</th><th>النوع</th><th>الطبيعة</th><th>الترحيل</th><th>حساب نظامي</th></tr></thead><tbody id="accountingAccountRows"></tbody></table></div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><h3>القوائم المالية</h3><p class="muted">قائمة الدخل للفترة المحددة، والميزانية العمومية حتى تاريخ النهاية. تعتمد على القيود المعتمدة والمُرحّلة فقط.</p></div><button class="btn btn-primary" onclick="loadAccountingStatements()">تحديث القوائم</button></div>
+    <div class="form" style="margin-top:10px"><div class="formgrid">
+      <div class="field"><label>قائمة الدخل — من</label><input id="accStatementFrom" type="date"></div>
+      <div class="field"><label>حتى</label><input id="accStatementTo" type="date"></div>
+    </div></div>
+    <div class="grid kpis" style="margin-top:12px">
+      <div class="kpi"><div><small>إيرادات الفترة</small><b id="accStmtRevenue">0</b></div></div>
+      <div class="kpi"><div><small>مصروفات الفترة</small><b id="accStmtExpenses">0</b></div></div>
+      <div class="kpi"><div><small>صافي نتيجة الفترة</small><b id="accStmtProfit">0</b></div></div>
+      <div class="kpi"><div><small>إجمالي الأصول</small><b id="accStmtAssets">0</b></div></div>
+      <div class="kpi"><div><small>الالتزامات وحقوق الملكية</small><b id="accStmtLiabEquity">0</b></div></div>
+    </div>
+    <div class="split" style="margin-top:12px">
+      <div class="card"><h4>قائمة الدخل</h4><div class="tablewrap"><table class="table"><thead><tr><th>الكود</th><th>الحساب</th><th>النوع</th><th>القيمة</th></tr></thead><tbody id="accIncomeStatementRows"></tbody><tfoot><tr><th colspan="3">صافي النتيجة</th><th id="accIncomeStatementTotal">0</th></tr></tfoot></table></div></div>
+      <div class="card"><h4>الميزانية العمومية</h4><div class="tablewrap"><table class="table"><thead><tr><th>الكود</th><th>الحساب</th><th>النوع</th><th>الرصيد</th></tr></thead><tbody id="accBalanceSheetRows"></tbody><tfoot><tr><th colspan="3">فرق التوازن</th><th id="accBalanceDifference">0</th></tr></tfoot></table></div><div id="accBalanceStatus" class="msg" style="margin-top:8px"></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>إدارة الفترات المحاسبية</h3>
+    <p class="muted">لا يمكن إقفال شهر به قيود مسودة أو تنتظر الاعتماد. الإقفال متاح للمدير أو مسؤول النظام فقط.</p>
+    <div class="form"><div class="formgrid">
+      <div class="field"><label>السنة</label><input id="accPeriodYear" type="number" min="2000" max="2200"></div>
+      <div class="field"><label>الشهر</label><select id="accPeriodMonth"><option value="1">01</option><option value="2">02</option><option value="3">03</option><option value="4">04</option><option value="5">05</option><option value="6">06</option><option value="7">07</option><option value="8">08</option><option value="9">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select></div>
+    </div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn btn-danger" onclick="closeAccountingPeriod()">إقفال الشهر</button><button class="btn btn-light" onclick="reopenAccountingPeriod()">إعادة فتح الشهر</button></div><div id="accPeriodMsg"></div></div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><h3>ميزان المراجعة — القيود المُرحّلة فقط</h3><button class="btn btn-light" onclick="loadAccountingTrialBalance()">تحديث الميزان</button></div>
+    <div class="tablewrap"><table class="table"><thead><tr><th>الكود</th><th>الحساب</th><th>النوع</th><th>إجمالي مدين</th><th>إجمالي دائن</th><th>الرصيد الطبيعي</th><th>الرصيد العكسي</th></tr></thead><tbody id="accountingTrialRows"></tbody><tfoot><tr><th colspan="3">الإجمالي</th><th id="accTBTotalDebit">0</th><th id="accTBTotalCredit">0</th><th colspan="2"></th></tr></tfoot></table></div>
+  </div>
+
+  <div class="split">
+    <div class="card"><h3>تكلفة وربحية كل مجموعة</h3><div class="tablewrap"><table class="table"><thead><tr><th>المجموعة</th><th>التكلفة المعتمدة</th><th>الإيراد المعتمد</th><th>صافي المساهمة</th></tr></thead><tbody id="accShipmentCostRows"></tbody></table></div></div>
+    <div class="card"><h3>تكلفة وربحية كل رأس</h3><div class="tablewrap"><table class="table"><thead><tr><th>الرأس</th><th>المجموعة</th><th>التكلفة المعتمدة</th><th>الإيراد المعتمد</th><th>الصافي</th></tr></thead><tbody id="accAnimalCostRows"></tbody></table></div></div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h3>دفتر الأستاذ العام</h3><button class="btn btn-light" onclick="loadAccountingGeneralLedger()">عرض الحركات</button></div>
+    <div class="form"><div class="formgrid">
+      <div class="field"><label>الحساب</label><select id="accLedgerAccount"></select></div>
+      <div class="field"><label>من تاريخ</label><input id="accLedgerFrom" type="date"></div>
+      <div class="field"><label>إلى تاريخ</label><input id="accLedgerTo" type="date"></div>
+    </div></div>
+    <div class="tablewrap" style="margin-top:10px"><table class="table"><thead><tr><th>التاريخ</th><th>رقم القيد</th><th>البيان</th><th>مركز التكلفة</th><th>الطرف</th><th>مدين</th><th>دائن</th><th>الرصيد الجاري</th></tr></thead><tbody id="accountingLedgerRows"></tbody></table></div>
+  </div>
+
+  <div class="card">
+    <h3>أحدث القيود</h3>
+    <div class="tablewrap"><table class="table"><thead><tr><th>رقم القيد</th><th>التاريخ</th><th>البيان</th><th>المصدر</th><th>المدين</th><th>الدائن</th><th>الحالة</th><th>التفاصيل / الإجراء</th></tr></thead><tbody id="accountingJournalRows"></tbody></table></div>
+  </div>
+</section>
+
+<section id="accountingApprovals" class="view">
+  <div class="card">
+    <h2><i class="fa-solid fa-clipboard-check"></i> مراجعة واعتماد القيود</h2>
+    <p class="muted">كل قيد أنشأه موظف أو نتج تلقائيًا من فاتورة أو دفعة أو صرف علف يظهر هنا بحالة «في انتظار الاعتماد». الاعتماد يرحّله للأستاذ العام، والرفض يحتفظ به في السجل دون ترحيل. تنبيه: المستند التشغيلي (مثل استلام المخزون أو صرفه) يُنفّذ عند تسجيله؛ اعتماد المدير هنا خاص بالقيد المحاسبي.</p>
+    <div id="accountingApprovalNote" class="msg" style="margin-top:10px"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0"><button class="btn btn-light" onclick="loadAccountingApprovals()">تحديث الطلبات</button></div>
+    <div class="tablewrap"><table class="table"><thead><tr><th>رقم القيد</th><th>التاريخ</th><th>البيان</th><th>النوع</th><th>مدين</th><th>دائن</th><th>تفاصيل</th><th>الإجراء</th></tr></thead><tbody id="accountingApprovalRows"></tbody></table></div>
+    <div id="accountingApprovalDetails" class="card" style="display:none;margin-top:12px"></div>
+  </div>
+</section>
 
 </div></main></section>
 <button id="mobileFab" class="mobile-fab" onclick="toggleMobileMenu()" aria-label="فتح القائمة"><i class="fa-solid fa-bars"></i></button><div id="toast" class="toast"></div>
 
 <script>
+const APP_VERSION="V39";
 const SUPABASE_URL="https://vhbhbzcywtmtwtpqvnhw.supabase.co";
 const SUPABASE_KEY="sb_publishable_LXRs70nbUvJljFiRyCT2UA_-hZDkuf3";
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
@@ -811,7 +983,7 @@ function toast(t){$("toast").textContent=t;$("toast").style.display="block";setT
 function message(id,text,err=false){const e=$(id);e.className="msg "+(err?"err":"ok");e.textContent=text}
 function num(x){const n=Number(x);return Number.isFinite(n)?n:0}
 function exportTable(id,name){const t=$(id);if(!t)return;const wb=XLSX.utils.table_to_book(t,{sheet:name.slice(0,31)});XLSX.writeFile(wb,name+"_"+today()+".xlsx")}
-function setDates(){["shDate","headDate","bwDate","wDate","fDate","bfDate","dDate","moDate","boatDate","saleDate","paymentDate","ledgerFrom","ledgerTo","custodyDate"].forEach(id=>{if($(id)&&!$(id).value)$(id).value=today()})}
+function setDates(){["shDate","headDate","bwDate","wDate","fDate","bfDate","dDate","moDate","boatDate","saleDate","paymentDate","ledgerFrom","ledgerTo","custodyDate","cashDate"].forEach(id=>{if($(id)&&!$(id).value)$(id).value=today()})}
 
 document.querySelectorAll(".item[data-page]").forEach(x=>x.onclick=()=>openPage(x.dataset.page));
 function toggleMobileMenu(){
@@ -831,7 +1003,7 @@ const EXPORT_PAGE_MAP = {
   heads:["headsRows"], barns:["barnsRows"], batchFeed:[], feed:[], batchWeights:["bwRows"],
   weights:["weightsRows"], sales:[], deaths:["deathsRows"], analytics:["analyticsRows"],
   fleet:["vehiclesRows"], inventory:["inventoryRows"], manufacturing:["moRows"], employees:["usersRows"],
-  batchReport:["batchReportRows"], fcrReport:["fcrRows"]
+  batchReport:["batchReportRows"], fcrReport:["fcrRows"], accounting:["accountingTrialRows","accountingLedgerRows","accIncomeStatementRows","accBalanceSheetRows","accShipmentCostRows","accAnimalCostRows"], accountingApprovals:["accountingApprovalRows"]
 };
 
 function ensurePageTools(page){
@@ -1039,6 +1211,8 @@ async function refreshPage(page){
  if(page==="batchReport")refreshBatchReport();
  if(page==="fcrReport")refreshFcrReport();
  if(page==="financial")refreshFinancialCenter();
+ if(page==="accounting")loadAccountingPage();
+ if(page==="accountingApprovals")loadAccountingApprovals();
 }
 
 async function login(){
@@ -1221,16 +1395,17 @@ async function deleteSupplier(id){if(!confirm("حذف المورد؟"))return;co
 
 async function addSupplierPayment(){const sid=$("supplierPaymentSupplier").value,amount=num($("supplierPaymentAmount").value),date=$("supplierPaymentDate").value||today();if(!sid||amount<=0)return message("supplierPaymentMsg","اختر المورد وأدخل مبلغًا صحيحًا.",true);const {error}=await db.rpc("record_supplier_payment",{p_supplier_id:sid,p_amount:amount,p_payment_date:date,p_payment_method:$("supplierPaymentMethod").value,p_reference:$("supplierPaymentReference").value.trim()||null,p_notes:$("supplierPaymentNotes").value.trim()||null});if(error)return message("supplierPaymentMsg",error.message,true);message("supplierPaymentMsg",$("supplierPaymentMethod").value==="cash"?"تم تسجيل الدفعة وإضافتها للخزنة.":"تم تسجيل الدفعة.");$("supplierPaymentAmount").value="";$("supplierPaymentReference").value="";$("supplierPaymentNotes").value="";await Promise.all([refreshSupplierLedger(),loadTreasury()])}
 async function refreshSupplierLedger(){
- const sid=$("supplierLedgerId").value;if(!sid)return;
- let pq=db.from("supplier_invoices").select("invoice_date,invoice_no,total_amount,notes").eq("farm_id",farmId).eq("supplier_id",sid).order("invoice_date");
- let payq=db.from("supplier_payments").select("payment_date,amount,reference,notes,payment_method").eq("farm_id",farmId).eq("supplier_id",sid).order("payment_date");
- if($("supplierLedgerFrom")?.value){pq=pq.gte("invoice_date",$("supplierLedgerFrom").value);payq=payq.gte("payment_date",$("supplierLedgerFrom").value)}
- if($("supplierLedgerTo").value){pq=pq.lte("invoice_date",$("supplierLedgerTo").value);payq=payq.lte("payment_date",$("supplierLedgerTo").value)}
- const [{data:inv=[],error:ie},{data:pays=[],error:pe}]=await Promise.all([pq,payq]);if(ie||pe)return toast((ie||pe).message);
- const totalInv=inv.reduce((s,x)=>s+num(x.total_amount),0),totalPay=pays.reduce((s,x)=>s+num(x.amount),0);
- $("supLedgerPurchases").textContent=totalInv.toLocaleString();$("supLedgerPayments").textContent=totalPay.toLocaleString();$("supLedgerBalance").textContent=(totalInv-totalPay).toLocaleString();
- const rows=[...inv.map(x=>({date:x.invoice_date,type:"فاتورة شراء",ref:x.invoice_no,debit:num(x.total_amount),credit:0,note:x.notes||"شراء"})),...pays.map(x=>({date:x.payment_date,type:"دفعة",ref:x.reference||x.payment_method||"-",debit:0,credit:num(x.amount),note:x.notes||"دفعة"}))].sort((a,b)=>a.date.localeCompare(b.date));
- let run=0;$("supplierLedgerRows").innerHTML=rows.map(r=>{run+=r.debit-r.credit;return `<tr><td>${r.date}</td><td>${r.type}</td><td>${r.ref}</td><td>${r.debit.toLocaleString()}</td><td>${r.credit.toLocaleString()}</td><td>${run.toLocaleString()}</td><td>${r.note}</td></tr>`}).join("")||'<tr><td colspan="7">لا توجد حركة</td></tr>';
+ const sid=$('supplierLedgerId').value;if(!sid)return;
+ let pq=db.from('supplier_invoices').select('invoice_date,invoice_no,total_amount,notes').eq('farm_id',farmId).eq('supplier_id',sid).order('invoice_date');
+ let aq=db.from('shipment_acquisition_costs').select('transaction_date,doc_no,total_amount,description,shipment_id,shipments(code)').eq('farm_id',farmId).eq('supplier_id',sid).order('transaction_date');
+ let payq=db.from('supplier_payments').select('payment_date,amount,reference,notes,payment_method').eq('farm_id',farmId).eq('supplier_id',sid).order('payment_date');
+ if($('supplierLedgerFrom')?.value){pq=pq.gte('invoice_date',$('supplierLedgerFrom').value);aq=aq.gte('transaction_date',$('supplierLedgerFrom').value);payq=payq.gte('payment_date',$('supplierLedgerFrom').value)}
+ if($('supplierLedgerTo').value){pq=pq.lte('invoice_date',$('supplierLedgerTo').value);aq=aq.lte('transaction_date',$('supplierLedgerTo').value);payq=payq.lte('payment_date',$('supplierLedgerTo').value)}
+ const [{data:inv=[],error:ie},{data:acq=[],error:ae},{data:pays=[],error:pe}]=await Promise.all([pq,aq,payq]);if(ie||ae||pe)return toast((ie||ae||pe).message);
+ const totalInv=inv.reduce((s,x)=>s+num(x.total_amount),0)+acq.reduce((s,x)=>s+num(x.total_amount),0),totalPay=pays.reduce((s,x)=>s+num(x.amount),0);
+ $('supLedgerPurchases').textContent=totalInv.toLocaleString();$('supLedgerPayments').textContent=totalPay.toLocaleString();$('supLedgerBalance').textContent=(totalInv-totalPay).toLocaleString();
+ const rows=[...inv.map(x=>({date:x.invoice_date,type:'فاتورة شراء',ref:x.invoice_no,debit:num(x.total_amount),credit:0,note:x.notes||'شراء'})),...acq.map(x=>({date:x.transaction_date,type:'تكلفة اقتناء شحنة',ref:x.doc_no,debit:num(x.total_amount),credit:0,note:(x.description||'تكلفة اقتناء')+(x.shipments?.code?' — '+x.shipments.code:'')})),...pays.map(x=>({date:x.payment_date,type:'دفعة',ref:x.reference||x.payment_method||'-',debit:0,credit:num(x.amount),note:x.notes||'دفعة'}))].sort((a,b)=>a.date.localeCompare(b.date));
+ let run=0;$('supplierLedgerRows').innerHTML=rows.map(r=>{run+=r.debit-r.credit;return `<tr><td>${r.date}</td><td>${r.type}</td><td>${r.ref}</td><td>${r.debit.toLocaleString()}</td><td>${r.credit.toLocaleString()}</td><td>${run.toLocaleString()}</td><td>${r.note}</td></tr>`}).join('')||'<tr><td colspan="7">لا توجد حركة</td></tr>';
 }
 // Paginate farm-scoped reads so analytical reports do not silently stop at the API's first page.
 async function fetchAllFarmRows(table,columns,orderField="id",maxRows=50000){
@@ -1388,16 +1563,34 @@ async function refreshFinancialCenter(){
 
 async function loadTreasury(){
  try{
+  const {data:accounts,error:accountError}=await db.from("accounting_accounts").select("id,account_code,account_name,system_key").eq("farm_id",farmId).eq("is_active",true).eq("is_postable",true).order("account_code");
+  if(!accountError){
+   const sel=$("cashCounterAccount"),oldValue=sel?.value;
+   if(sel)sel.innerHTML='<option value="">اختر الحساب المقابل</option>'+(accounts||[]).filter(a=>a.system_key!=="cash").map(a=>`<option value="${a.id}" data-key="${a.system_key||''}">${a.account_code} — ${a.account_name}</option>`).join('');
+   if(oldValue&&sel?.querySelector(`option[value="${oldValue}"]`))sel.value=oldValue;
+   setTreasuryCounterDefault();
+  }else if($("cashCounterAccount"))$("cashCounterAccount").innerHTML='<option value="">شغّل SQL Migration V39 أولًا</option>';
   const {rows:data}=await fetchAllFarmRows("treasury_transactions","id,movement_date,movement_type,amount,category,reference,description,source_type,source_id","movement_date");
   let tin=0,tout=0;data.forEach(x=>x.movement_type==="in"?tin+=num(x.amount):tout+=num(x.amount));
   $("cashIn").textContent=tin.toLocaleString();$("cashOut").textContent=tout.toLocaleString();$("cashBalance").textContent=(tin-tout).toLocaleString();
   $("cashRows").innerHTML=data.slice().reverse().slice(0,500).map(x=>`<tr><td>${x.movement_date}</td><td>${x.movement_type==="in"?"قبض":"صرف"}</td><td>${num(x.amount).toLocaleString()}</td><td>${x.category||"-"}</td><td>${x.reference||"-"}</td><td>${x.description||((x.source_type&&x.source_id)?`${x.source_type} — ${x.source_id}`:"-")}</td></tr>`).join("")||'<tr><td colspan="6">لا توجد حركات</td></tr>';
  }catch(error){$("cashRows").innerHTML=`<tr><td colspan="6">${error.message}</td></tr>`;}
 }
+function setTreasuryCounterDefault(){
+ const type=$("cashType")?.value,sel=$("cashCounterAccount");if(!sel)return;
+ const previousType=sel.dataset.lastType;
+ if(!sel.value||previousType!==type){
+  const key=type==="in"?"other_revenue":"other_expenses";
+  const option=[...sel.options].find(o=>o.dataset.key===key);if(option)sel.value=option.value;
+ }
+ sel.dataset.lastType=type||"";
+}
 async function saveTreasuryTransaction(){
- const amount=num($("cashAmount").value);if(amount<=0)return toast("أدخل مبلغًا صحيحًا");
- const {error}=await db.from("treasury_transactions").insert({farm_id:farmId,movement_type:$("cashType").value,amount,movement_date:$("cashDate").value||today(),category:$("cashCategory").value.trim(),reference:$("cashReference").value.trim(),description:$("cashDescription").value.trim(),created_by:user.id});
- if(error)return toast(error.message);$("cashAmount").value="";$("cashReference").value="";$("cashDescription").value="";await loadTreasury();toast("تم حفظ حركة الخزنة");
+ const amount=num($("cashAmount").value),counter=$("cashCounterAccount").value;
+ if(amount<=0)return toast("أدخل مبلغًا صحيحًا");
+ if(!counter)return toast("اختر الحساب المقابل لحركة الخزنة");
+ const {error}=await db.from("treasury_transactions").insert({farm_id:farmId,movement_type:$("cashType").value,amount,movement_date:$("cashDate").value||today(),category:$("cashCategory").value.trim(),reference:$("cashReference").value.trim(),description:$("cashDescription").value.trim(),counter_account_id:counter,created_by:user.id});
+ if(error)return toast(error.message);$("cashAmount").value="";$("cashReference").value="";$("cashDescription").value="";await loadTreasury();toast("تم تسجيل حركة الخزنة وإرسال القيد للاعتماد");
 }
 
 async function createFeedPurchase(){
@@ -1593,15 +1786,11 @@ async function issueIndividualFeed(){
  const wh=$("fWarehouse").value, stock=$("fStock").value, qty=num($("fQty").value), date=$("fDate").value||today(), barn=$("fBarn").value||null;
  if(!wh||!stock||qty<=0)return message("fMsg","أكمل بيانات الصرف.",true);
  const selected=$("fStock").selectedOptions[0]; if(selected?.dataset?.wh && selected.dataset.wh!==wh)return message("fMsg","الصنف المختار لا يتبع المخزن المحدد.",true);
- const {data,error}=await db.rpc("issue_stock",{p_stock_id:stock,p_warehouse_id:wh,p_qty_kg:qty,p_reference_type:"feed_issue",p_movement_date:date,p_notes:barn?("إلى: "+$("fBarn").selectedOptions[0].text):null});
+ const {data,error}=await db.rpc("create_individual_feed_issue",{p_warehouse_id:wh,p_stock_id:stock,p_qty_kg:qty,p_barn_id:barn,p_issue_date:date,p_created_by:user.id});
  if(error)return message("fMsg",error.message,true);
- const issueNo="FEED-"+date.replaceAll("-","")+"-"+Date.now().toString().slice(-6);
- const {data:issue,error:issueErr}=await db.from("feed_issues").insert({farm_id:farmId,issue_no:issueNo,issue_date:date,issue_type:"barn",barn_id:barn,total_qty_kg:qty,created_by:user.id}).select("id").single();
- if(issueErr)return message("fMsg","تم خصم المخزون لكن تعذر إنشاء سجل إذن الصرف: "+issueErr.message,true);
- const unitCost=num(selected?.dataset?.cost||0);
- const {error:lineErr}=await db.from("feed_issue_lines").insert({feed_issue_id:issue.id,stock_id:stock,qty_kg:qty,protein_pct:num(selected?.dataset?.protein||0),unit_cost:unitCost});
- if(lineErr)return message("fMsg","تم إنشاء الإذن لكن تعذر حفظ بند الصرف: "+lineErr.message,true);
- message("fMsg","تم إنشاء إذن الصرف رقم "+issueNo); $("fQty").value=""; await Promise.all([loadInventory(),refreshDashboardAnalytics(),loadDashboard(),loadFeedIssueRegister()]);
+ message("fMsg","تم حفظ إذن الصرف الذري رقم "+data+" وتحديث المخزون والسجل المحاسبي.");
+ $("fQty").value="";
+ await Promise.all([loadInventory(),refreshDashboardAnalytics(),loadDashboard(),loadFeedIssueRegister()]);
 }
 async function issueStock(whId,stockId,qtyId,barnId,shipId,dateId,msgId,type){
  const warehouse=$(whId).value,stock=$(stockId).value,qty=num($(qtyId).value),date=$(dateId).value||today();if(!warehouse||!stock||!qty)return message(msgId,"أكمل بيانات الصرف.",true);
@@ -2223,5 +2412,279 @@ async function refreshAdvancedAnalytics(){
 function resetAnalyticsFilters(){["anBoat","anBatch"].forEach(id=>{$(id).value="all"});["anFrom","anTo"].forEach(id=>$(id).value="");refreshAdvancedAnalytics()}
 
 (async()=>{const {data}=await db.auth.getSession();if(data.session)await enter(data.session.user)})();
+// ======================== V39 ACCOUNTING ========================
+let accountingAccountsCache=[];
+let accountingCostCentersCache=[];
+let accountingCustomersCache=[];
+let accountingSuppliersCache=[];
+let accountingApproverCache=false;
+
+function escV39(value){
+ return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function moneyV39(value){return num(value||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function accountTypeLabelV39(t){return ({asset:'أصول',liability:'التزامات',equity:'حقوق ملكية',revenue:'إيرادات',expense:'مصروفات وتكاليف'})[t]||t||'-';}
+function journalStatusLabelV39(s){return ({draft:'مسودة',pending_approval:'في انتظار الاعتماد',posted:'مُرحّل',rejected:'مرفوض',cancelled:'ملغي'})[s]||s||'-';}
+function journalTypeLabelV39(s){return ({manual:'يدوي',automatic:'آلي',opening:'افتتاحي',allocation:'توزيع تكلفة',reversal:'عكسي'})[s]||s||'-';}
+
+async function loadAccountingPage(){
+ try{
+  const [{data:accounts,error:ae},{data:shipments,error:se},{data:customers,error:cuErr},{data:suppliers,error:suErr}]=await Promise.all([
+   db.from('accounting_accounts').select('id,account_code,account_name,account_type,normal_side,system_key,parent_id,is_postable,is_active').eq('farm_id',farmId).eq('is_active',true).order('account_code'),
+   db.from('shipments').select('id,code').eq('farm_id',farmId).order('arrival_date',{ascending:false}).limit(5000),
+   db.from('customers').select('id,name').eq('farm_id',farmId).order('name').limit(10000),
+   db.from('suppliers').select('id,name').eq('farm_id',farmId).order('name').limit(10000)
+  ]);
+  if(ae)throw ae;if(se)throw se;if(cuErr)throw cuErr;if(suErr)throw suErr;
+  const centerPage=await fetchAllFarmRows('cost_centers','id,code,name,center_type,shipment_id,animal_id,parent_id','code',50000);
+  if(centerPage.truncated)toast('تنبيه: تجاوزت مراكز التكلفة 50,000 سجل؛ تم تحميل أول 50,000 فقط.');
+  accountingAccountsCache=accounts||[];accountingCostCentersCache=centerPage.rows||[];accountingCustomersCache=customers||[];accountingSuppliersCache=suppliers||[];
+  const accountOpts='<option value="">اختر الحساب</option>'+accountingAccountsCache.filter(a=>a.is_postable).map(a=>`<option value="${a.id}">${escV39(a.account_code)} — ${escV39(a.account_name)}</option>`).join('');
+  const centerOpts='<option value="">إدارة المزرعة / بدون مركز محدد</option>'+accountingCostCentersCache.map(c=>`<option value="${c.id}">${escV39(c.code)} — ${escV39(c.name)}</option>`).join('');
+  const fill=(id,html)=>{const el=$(id);if(el)el.innerHTML=html;};
+  const shipmentOpts='<option value="">اختر المجموعة</option>'+(shipments||[]).map(x=>`<option value="${x.id}">${escV39(x.code)}</option>`).join('');
+  fill('costShipment',shipmentOpts);fill('acqShipment',shipmentOpts);
+  fill('costExpenseAccount','<option value="">اختر حساب التكلفة</option>'+accountingAccountsCache.filter(a=>a.account_type==='expense'&&a.is_postable).map(a=>`<option value="${a.id}">${escV39(a.account_code)} — ${escV39(a.account_name)}</option>`).join(''));
+  const acquisitionCounterKeys=['cash','bank','checks_receivable','other_payment_clearing','payables','other_payables','checks_payable'];
+  fill('acqCounterAccount','<option value="">اختر الحساب المقابل</option>'+accountingAccountsCache.filter(a=>a.is_postable&&(acquisitionCounterKeys.includes(a.system_key)||(!a.system_key&&a.account_type==='liability'))).map(a=>`<option value="${a.id}" data-key="${a.system_key||''}">${escV39(a.account_code)} — ${escV39(a.account_name)}</option>`).join(''));
+  fill('acqSupplier','<option value="">بدون مورد</option>'+accountingSuppliersCache.map(x=>`<option value="${x.id}">${escV39(x.name)}</option>`).join(''));
+  if(!$('acqDate').value)$('acqDate').value=today();
+  fill('costCreditAccount','<option value="">اختر الحساب الدائن</option>'+accountingAccountsCache.filter(a=>['asset','liability'].includes(a.account_type)&&a.is_postable).map(a=>`<option value="${a.id}">${escV39(a.account_code)} — ${escV39(a.account_name)}</option>`).join(''));
+  fill('accLedgerAccount','<option value="">كل الحسابات</option>'+accountingAccountsCache.map(a=>`<option value="${a.id}">${escV39(a.account_code)} — ${escV39(a.account_name)}</option>`).join(''));
+  fill('newAccParent','<option value="">بدون حساب رئيسي</option>'+accountingAccountsCache.filter(a=>!a.is_postable).map(a=>`<option value="${a.id}">${escV39(a.account_code)} — ${escV39(a.account_name)}</option>`).join(''));
+  $('accountingAccountRows').innerHTML=accountingAccountsCache.map(a=>{const parent=accountingAccountsCache.find(x=>x.id===a.parent_id);return `<tr><td>${escV39(a.account_code)}</td><td>${escV39(a.account_name)}</td><td>${parent?escV39(parent.account_code+' — '+parent.account_name):'-'}</td><td>${accountTypeLabelV39(a.account_type)}</td><td>${a.normal_side==='debit'?'مدين':'دائن'}</td><td>${a.is_postable?'يقبل':'تجميعي'}</td><td>${a.system_key?escV39(a.system_key):'-'}</td></tr>`;}).join('')||'<tr><td colspan="7">لا توجد حسابات</td></tr>';
+  $('accAccountsCount').textContent=accountingAccountsCache.length.toLocaleString();
+  $('accRoleBadge').textContent=`المستخدم: ${profile?.full_name||profile?.username||'-'} — ${profile?.role||'employee'}`;
+  const addForm=$('accAddAccountForm');if(addForm)addForm.style.display=['admin','manager'].includes(profile?.role)?'block':'none';
+  if(!$('accEntryDate').value)$('accEntryDate').value=today();
+  if(!$('costEntryDate').value)$('costEntryDate').value=today();
+  if(!$('accStatementFrom').value)$('accStatementFrom').value=today().slice(0,4)+'-01-01';
+  if(!$('accStatementTo').value)$('accStatementTo').value=today();
+  if(!$('accPeriodYear').value)$('accPeriodYear').value=new Date().getFullYear();
+  if(!$('accPeriodMonth').value)$('accPeriodMonth').value=String(new Date().getMonth()+1);
+  if(!$('accJournalLines').children.length){addAccountingLine();addAccountingLine();}
+  await Promise.all([loadAccountingTrialBalance(),loadAccountingCostReports(),loadAccountingJournals(),loadAccountingGeneralLedger(),loadAccountingApprovals(),loadAccountingStatements(),loadAcquisitionCosts()]);
+ }catch(e){console.error(e);toast('تعذر تحميل المحاسبة: '+(e.message||e));}
+}
+
+function addAccountingLine(){
+ const body=$('accJournalLines');if(!body)return;
+ const tr=document.createElement('tr');tr.className='acc-journal-line';
+ const accountOpts='<option value="">اختر الحساب</option>'+accountingAccountsCache.filter(a=>a.is_postable).map(a=>`<option value="${a.id}">${escV39(a.account_code)} — ${escV39(a.account_name)}</option>`).join('');
+ const centerOpts='<option value="">إدارة المزرعة / عام</option>'+accountingCostCentersCache.map(c=>`<option value="${c.id}">${escV39(c.code)} — ${escV39(c.name)}</option>`).join('');
+ const partyOpts='<option value="">بدون طرف</option><optgroup label="العملاء">'+accountingCustomersCache.map(x=>`<option value="customer:${x.id}">${escV39(x.name)}</option>`).join('')+'</optgroup><optgroup label="الموردون">'+accountingSuppliersCache.map(x=>`<option value="supplier:${x.id}">${escV39(x.name)}</option>`).join('')+'</optgroup>';
+ tr.innerHTML=`<td><select class="acc-line-account" style="min-width:220px" onchange="updateAccountingJournalTotals()">${accountOpts}</select></td>
+ <td><select class="acc-line-center" style="min-width:180px">${centerOpts}</select></td>
+ <td><select class="acc-line-party" style="min-width:170px">${partyOpts}</select></td>
+ <td><input class="acc-line-debit" type="number" min="0" step="0.01" value="0" style="width:105px" oninput="updateAccountingJournalTotals()"></td>
+ <td><input class="acc-line-credit" type="number" min="0" step="0.01" value="0" style="width:105px" oninput="updateAccountingJournalTotals()"></td>
+ <td><input class="acc-line-memo" style="min-width:150px" placeholder="بيان السطر"></td>
+ <td><button class="btn btn-danger" onclick="this.closest('tr').remove();updateAccountingJournalTotals()">حذف</button></td>`;
+ body.appendChild(tr);updateAccountingJournalTotals();
+}
+function updateAccountingJournalTotals(){
+ let debit=0,credit=0;
+ document.querySelectorAll('.acc-journal-line').forEach(r=>{debit+=num(r.querySelector('.acc-line-debit')?.value);credit+=num(r.querySelector('.acc-line-credit')?.value)});
+ $('accJournalTotals').textContent=`المدين ${moneyV39(debit)} — الدائن ${moneyV39(credit)} — الفرق ${moneyV39(debit-credit)}`;
+ $('accJournalTotals').className='badge '+(Math.abs(debit-credit)<0.005&&debit>0?'ok':'warn');
+ return {debit,credit};
+}
+async function saveAccountingJournal(submit){
+ const lines=[...document.querySelectorAll('.acc-journal-line')].map(r=>({
+  account_id:r.querySelector('.acc-line-account')?.value||null,
+  cost_center_id:r.querySelector('.acc-line-center')?.value||null,
+  party:r.querySelector('.acc-line-party')?.value||'',
+  debit:num(r.querySelector('.acc-line-debit')?.value),
+  credit:num(r.querySelector('.acc-line-credit')?.value),
+  memo:r.querySelector('.acc-line-memo')?.value.trim()||null
+ })).map(x=>({
+   ...x,
+   customer_id:x.party.startsWith('customer:')?x.party.slice(9):null,
+   supplier_id:x.party.startsWith('supplier:')?x.party.slice(9):null
+ })).filter(x=>x.account_id&&(x.debit>0||x.credit>0));
+ const {debit,credit}=updateAccountingJournalTotals();
+ if(!lines.length||Math.abs(debit-credit)>=0.005||debit<=0)return message('accJournalMsg','راجع الحسابات والمبالغ: يجب أن يتساوى إجمالي المدين والدائن.',true);
+ const entryKind=$('accEntryKind')?.value||'manual';
+ if(entryKind==='opening'&&!submit)return message('accJournalMsg','القيد الافتتاحي يجب إرساله للاعتماد ولا يمكن تركه مسودة.',true);
+ const rpcName=entryKind==='opening'?'save_opening_accounting_journal':'save_accounting_journal';
+ const args=entryKind==='opening'?{p_entry_date:$('accEntryDate').value||today(),p_description:$('accEntryDescription').value.trim(),p_lines:lines}:{p_entry_date:$('accEntryDate').value||today(),p_description:$('accEntryDescription').value.trim(),p_lines:lines,p_submit:!!submit};
+ const {data,error}=await db.rpc(rpcName,args);
+ if(error)return message('accJournalMsg',error.message,true);
+ message('accJournalMsg',entryKind==='opening'?'تم إرسال القيد الافتتاحي للاعتماد.':(submit?'تم إرسال القيد إلى المدير للاعتماد.':'تم حفظ القيد كمسودة.'));
+ $('accEntryDescription').value='';$('accJournalLines').innerHTML='';addAccountingLine();addAccountingLine();
+ await Promise.all([loadAccountingJournals(),loadAccountingApprovals(),loadAccountingTrialBalance()]);
+}
+async function createAccountingAccount(){
+ const code=$('newAccCode').value.trim(),name=$('newAccName').value.trim(),type=$('newAccType').value,side=$('newAccSide').value,parent=$('newAccParent')?.value||null;
+ if(!code||!name)return toast('أدخل كود واسم الحساب');
+ const {error}=await db.rpc('create_accounting_account',{p_account_code:code,p_account_name:name,p_account_type:type,p_normal_side:side,p_parent_id:parent,p_is_postable:$('newAccPostable')?.checked!==false});
+ if(error)return toast(error.message);
+ $('newAccCode').value='';$('newAccName').value='';$('newAccParent').value='';$('newAccPostable').checked=true;toast('تم إضافة الحساب');await loadAccountingPage();
+}
+async function loadAccountingStatements(){
+ const from=$('accStatementFrom')?.value||null,to=$('accStatementTo')?.value||today();
+ const {data,error}=await db.rpc('get_accounting_financial_statements',{p_from:from,p_to:to});
+ if(error){$('accIncomeStatementRows').innerHTML=`<tr><td colspan="4">${escV39(error.message)}</td></tr>`;$('accBalanceStatus').className='msg err';$('accBalanceStatus').textContent='تعذر تحميل القوائم المالية.';return;}
+ const income=data?.income_summary||{},bs=data?.balance_summary||{};
+ $('accStmtRevenue').textContent=moneyV39(income.revenue);$('accStmtExpenses').textContent=moneyV39(income.expenses);$('accStmtProfit').textContent=moneyV39(income.net_profit);
+ $('accStmtAssets').textContent=moneyV39(bs.assets);$('accStmtLiabEquity').textContent=moneyV39(bs.liabilities_and_equity);
+ $('accIncomeStatementRows').innerHTML=(data?.income_statement||[]).map(x=>`<tr><td>${escV39(x.account_code)}</td><td>${escV39(x.account_name)}</td><td>${accountTypeLabelV39(x.account_type)}</td><td>${moneyV39(x.amount)}</td></tr>`).join('')||'<tr><td colspan="4">لا توجد إيرادات أو مصروفات مُرحّلة في الفترة</td></tr>';
+ $('accIncomeStatementTotal').textContent=moneyV39(income.net_profit);
+ $('accBalanceSheetRows').innerHTML=(data?.balance_sheet||[]).map(x=>`<tr><td>${escV39(x.account_code||'-')}</td><td>${escV39(x.account_name)}</td><td>${accountTypeLabelV39(x.account_type)}</td><td>${moneyV39(x.balance)}</td></tr>`).join('')||'<tr><td colspan="4">لا توجد أرصدة ميزانية مُرحّلة حتى التاريخ المحدد</td></tr>';
+ $('accBalanceDifference').textContent=moneyV39(bs.difference);
+ $('accBalanceStatus').className='msg '+(bs.balanced?'ok':'warn');
+ $('accBalanceStatus').textContent=bs.balanced?'الميزانية متوازنة حسب القيود المُرحّلة.':'يوجد فرق في توازن الميزانية. راجع قيود الافتتاح والتصنيف المحاسبي.';
+}
+async function closeAccountingPeriod(){
+ const y=num($('accPeriodYear').value),m=num($('accPeriodMonth').value);
+ if(y<2000||m<1||m>12)return message('accPeriodMsg','اختر سنة وشهر صحيحين.',true);
+ if(!confirm(`تأكيد إقفال ${m}/${y}؟ لا يمكن تسجيل قيود جديدة على هذه الفترة بعد الإقفال.`))return;
+ const {error}=await db.rpc('close_accounting_period',{p_year:y,p_month:m});
+ if(error)return message('accPeriodMsg',error.message,true);
+ message('accPeriodMsg','تم إقفال الفترة المحاسبية.');
+}
+async function reopenAccountingPeriod(){
+ const y=num($('accPeriodYear').value),m=num($('accPeriodMonth').value);
+ if(y<2000||m<1||m>12)return message('accPeriodMsg','اختر سنة وشهر صحيحين.',true);
+ if(!confirm(`تأكيد إعادة فتح ${m}/${y}؟`))return;
+ const {error}=await db.rpc('reopen_accounting_period',{p_year:y,p_month:m});
+ if(error)return message('accPeriodMsg',error.message,true);
+ message('accPeriodMsg','تم إعادة فتح الفترة.');
+}
+
+async function loadAccountingTrialBalance(){
+ const {data,error}=await db.from('v_accounting_trial_balance').select('*').order('account_code');
+ if(error){$('accountingTrialRows').innerHTML=`<tr><td colspan="7">${escV39(error.message)}</td></tr>`;return;}
+ let td=0,tc=0;
+ $('accountingTrialRows').innerHTML=(data||[]).map(x=>{td+=num(x.total_debit);tc+=num(x.total_credit);return `<tr><td>${escV39(x.account_code)}</td><td>${escV39(x.account_name)}</td><td>${accountTypeLabelV39(x.account_type)}</td><td>${moneyV39(x.total_debit)}</td><td>${moneyV39(x.total_credit)}</td><td>${moneyV39(x.balance)}</td><td>${moneyV39(x.opposite_balance)}</td></tr>`;}).join('')||'<tr><td colspan="7">لا توجد حسابات</td></tr>';
+ $('accTBTotalDebit').textContent=moneyV39(td);$('accTBTotalCredit').textContent=moneyV39(tc);
+ $('accDebitTotal').textContent=moneyV39(td);$('accCreditTotal').textContent=moneyV39(tc);
+}
+async function fetchAllQueryRowsV39(buildQuery,pageSize=1000,maxRows=50000){
+ const rows=[];
+ for(let offset=0;offset<maxRows;offset+=pageSize){
+  const {data,error}=await buildQuery().range(offset,Math.min(offset+pageSize-1,maxRows-1));
+  if(error)return {rows,error,truncated:false};
+  const batch=data||[];rows.push(...batch);
+  if(batch.length<pageSize)return {rows,error:null,truncated:false};
+ }
+ return {rows,error:null,truncated:true};
+}
+async function loadAccountingCostReports(){
+ const groupResult=await db.from('v_accounting_shipment_costs').select('*').order('total_cost',{ascending:false});
+ const animalResult=await fetchAllQueryRowsV39(()=>db.from('v_accounting_animal_costs').select('*').order('tag').order('animal_id'),1000,50000);
+ const groups=groupResult.data||[],animals=animalResult.rows||[];
+ if(groupResult.error)$('accShipmentCostRows').innerHTML=`<tr><td colspan="4">${escV39(groupResult.error.message)}</td></tr>`;
+ else $('accShipmentCostRows').innerHTML=groups.map(x=>`<tr><td>${escV39(x.shipment_code||'-')}</td><td>${moneyV39(x.total_cost)}</td><td>${moneyV39(x.total_revenue)}</td><td>${moneyV39(num(x.total_revenue)-num(x.total_cost))}</td></tr>`).join('')||'<tr><td colspan="4">لا توجد تكاليف مُرحّلة بعد</td></tr>';
+ if(animalResult.error)$('accAnimalCostRows').innerHTML=`<tr><td colspan="5">${escV39(animalResult.error.message)}</td></tr>`;
+ else $('accAnimalCostRows').innerHTML=animals.map(x=>`<tr><td>${escV39(x.tag||'-')}</td><td>${escV39(x.shipment_code||'-')}</td><td>${moneyV39(x.total_cost)}</td><td>${moneyV39(x.total_revenue)}</td><td>${moneyV39(num(x.total_revenue)-num(x.total_cost))}</td></tr>`).join('')||'<tr><td colspan="5">لا توجد تكاليف مُرحّلة على الرؤوس بعد</td></tr>';
+ if(animalResult.truncated)toast('تم عرض أول 50,000 رأس. استخدم فلتر المجموعة لتجزئة التقرير إذا تجاوز العدد ذلك.');
+}
+async function loadAccountingJournals(){
+ const {data,error}=await db.from('journal_entries').select('id,entry_no,entry_date,description,entry_type,status,total_debit,total_credit,source_type,created_by').eq('farm_id',farmId).order('created_at',{ascending:false}).limit(250);
+ if(error){$('accountingJournalRows').innerHTML=`<tr><td colspan="8">${escV39(error.message)}</td></tr>`;return;}
+ $('accountingJournalRows').innerHTML=(data||[]).map(x=>{
+  let action=`<button class="btn btn-light" onclick="showAccountingJournalDetails('${x.id}')">التفاصيل</button>`;
+  if(x.status==='draft'&&x.created_by===user?.id)action+=` <button class="btn btn-primary" onclick="submitAccountingDraft('${x.id}')">إرسال للاعتماد</button> <button class="btn btn-danger" onclick="cancelAccountingDraft('${x.id}')">إلغاء المسودة</button>`;
+  else if(x.status==='posted'&&(accountingApproverCache||['admin','manager'].includes(profile?.role)))action+=` <button class="btn btn-warn" onclick="reverseAccountingEntry('${x.id}')">قيد عكسي</button>`;
+  return `<tr><td>${escV39(x.entry_no)}</td><td>${escV39(x.entry_date)}</td><td>${escV39(x.description)}</td><td>${escV39(x.source_type||journalTypeLabelV39(x.entry_type)||'-')}</td><td>${moneyV39(x.total_debit)}</td><td>${moneyV39(x.total_credit)}</td><td>${journalStatusLabelV39(x.status)}</td><td>${action}</td></tr>`;
+ }).join('')||'<tr><td colspan="8">لا توجد قيود حتى الآن</td></tr>';
+ const p=(data||[]).filter(x=>x.status==='pending_approval').length;$('accPendingCount').textContent=p.toLocaleString();
+}
+async function loadAccountingGeneralLedger(){
+ const aid=$('accLedgerAccount')?.value,from=$('accLedgerFrom')?.value,to=$('accLedgerTo')?.value;
+ const result=await fetchAllQueryRowsV39(()=>{
+  let q=db.from('v_accounting_general_ledger').select('entry_date,entry_no,line_no,entry_created_at,description,cost_center_name,customer_name,supplier_name,debit,credit,account_id,running_balance').order('entry_date',{ascending:true}).order('entry_created_at',{ascending:true}).order('entry_no',{ascending:true}).order('line_no',{ascending:true});
+  if(aid)q=q.eq('account_id',aid);if(from)q=q.gte('entry_date',from);if(to)q=q.lte('entry_date',to);
+  return q;
+ },1000,50000);
+ if(result.error){$('accountingLedgerRows').innerHTML=`<tr><td colspan="8">${escV39(result.error.message)}</td></tr>`;return;}
+ $('accountingLedgerRows').innerHTML=(result.rows||[]).map(x=>`<tr><td>${escV39(x.entry_date)}</td><td>${escV39(x.entry_no)}</td><td>${escV39(x.description||'-')}</td><td>${escV39(x.cost_center_name||'-')}</td><td>${escV39(x.customer_name||x.supplier_name||'-')}</td><td>${moneyV39(x.debit)}</td><td>${moneyV39(x.credit)}</td><td>${moneyV39(x.running_balance)}</td></tr>`).join('')||'<tr><td colspan="8">لا توجد حركات مُرحّلة في الاختيار</td></tr>';
+ if(result.truncated)toast('تم عرض أول 50,000 حركة أستاذ. حدّد حسابًا أو فترة زمنية لتجزئة التقرير.');
+}
+function toggleCostAnimal(){const mode=$('costAllocationMode').value;$('costAnimalField').style.display=mode==='animal'?'block':'none';}
+async function loadCostAllocationAnimals(){
+ const shipment=$('costShipment').value;if(!shipment){$('costAnimal').innerHTML='<option value="">اختر المجموعة أولًا</option>';return;}
+ const result=await fetchAllQueryRowsV39(()=>db.from('animals').select('id,tag,status').eq('farm_id',farmId).eq('shipment_id',shipment).order('tag').order('id'),1000,50000);
+ if(result.error){toast(result.error.message);return;}
+ $('costAnimal').innerHTML='<option value="">اختر الرأس</option>'+(result.rows||[]).map(a=>`<option value="${a.id}">${escV39(a.tag)} — ${escV39(a.status)}</option>`).join('');
+ if(result.truncated)toast('تم عرض أول 50,000 رأس في المجموعة.');
+}
+async function saveCostAllocationJournal(){
+ const mode=$('costAllocationMode').value,shipment=$('costShipment').value,animal=mode==='animal'?$('costAnimal').value:null;
+ if(!shipment)return message('costAllocationMsg','اختر المجموعة/الشحنة.',true);
+ if(mode==='animal'&&!animal)return message('costAllocationMsg','اختر الرأس.',true);
+ const amount=num($('costEntryAmount').value);if(amount<=0)return message('costAllocationMsg','أدخل مبلغًا أكبر من صفر.',true);
+ const args={p_entry_date:$('costEntryDate').value||today(),p_description:$('costEntryDescription').value.trim(),p_amount:amount,p_expense_account_id:$('costExpenseAccount').value,p_credit_account_id:$('costCreditAccount').value,p_shipment_id:shipment,p_animal_id:animal,p_allocation_method:mode};
+ const {data,error}=await db.rpc('create_cost_allocation_journal',args);
+ if(error)return message('costAllocationMsg',error.message,true);
+ message('costAllocationMsg','تم إنشاء قيد التكلفة وإرساله للاعتماد. لن يظهر في تكلفة المجموعة/الرأس المُرحّلة قبل اعتماد المدير.');
+ $('costEntryAmount').value='';$('costEntryDescription').value='';await Promise.all([loadAccountingJournals(),loadAccountingApprovals()]);
+}
+async function loadAccountingApprovals(){
+ try{
+  const {data:canApprove,error:permError}=await db.rpc('can_approve_accounting');
+  accountingApproverCache=!permError&&canApprove===true;
+  const note=$('accountingApprovalNote');
+  note.className='msg '+(accountingApproverCache?'ok':'warn');
+  note.textContent=accountingApproverCache?'لديك صلاحية اعتماد القيود. لا يمكنك اعتماد قيد أنشأته بنفسك.':'أنت في وضع تسجيل ومراجعة فقط. اعتماد القيود متاح لحساب بدور admin أو manager.';
+  const {data,error}=await db.from('journal_entries').select('id,entry_no,entry_date,description,entry_type,status,total_debit,total_credit,created_by,source_type').eq('farm_id',farmId).eq('status','pending_approval').order('submitted_at',{ascending:true}).limit(300);
+  if(error)throw error;
+  $('accPendingCount').textContent=(data||[]).length.toLocaleString();
+  $('accountingApprovalRows').innerHTML=(data||[]).map(x=>{
+   const self=x.created_by===user?.id;
+   const actions=accountingApproverCache&&!self?`<button class="btn btn-primary" onclick="approveAccountingEntry('${x.id}',true)">اعتماد وترحيل</button> <button class="btn btn-danger" onclick="approveAccountingEntry('${x.id}',false)">رفض</button>`:self?'بانتظار مدير آخر': 'بانتظار المدير';
+   return `<tr><td>${escV39(x.entry_no)}</td><td>${escV39(x.entry_date)}</td><td>${escV39(x.description)}</td><td>${escV39(x.source_type||journalTypeLabelV39(x.entry_type))}</td><td>${moneyV39(x.total_debit)}</td><td>${moneyV39(x.total_credit)}</td><td><button class="btn btn-light" onclick="showAccountingJournalDetails('${x.id}')">عرض القيد</button></td><td>${actions}</td></tr>`;
+  }).join('')||'<tr><td colspan="8">لا توجد قيود في انتظار الاعتماد</td></tr>';
+ }catch(e){$('accountingApprovalRows').innerHTML=`<tr><td colspan="8">${escV39(e.message||e)}</td></tr>`;}
+}
+async function showAccountingJournalDetails(id){
+ const box=$('accountingApprovalDetails');box.style.display='block';box.innerHTML='جاري تحميل التفاصيل...';
+ const {data,error}=await db.from('journal_entry_lines').select('line_no,debit,credit,memo,accounting_accounts(account_code,account_name),cost_centers(code,name),customers(name),suppliers(name)').eq('journal_entry_id',id).eq('farm_id',farmId).order('line_no');
+ if(error){box.textContent=error.message;return;}
+ box.innerHTML='<h3>تفاصيل القيد</h3><div class="tablewrap"><table class="table"><thead><tr><th>الحساب</th><th>مركز التكلفة</th><th>الطرف</th><th>مدين</th><th>دائن</th><th>البيان</th></tr></thead><tbody>'+(data||[]).map(x=>`<tr><td>${escV39(x.accounting_accounts?.account_code||'')} — ${escV39(x.accounting_accounts?.account_name||'')}</td><td>${escV39(x.cost_centers?.name||'-')}</td><td>${escV39(x.customers?.name||x.suppliers?.name||'-')}</td><td>${moneyV39(x.debit)}</td><td>${moneyV39(x.credit)}</td><td>${escV39(x.memo||'-')}</td></tr>`).join('')+'</tbody></table></div>';
+}
+async function approveAccountingEntry(id,approve){
+ if(!accountingApproverCache)return toast('لا تملك صلاحية اعتماد القيود');
+ let reason=null;
+ if(approve){if(!confirm('تأكيد اعتماد القيد وترحيله إلى الأستاذ العام؟'))return;}
+ else{reason=prompt('اكتب سبب رفض القيد:');if(reason===null)return;if(!reason.trim())return toast('اكتب سبب الرفض');}
+ const {error}=await db.rpc('approve_accounting_journal',{p_journal_id:id,p_approve:!!approve,p_rejection_reason:reason});
+ if(error)return toast(error.message);
+ toast(approve?'تم اعتماد القيد وترحيله':'تم رفض القيد');
+ await Promise.all([loadAccountingApprovals(),loadAccountingJournals(),loadAccountingTrialBalance(),loadAccountingCostReports(),loadAccountingGeneralLedger()]);
+}
+async function loadAcquisitionCosts(){
+ const {data:docs,error}=await db.from('shipment_acquisition_costs').select('id,doc_no,transaction_date,description,total_amount,allocation_method,shipment_id,supplier_id,shipments(code),suppliers(name)').eq('farm_id',farmId).order('transaction_date',{ascending:false}).limit(250);
+ if(error){$('acqCostRows').innerHTML=`<tr><td colspan="8">${escV39(error.message)}</td></tr>`;return;}
+ const ids=(docs||[]).map(x=>x.id);let journals=[];
+ if(ids.length){const {data:j,error:je}=await db.from('journal_entries').select('source_id,status,entry_no').eq('farm_id',farmId).eq('source_type','shipment_acquisition_cost').in('source_id',ids);if(!je)journals=j||[];}
+ const jm=new Map(journals.map(j=>[j.source_id,j]));
+ $('acqCostRows').innerHTML=(docs||[]).map(x=>{const j=jm.get(x.id);return `<tr><td>${escV39(x.doc_no)}</td><td>${escV39(x.shipments?.code||'-')}</td><td>${escV39(x.transaction_date)}</td><td>${escV39(x.description||'-')}</td><td>${moneyV39(x.total_amount)}</td><td>${x.allocation_method==='equal'?'بالتساوي':'حسب الوزن الابتدائي'}</td><td>${escV39(x.suppliers?.name||'-')}</td><td>${journalStatusLabelV39(j?.status||'pending_approval')}${j?.entry_no?' — '+escV39(j.entry_no):''}</td></tr>`;}).join('')||'<tr><td colspan="8">لم يتم تسجيل تكلفة اقتناء بعد</td></tr>';
+}
+async function saveShipmentAcquisitionCost(){
+ const shipment=$('acqShipment').value,doc=$('acqDocNo').value.trim(),amount=num($('acqAmount').value),counter=$('acqCounterAccount').value;
+ if(!shipment||!doc||amount<=0||!counter)return message('acqMsg','أكمل الشحنة ورقم المستند والمبلغ والحساب المقابل.',true);
+ const args={p_shipment_id:shipment,p_doc_no:doc,p_transaction_date:$('acqDate').value||today(),p_description:$('acqDescription').value.trim()||null,p_total_amount:amount,p_allocation_method:$('acqAllocation').value,p_counter_account_id:counter,p_supplier_id:$('acqSupplier').value||null};
+ const {data,error}=await db.rpc('record_shipment_acquisition_cost',args);
+ if(error)return message('acqMsg',error.message,true);
+ message('acqMsg','تم تم تسجيل تكلفة الاقتناء وتوزيعها على الرؤوس وإرسال القيد للاعتماد. أدخل تكلفة الشراء والنقل قبل البيع أو النفوق حتى تُحتسب تكلفة الرأس عند الاستبعاد.');
+ $('acqDocNo').value='';$('acqAmount').value='';$('acqDescription').value='';
+ await Promise.all([loadAcquisitionCosts(),loadAccountingJournals(),loadAccountingApprovals(),loadAccountingCostReports()]);
+}
+async function cancelAccountingDraft(id){
+ if(!confirm('إلغاء مسودة القيد؟ لن تُحذف من سجل التدقيق.'))return;
+ const {error}=await db.rpc('cancel_accounting_draft',{p_journal_id:id});if(error)return toast(error.message);
+ toast('تم إلغاء المسودة');await Promise.all([loadAccountingJournals(),loadAccountingApprovals()]);
+}
+async function reverseAccountingEntry(id){
+ if(!confirm('إنشاء قيد عكسي لهذا القيد المُرحّل؟ القيد الأصلي سيبقى كما هو، والعكسي سيُرسل لاعتماد مدير آخر.'))return;
+ const {data,error}=await db.rpc('reverse_accounting_journal',{p_journal_id:id,p_reversal_date:today(),p_description:'قيد عكسي بناءً على مراجعة الإدارة'});
+ if(error)return toast(error.message);
+ toast('تم إنشاء القيد العكسي وإرساله للاعتماد');await Promise.all([loadAccountingJournals(),loadAccountingApprovals()]);
+}
+async function submitAccountingDraft(id){const {error}=await db.rpc('submit_accounting_journal',{p_journal_id:id});if(error)return toast(error.message);toast('تم إرسال المسودة للاعتماد');await Promise.all([loadAccountingApprovals(),loadAccountingJournals()]);}
+// ====================== END V39 ACCOUNTING =======================
+
 </script>
 <script>document.addEventListener("DOMContentLoaded",()=>{setTimeout(()=>{if(typeof loadFeedIssueRegister==="function")loadFeedIssueRegister()},1200)});</script></body></html>
